@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Title>Backlot.Services.Postmark</Title>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionSuffix>
+    </VersionSuffix>
+    <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+    <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+    <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+    <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+    <PackageIcon>bl.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;Development</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Stubble.Core" Version="1.10.8" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Backlot\Backlot.Core\Backlot.Core.csproj" />
+    <ProjectReference Include="..\Backlot.Functions\Backlot.Functions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\bl.png">
+      <Pack>True</Pack>
+      <PackagePath>
+      </PackagePath>
+      <Link>bl.png</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+{
+  "Container": {
+    "defaultAssembly": "Backlot.Demo.Web"
+  },
+  "Backlot": {
+    "Services": {
+      "LiteDB":{
+        "Settings" : {
+          "ConnectionString": "mydata.db"
+        }
+      }
+    },
+    "Http": {
+      "Watching": {
+        "DebugWatcher": {
+          "WebHookEndpoint": "https://localhost:7221/webhook/debugger",
+          "Events": "Ending",
+          "Scenarios": "Login"
+        }
+      }
+    }
+  }
+}

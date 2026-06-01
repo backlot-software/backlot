@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.Authentication.Basic\Backlot.Authentication.Basic.csproj" />
+      <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+      <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
+      <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
+      <ProjectReference Include="..\Backlot.Http.DependencyInjection.Autofac\Backlot.Http.DependencyInjection.Autofac.csproj" />
+      <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+      <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
+      <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
+      <ProjectReference Include="..\Backlot.WebApp\Backlot.WebApp.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="local.jsonsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Include="usersandgroups.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

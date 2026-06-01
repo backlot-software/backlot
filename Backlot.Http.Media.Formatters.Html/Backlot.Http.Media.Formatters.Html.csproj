@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>
+        </VersionSuffix>
+        <Title>Backlot.Http.Media.Formatters.Html</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+        <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Configurations>Debug;Release;Development</Configurations>
+    </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Stubble.Core" Version="1.10.8" />
+    </ItemGroup>
+
+  <ItemGroup>
+      <None Include="..\bl.png">
+        <Pack>True</Pack>
+        <PackagePath>
+        </PackagePath>
+        <Link>bl.png</Link>
+      </None>
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+    <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+  </ItemGroup>
+</Project>

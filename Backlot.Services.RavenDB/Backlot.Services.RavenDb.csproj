@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionSuffix>
+    </VersionSuffix>
+    <Title>Backlot.Services.RavenDb</Title>
+    <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+    <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+    <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+    <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+    <PackageIcon>bl.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;Development</Configurations>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="RavenDB.Client" Version="7.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\bl.png">
+      <Pack>True</Pack>
+      <PackagePath>
+      </PackagePath>
+      <Link>bl.png</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

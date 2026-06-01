@@ -1,0 +1,111 @@
+{
+  "RequestedProfessionalAlarmProduct": "Flexible",
+  "Status": "Online Leveren",
+  "CreateDate": "12/08/2025 08:57:46",
+  "RegistrationId": "b5e62bef-8167-44b2-b6aa-46a3d2ff991c",
+  "Salutation": "Mevr",
+  "Email": "sonja@testmail.backlot.software",
+  "Initials": "S",
+  "Prefix": "",
+  "Name": "Schakel",
+  "DateOfBirth": "1977-04-06T00:00:00.0000000",
+  "PhoneFixed": "",
+  "PhoneMobile": "0600000000",
+  "ShippingAddress": {
+    "Street": "Prins Hendrikstraat ",
+    "StreetNumber": "99 ",
+    "ZipCode": "1234BB",
+    "City": "Gravenhagen "
+  },
+  "BillingAddress": {
+    "Street": "Prins Hendrikstraat ",
+    "StreetNumber": "99 ",
+    "ZipCode": "1234BB",
+    "City": "Gravenhagen "
+  },
+  "Iban": "GB33BUKB20201555555555",
+  "Bsn": "999999999",
+  "HealthInsurance": {
+    "Id": "",
+    "Date": "0001-01-01T00:00:00.0000000",
+    "Name": "",
+    "Number": ""
+  },
+  "RequestCompensation": false,
+  "ChangesMadeBy": "sonja@testmail.backlot.software",
+  "MedicalDetails": {
+    "Id": "",
+    "Date": "0001-01-01T00:00:00.0000000",
+    "Speech": 1,
+    "Hearing": 1,
+    "Mobility": 1,
+    "Details": ""
+  },
+  "LivingSituation": "LivingAlone",
+  "GeneralPractitioner": {
+    "Id": "",
+    "Date": "0001-01-01T00:00:00.0000000",
+    "Name": "Dr Petersen",
+    "Phone": "0600000001"
+  },
+  "RequestedProfessionalAlarmFollowUp": -1,
+  "ContactPersons": [
+    {
+      "InternalCode": "-1",
+      "Title": "",
+      "FirstName": "Joop",
+      "Prefix": "",
+      "LastName": "Roepert",
+      "RelationCode": "",
+      "Street": "",
+      "Number": "",
+      "ZipCode": "",
+      "City": "",
+      "Phone1": "0600000002",
+      "Phone2": "",
+      "Mobile": "",
+      "Notes": "",
+      "SecondOption": false,
+      "Email": "joop@testmail.backlot.software",
+      "IsPrimary": true
+    }
+  ],
+  "EmergencyContacts": [
+    {
+      "InternalCode": "-1000",
+      "Title": "",
+      "FirstName": "Joop",
+      "Prefix": "",
+      "LastName": "Roepert",
+      "RelationCode": "15",
+      "Street": "",
+      "Number": "22 ",
+      "ZipCode": "1234BB",
+      "City": "Eindhoven",
+      "Phone1": "0600000003",
+      "Phone2": "",
+      "Mobile": "",
+      "Notes": "",
+      "SecondOption": false,
+      "Email": "sonja@testmail.backlot.software",
+      "IsPrimary": true
+    }
+  ],
+  "RequestedProfessionalAlarmFollowUpInfo": "",
+  "RequestedProfessionalAlarmFollowUpCity": "",
+  "SelfInstallation": true,
+  "GeneralTermsAccepted": true,
+  "EditMode": 0,
+  "OrderLines": [],
+  "AccountEmail": "sonja@testmail.backlot.software",
+  "ErrorMessage": "",
+  "ErrorStatusCode": 0,
+  "__Construct": "Backlot.Testing.Roles.Complex.CustomerRegistration, Backlot.Testing",
+  "__Skills": [
+    "CustomerRegistration",
+    "Persist",
+    "Permission",
+    "Role",
+    "Uid"
+  ]
+}

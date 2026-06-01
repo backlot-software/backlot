@@ -1,0 +1,16 @@
+{
+  "Container": {
+    "defaultAssembly": "Backlot.Demo.Azure"
+  },
+  "Backlot": {
+    "Http": {
+      "Watching": {
+        "DebugWatcher": {
+          "WebHookEndpoint" : "https://localhost:7221/webhook/debugger",
+          "Events": "Ending",
+          "Scenarios": "Login"
+        }
+      }
+    }
+  }
+}

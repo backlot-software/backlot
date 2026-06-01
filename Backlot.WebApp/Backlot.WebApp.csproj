@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>
+        </VersionSuffix>
+        <Title>Backlot.WebApp</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+        <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Configurations>Debug;Release;Development</Configurations>
+    </PropertyGroup>
+    <ItemGroup>
+      <Reference Include="Autofac.Extensions.DependencyInjection">
+        <HintPath>..\..\..\.nuget\packages\autofac.extensions.dependencyinjection\10.0.0\lib\net8.0\Autofac.Extensions.DependencyInjection.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+      <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
+      <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+      <PackageReference Include="Scalar.AspNetCore" Version="2.12.52" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\bl.png">
+            <Pack>True</Pack>
+            <PackagePath>
+            </PackagePath>
+            <Link>bl.png</Link>
+        </None>
+    </ItemGroup>
+</Project>

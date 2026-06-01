@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>
+        </VersionSuffix>
+        <Title>Backlot.Http.DependencyInjection.Autofac</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+        <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Configurations>Debug;Release;Development</Configurations>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>..\..\..\.nuget\packages\microsoft.extensions.hosting.abstractions\10.0.0\lib\net10.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
+      <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac.Configuration" Version="7.0.0" />
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\bl.png">
+            <Pack>True</Pack>
+            <PackagePath>
+            </PackagePath>
+            <Link>bl.png</Link>
+        </None>
+    </ItemGroup>
+    
+</Project>

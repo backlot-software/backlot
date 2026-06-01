@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AssemblyName>Backlot.Services.SqlDb</AssemblyName>
+        <RootNamespace>Backlot.Services.SqlDb</RootNamespace>
+
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>
+        </VersionSuffix>
+        <Title>Backlot.Services.SqlDb</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2025</Copyright>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Configurations>Debug;Release;Development</Configurations>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\bl.png">
+            <Pack>True</Pack>
+            <PackagePath>
+            </PackagePath>
+            <Link>bl.png</Link>
+        </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+      <PackageReference Include="SqlKata" Version="4.0.1" />
+      <PackageReference Include="SqlKata.Execution" Version="4.0.1" />
+    </ItemGroup>
+
+</Project>

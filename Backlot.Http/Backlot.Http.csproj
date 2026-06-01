@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>
+        </VersionSuffix>
+        <Title>Backlot.Http</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+        <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Configurations>Debug;Release;Development</Configurations>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Autofac">
+        <HintPath>..\..\..\.nuget\packages\autofac\9.0.0\lib\net10.0\Autofac.dll</HintPath>
+      </Reference>
+      <Reference Include="Autofac.Extensions.DependencyInjection">
+        <HintPath>..\..\..\.nuget\packages\autofac.extensions.dependencyinjection\10.0.0\lib\net8.0\Autofac.Extensions.DependencyInjection.dll</HintPath>
+      </Reference>
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>..\..\..\.nuget\packages\microsoft.extensions.hosting.abstractions\10.0.0\lib\net10.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
+      <Reference Include="Serilog">
+        <HintPath>..\..\..\.nuget\packages\serilog\4.3.1\lib\net10.0\Serilog.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+      <PackageReference Include="Serilog" Version="4.3.0" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\bl.png">
+            <Pack>True</Pack>
+            <PackagePath>
+            </PackagePath>
+            <Link>bl.png</Link>
+        </None>
+    </ItemGroup>
+    
+</Project>

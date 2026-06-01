@@ -1,0 +1,33 @@
+{
+  "Roles": [
+    {
+      "Name": "IPersist",
+      "Enabled": true,
+      "Views": {
+        "Overview": [
+          "Client.Default"
+        ],
+        "Detail": [
+          "Client.Default",
+          "Server.Test"
+        ],
+        "Relation": [
+          "Client.Default"
+        ]
+      },
+      "TableColumns": [
+        "Uid",
+        "Name",
+        "LastModified"
+      ]
+    }
+  ],
+  "OtherSidebarNavigationItems": [
+    {
+      "Href": "/scenarios",
+      "Text": "Scenarios",
+      "IconCss": "fa-camera-reels",
+      "IsActive": true
+    }
+  ]
+}
