@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backlot", "Backlot", "{EEC7
 	ProjectSection(SolutionItems) = preProject
 		README.MD = README.MD
 		LICENSE.MD = LICENSE.MD
+		.github\workflows\build-and-publish-backlot.yml = .github\workflows\build-and-publish-backlot.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlot.Demo.Azure", "Backlot.Demo.Azure\Backlot.Demo.Azure.csproj", "{4F0FACCF-85BB-48EA-8384-9B334669ECD8}"
