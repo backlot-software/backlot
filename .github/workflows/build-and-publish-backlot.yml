@@ -39,11 +39,12 @@ jobs:
     
       - name: Run unit tests
         run: dotnet test --no-build --verbosity normal
-    
-      - name: Pack projects with GeneratePackageOnBuild
+
+      - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
-          dotnet pack --configuration ${{ steps.config.outputs.configuration }} --output nupkgs /p:IncludeBuildOutput=false
-    
+          dotnet pack --configuration ${{ steps.config.outputs.configuration }} --output nupkgs /p:IncludeBuildOutput=false \
+          $(find . -name "*.csproj" -not -path "*Backlot.Demo.*" -exec echo "{} " \;)
+          
       - name: Find .nupkg files
         id: find-nupkgs
         run: |

@@ -4,6 +4,8 @@
 		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>enabled</ImplicitUsings>
+		<Configurations>Debug;Release;Development</Configurations>
+		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="local.settings.json" />
