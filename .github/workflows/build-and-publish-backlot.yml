@@ -13,50 +13,50 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-  - name: Setup .NET 10.0
-    uses: actions/setup-dotnet@v4
-    with:
-      dotnet-version: 10.0.x
-
-  - name: Determine configuration
-    id: config
-    run: |
-      if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-        echo "configuration=Release" >> $GITHUB_OUTPUT
-      elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
-        echo "configuration=Development" >> $GITHUB_OUTPUT
-      else
-        echo "configuration=Debug" >> $GITHUB_OUTPUT
-      fi
-
-  - name: Update version in .csproj files
-    run: |
-      find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
-
-  - name: Build solution
-    run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
-
-  - name: Run unit tests
-    run: dotnet test --no-build --verbosity normal
-
-  - name: Pack projects with GeneratePackageOnBuild
-    run: |
-      dotnet pack --configuration ${{ steps.config.outputs.configuration }} --output nupkgs /p:IncludeBuildOutput=false
-
-  - name: Find .nupkg files
-    id: find-nupkgs
-    run: |
-      NUPKG_COUNT=$(find nupkgs -name "*.nupkg" | wc -l)
-      echo "nupkg_count=$NUPKG_COUNT" >> $GITHUB_OUTPUT
-      if [ "$NUPKG_COUNT" -eq 0 ]; then
-        echo "No .nupkg files found to publish."
-        exit 1
-      fi
-
-  - name: Publish to GitHub Packages
-    run: |
-      for nupkg in nupkgs/*.nupkg; do
-        dotnet nuget push "$nupkg" --source https://nuget.pkg.github.com/backlot-software/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-      done
+        
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          
+      - name: Determine configuration
+        id: config
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "configuration=Release" >> $GITHUB_OUTPUT
+          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            echo "configuration=Development" >> $GITHUB_OUTPUT
+          else
+            echo "configuration=Debug" >> $GITHUB_OUTPUT
+          fi
+    
+      - name: Update version in .csproj files
+        run: |
+          find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
+    
+      - name: Build solution
+        run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
+    
+      - name: Run unit tests
+        run: dotnet test --no-build --verbosity normal
+    
+      - name: Pack projects with GeneratePackageOnBuild
+        run: |
+          dotnet pack --configuration ${{ steps.config.outputs.configuration }} --output nupkgs /p:IncludeBuildOutput=false
+    
+      - name: Find .nupkg files
+        id: find-nupkgs
+        run: |
+          NUPKG_COUNT=$(find nupkgs -name "*.nupkg" | wc -l)
+          echo "nupkg_count=$NUPKG_COUNT" >> $GITHUB_OUTPUT
+          if [ "$NUPKG_COUNT" -eq 0 ]; then
+            echo "No .nupkg files found to publish."
+            exit 1
+          fi
+    
+      - name: Publish to GitHub Packages
+        run: |
+          for nupkg in nupkgs/*.nupkg; do
+            dotnet nuget push "$nupkg" --source https://nuget.pkg.github.com/backlot-software/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          done
 
