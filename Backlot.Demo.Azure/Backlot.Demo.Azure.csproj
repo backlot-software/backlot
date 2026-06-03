@@ -30,7 +30,7 @@
 		<None Update="uisettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="usersandgroups.json">
+		<None Include="usersandgroups.json" Condition="Exists('usersandgroups.json')">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="login.mustach.yml">

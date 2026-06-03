@@ -46,6 +46,35 @@ The repository includes three available demos to help you explore the framework:
 - **Backlot.Demo.Web**: Shows integration with ASP.NET Core, including middleware and API endpoints.
 - **Backlot.Demo.Azure**: Illustrates hosting scenarios within Azure Functions (Isolated Worker model).
 
+Both the azure and web demos require a usersandgroups.json file. By default this is gitignored. The structure is like this:
+
+```json
+{
+  "Users": [
+    {
+      "Id": "admin@testmail.backlot.software",
+      "SystemAdmin": true,
+      "Settings" : {
+        "pw": "<pwhash>=optional, only needed if you want to use the built in basic auth provider"
+      }
+    }
+  ],
+  "Groups": [
+    {
+      "Id": "Admin",
+      "Users": [
+      ]
+    },
+    {
+      "Id": "Users",
+      "Users": [
+        "...@testmail.backlot.software"
+      ]
+    }
+  ]
+}
+```
+
 **Prerequisites:**
 - .NET 10 SDK
 - For the Azure demo: Azure Functions Core Tools and Azurite (or an active Azure Storage account).
