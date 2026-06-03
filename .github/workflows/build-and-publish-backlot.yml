@@ -60,6 +60,20 @@ jobs:
           elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
             TAG_NAME="v${{ inputs.Version }}-beta"
           fi
+
+          if git show-ref --verify --quiet "refs/tags/$TAG_NAME"; then
+            EXISTING_TAG_COMMIT="$(git rev-list -n 1 "$TAG_NAME")"
+            CURRENT_COMMIT="$(git rev-parse HEAD)"
+
+            if [ "$EXISTING_TAG_COMMIT" = "$CURRENT_COMMIT" ]; then
+              echo "Tag $TAG_NAME already exists on the current commit. Skipping tag creation."
+              exit 0
+            fi
+
+            echo "Tag $TAG_NAME already exists on commit $EXISTING_TAG_COMMIT. Please use a new version."
+            exit 1
+          fi
+
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
   
@@ -89,4 +103,3 @@ jobs:
           for nupkg in nupkgs/*.nupkg; do
             dotnet nuget push "$nupkg" --source https://nuget.pkg.github.com/backlot-software/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           done
-
