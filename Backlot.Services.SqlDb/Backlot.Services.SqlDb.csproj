@@ -7,7 +7,7 @@
         <AssemblyName>Backlot.Services.SqlDb</AssemblyName>
         <RootNamespace>Backlot.Services.SqlDb</RootNamespace>
 
-        <VersionPrefix>0.1.1</VersionPrefix>
+        <VersionPrefix>0.1.3</VersionPrefix>
         <VersionSuffix>
         </VersionSuffix>
         <Title>Backlot.Services.SqlDb</Title>
