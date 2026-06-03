@@ -6,7 +6,9 @@ on:
       Version:
         description: 'Version number for the packages (e.g., 1.2.3.4)'
         required: true
-
+        
+permissions: write-all
+  
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -35,12 +37,18 @@ jobs:
       - name: Update version in .csproj files
         run: |
           find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
-  
+
       - name: Commit version changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .
+          
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          
           git commit -m "Update version to ${{ inputs.Version }}"
           git push
   
