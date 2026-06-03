@@ -25,9 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Backlot\Backlot.Core\Backlot.Core.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\bl.png">
@@ -36,6 +33,10 @@
       </PackagePath>
       <Link>bl.png</Link>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
   </ItemGroup>
 
 </Project>
