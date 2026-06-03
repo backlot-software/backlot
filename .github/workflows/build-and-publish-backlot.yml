@@ -57,9 +57,9 @@ jobs:
   
       - name: Build solution
         run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
-  
+
       - name: Run unit tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test Backlot.Testing/Backlot.Testing.csproj --no-build --configuration ${{ steps.config.outputs.configuration }} --verbosity normal
   
       - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
