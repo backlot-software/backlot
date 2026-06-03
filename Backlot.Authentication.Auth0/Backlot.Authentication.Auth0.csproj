@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>0.1.3</VersionPrefix>
         <VersionSuffix>
         </VersionSuffix>
         <Title>Backlot.Authentication.Auth0</Title>
@@ -20,8 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.19.1" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

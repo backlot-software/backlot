@@ -1,0 +1,98 @@
+name: Build and Publish Backlot
+
+on:
+  workflow_dispatch:
+    inputs:
+      Version:
+        description: 'Version number for the packages (e.g., 1.2.3.4)'
+        required: true
+        
+permissions: write-all
+  
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required to fetch all history for git tagging
+
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+  
+      - name: Determine configuration
+        id: config
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "configuration=Release" >> $GITHUB_OUTPUT
+          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            echo "configuration=Development" >> $GITHUB_OUTPUT
+          else
+            echo "configuration=Debug" >> $GITHUB_OUTPUT
+          fi
+  
+      - name: Update version in .csproj files
+        run: |
+          find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
+
+      - name: Commit version changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+          
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          
+          git commit -m "Update version to ${{ inputs.Version }}"
+          git push
+  
+      - name: Tag commit
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            TAG_NAME="v${{ inputs.Version }}"
+          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            TAG_NAME="v${{ inputs.Version }}-beta"
+          fi
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+  
+      - name: Build solution
+        run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
+
+      - name: Run unit tests
+        run: dotnet test Backlot.Testing/Backlot.Testing.csproj --no-build --configuration ${{ steps.config.outputs.configuration }} --verbosity normal
+
+      - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
+        run: |
+          mkdir -p nupkgs
+          find . -name "*.csproj" -not -path "*Backlot.Demo.*" | while read -r project; do
+            dotnet pack "$project" \
+              --configuration "${{ steps.config.outputs.configuration }}" \
+              --output nupkgs \
+              /p:IncludeBuildOutput=false \
+              --no-build
+          done
+  
+      - name: Find .nupkg files
+        id: find-nupkgs
+        run: |
+          NUPKG_COUNT=$(find nupkgs -name "*.nupkg" | wc -l)
+          echo "nupkg_count=$NUPKG_COUNT" >> $GITHUB_OUTPUT
+          if [ "$NUPKG_COUNT" -eq 0 ]; then
+            echo "No .nupkg files found to publish."
+            exit 1
+          fi
+  
+      - name: Publish to GitHub Packages
+        run: |
+          for nupkg in nupkgs/*.nupkg; do
+            dotnet nuget push "$nupkg" --source https://nuget.pkg.github.com/backlot-software/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          done
+

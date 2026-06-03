@@ -17,7 +17,6 @@ using Backlot.Functions.Defaults;
 using Backlot.Functions.Services;
 using Backlot.Http.DependencyInjection.Autofac;
 using Backlot.Services.Filesystem;
-using Backlot.Services.Filesystem.BlobStorage;
 using Backlot.Services.Filesystem.LocalDiskStorage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;

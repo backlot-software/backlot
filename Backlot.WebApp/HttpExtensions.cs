@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Backlot.Http;
 using Backlot.Http.Media;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Backlot.WebApp;

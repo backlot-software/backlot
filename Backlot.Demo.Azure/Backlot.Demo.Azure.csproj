@@ -4,14 +4,16 @@
 		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>enabled</ImplicitUsings>
+		<Configurations>Debug;Release;Development</Configurations>
+		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="local.settings.json" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Serilog.Sinks.AzureTableStorage" Version="10.2.0" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
 	</ItemGroup>
 	<ItemGroup>
@@ -28,7 +30,7 @@
 		<None Update="uisettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="usersandgroups.json">
+		<None Include="usersandgroups.json" Condition="Exists('usersandgroups.json')">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="login.mustach.yml">
@@ -39,7 +41,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Backlot.Authentication.Auth0\Backlot.Authentication.Auth0.csproj" />
+		<ProjectReference Include="..\Backlot.Authentication.BuiltIn\Backlot.Authentication.BuiltIn.csproj" />
 		<ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
 		<ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
 		<ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
@@ -47,11 +49,9 @@
 		<ProjectReference Include="..\Backlot.Http.Media.Formatters.Csv\Backlot.Http.Media.Formatters.Csv.csproj" />
 		<ProjectReference Include="..\Backlot.Http.Media.Formatters.Html\Backlot.Http.Media.Formatters.Html.csproj" />
 		<ProjectReference Include="..\Backlot.Functions\Backlot.Functions.csproj" />
-		<ProjectReference Include="..\Backlot.Services.Filesystem.BlobStorage\Backlot.Services.Filesystem.BlobStorage.csproj" />
 		<ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
 		<ProjectReference Include="..\Backlot.Services.Postmark\Backlot.Services.Postmark.csproj" />
 		<ProjectReference Include="..\Backlot.Services.RavenDB\Backlot.Services.RavenDb.csproj" />
-		<ProjectReference Include="..\Backlot.Authentication.BuiltIn.Redis\Backlot.Authentication.BuiltIn.Redis.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />

@@ -7,7 +7,7 @@
         <AssemblyName>Backlot.Services.SqlDb</AssemblyName>
         <RootNamespace>Backlot.Services.SqlDb</RootNamespace>
 
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>0.1.3</VersionPrefix>
         <VersionSuffix>
         </VersionSuffix>
         <Title>Backlot.Services.SqlDb</Title>
@@ -39,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
       <PackageReference Include="SqlKata" Version="4.0.1" />
       <PackageReference Include="SqlKata.Execution" Version="4.0.1" />
     </ItemGroup>
