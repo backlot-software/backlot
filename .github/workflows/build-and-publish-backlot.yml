@@ -13,12 +13,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+        with:
+          fetch-depth: 0  # Required to fetch all history for git tagging
+
       - name: Setup .NET 10.0
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-          
+  
       - name: Determine configuration
         id: config
         run: |
@@ -29,22 +31,41 @@ jobs:
           else
             echo "configuration=Debug" >> $GITHUB_OUTPUT
           fi
-    
+  
       - name: Update version in .csproj files
         run: |
           find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
-    
+  
+      - name: Commit version changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+          git commit -m "Update version to ${{ inputs.Version }}"
+          git push
+  
+      - name: Tag commit
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            TAG_NAME="v${{ inputs.Version }}"
+          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            TAG_NAME="v${{ inputs.Version }}-beta"
+          fi
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+  
       - name: Build solution
         run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
-    
+  
       - name: Run unit tests
         run: dotnet test --no-build --verbosity normal
-
+  
       - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
           dotnet pack --configuration ${{ steps.config.outputs.configuration }} --output nupkgs /p:IncludeBuildOutput=false \
           $(find . -name "*.csproj" -not -path "*Backlot.Demo.*" -exec echo "{} " \;)
-          
+  
       - name: Find .nupkg files
         id: find-nupkgs
         run: |
@@ -54,7 +75,7 @@ jobs:
             echo "No .nupkg files found to publish."
             exit 1
           fi
-    
+  
       - name: Publish to GitHub Packages
         run: |
           for nupkg in nupkgs/*.nupkg; do
