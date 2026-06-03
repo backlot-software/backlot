@@ -21,13 +21,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Stubble.Core" Version="1.10.8" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="YamlDotNet" Version="18.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Backlot\Backlot.Core\Backlot.Core.csproj" />
-    <ProjectReference Include="..\Backlot.Functions\Backlot.Functions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

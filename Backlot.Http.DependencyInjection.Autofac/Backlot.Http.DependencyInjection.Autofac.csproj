@@ -29,8 +29,8 @@
 
     <ItemGroup>
       <PackageReference Include="Autofac.Configuration" Version="7.0.0" />
-      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.8" />
     </ItemGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>

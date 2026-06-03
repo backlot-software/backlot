@@ -28,13 +28,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="9.1.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="GraphQL.Net" Version="0.3.5" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="2.51.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="2.52.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Abstractions" Version="1.3.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageReference Include="Serilog.Extensions" Version="10.0.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
     <PackageReference Include="TypeGen" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>

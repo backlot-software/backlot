@@ -15,12 +15,11 @@
       <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
       <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
       <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
-      <ProjectReference Include="..\Backlot.Services.SqlDb\Backlot.Services.SqlDb.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="9.1.0" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
     </ItemGroup>
 
 </Project>
