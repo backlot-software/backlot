@@ -44,12 +44,12 @@ Plans:
   1. User can view a list of all registered scenarios (from `director/scenarios`), grouped or tagged by category, with loading/empty/error states
   2. User can open a slide-in Scalar API reference side panel keyed to any scenario and see its interactive endpoint docs
   3. The Scalar panel re-initializes correctly after Turbo navigations (no blanking, duplication, or stale content) and uses a pinned CDN version
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 02-01: Scenario overview page — `/scenarios` rendering Scenario/Result/Roles/Tags/Endpoints with loading/empty/error states
-- [ ] 02-02: Scalar side panel — `openapidoc.json` served from Studio, `data-turbo-permanent` mount, init/teardown on `turbo:load`, pinned 1.60.0
+- [ ] 02-01-PLAN.md — Scenario overview page: `/scenarios` DTOs + `GetScenariosAsync`, grouped cards, empty/error states, active sidebar nav (SCEN-01)
+- [ ] 02-02-PLAN.md — Scalar side panel: `openapidoc.json` served from wwwroot, `data-turbo-permanent` mount, single-init on `turbo:load`, open/close/Escape, pinned 1.60.0 (SCEN-02)
 
 ### Phase 3: Role Browsing & Detail
 **Goal**: A user can discover any role via search and pagination, open its detail page to inspect fields/permissions/skills, and navigate to related roles — delivering two-thirds of the Core Value (find and inspect).
