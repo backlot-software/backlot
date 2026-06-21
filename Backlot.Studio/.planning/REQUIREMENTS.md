@@ -66,27 +66,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| SCEN-01 | — | Pending |
-| SCEN-02 | — | Pending |
-| ROLE-01 | — | Pending |
-| ROLE-02 | — | Pending |
-| ROLE-03 | — | Pending |
-| DETL-01 | — | Pending |
-| DETL-02 | — | Pending |
-| DETL-03 | — | Pending |
-| EDIT-01 | — | Pending |
-| EDIT-02 | — | Pending |
-| EDIT-03 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| SCEN-01 | Phase 2 | Pending |
+| SCEN-02 | Phase 2 | Pending |
+| ROLE-01 | Phase 3 | Pending |
+| ROLE-02 | Phase 3 | Pending |
+| ROLE-03 | Phase 3 | Pending |
+| DETL-01 | Phase 3 | Pending |
+| DETL-02 | Phase 3 | Pending |
+| DETL-03 | Phase 3 | Pending |
+| EDIT-01 | Phase 4 | Pending |
+| EDIT-02 | Phase 4 | Pending |
+| EDIT-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-21*
-*Last updated: 2026-06-21 after initial definition*
+*Last updated: 2026-06-21 after roadmap creation (phase mappings added)*
