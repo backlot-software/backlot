@@ -1,0 +1,38 @@
+using Backlot.Studio.Models.Api;
+using Backlot.Studio.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace Backlot.Studio.Pages.Scenarios;
+
+[Authorize]
+public class IndexModel : PageModel
+{
+    private readonly IBacklotApiClient _api;
+
+    public List<(string Category, IEnumerable<ScenarioItem> Scenarios)> Groups { get; private set; } = [];
+    public string? ErrorMessage { get; private set; }
+
+    public IndexModel(IBacklotApiClient api)
+    {
+        _api = api;
+    }
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        try
+        {
+            var result = await _api.GetScenariosAsync();
+            Groups = (result ?? [])
+                .GroupBy(s => s.Tags.Length > 0 ? s.Tags[0] : "Uncategorized")
+                .Select(g => (g.Key, g.AsEnumerable()))
+                .ToList();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            ErrorMessage = "Could not load scenarios. Check that the Backlot API is reachable and that your credentials are valid.";
+        }
+        return Page();
+    }
+}

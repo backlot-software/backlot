@@ -5,13 +5,15 @@
     <!-- App name — hidden in collapsed icon-rail mode via CSS -->
     <div class="fw-semibold mb-4 px-1 sidebar-label">Backlot Studio</div>
 
-    <!-- Nav items (Phase 1: both disabled — activated in their respective phases) -->
+    <!-- Nav items -->
     <ul class="nav nav-pills flex-column mb-auto gap-1">
         <li class="nav-item">
-            <span class="nav-link disabled text-muted" aria-disabled="true">
+            <a href="/scenarios"
+               class="nav-link @(activeNav == "scenarios" ? "active fw-semibold text-primary" : "text-muted")"
+               data-turbo-action="advance">
                 <i class="bi bi-play-circle me-2"></i>
                 <span class="sidebar-label">Scenarios</span>
-            </span>
+            </a>
         </li>
         <li class="nav-item">
             <span class="nav-link disabled text-muted" aria-disabled="true">
