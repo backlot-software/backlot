@@ -10,7 +10,7 @@
 - [ ] **AUTH-01**: User can log in with username and password; credentials are base64-encoded as `username:password` and stored in server-side session as a Basic Auth header
 - [ ] **AUTH-02**: User can log out; server session is cleared and user is redirected to the login page
 - [ ] **AUTH-03**: User is automatically redirected to the login page when the Backlot API returns a 401 (expired or invalid credentials)
-- [ ] **AUTH-04**: User sees their current username/identity in the navbar via `GET /api/role/director/whoami`
+- [x] **AUTH-04**: User sees their current username/identity in the navbar via `GET /api/role/director/whoami`
 
 ### Scenarios
 
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-01 | Phase 1 | Pending |
 | AUTH-02 | Phase 1 | Pending |
 | AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Complete |
 | SCEN-01 | Phase 2 | Pending |
 | SCEN-02 | Phase 2 | Pending |
 | ROLE-01 | Phase 3 | Pending |
@@ -83,6 +83,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EDIT-03 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 15 total
 - Mapped to phases: 15
 - Unmapped: 0 ✓
