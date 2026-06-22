@@ -17,7 +17,8 @@ public class IndexModel : AuthenticatedPageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var result = await SafeApiCall(async () => await _api.WhoAmIAsync());
+        var (result, redirect) = await SafeApiCall(async () => await _api.WhoAmIAsync());
+        if (redirect != null) return redirect;
 
         // WhoAmIAsync returns object? — if it is a JsonElement, extract the string value safely (T-03-07)
         string? usernameStr;
