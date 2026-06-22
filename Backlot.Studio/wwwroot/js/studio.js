@@ -48,10 +48,18 @@ document.addEventListener('turbo:before-visit', function () {
     if (backdrop) backdrop.style.display = 'none';
 });
 
-function openScalarPanel(endpointPath) {
+// Event delegation for "Open API Docs" buttons — reads endpoint from data-* attribute
+// instead of inline onclick, preventing XSS via HTML-entity-decoded event handler context.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-action="open-scalar"]');
+    if (!btn) return;
+    openScalarPanel(btn.dataset.endpoint ?? '');
+});
+
+function openScalarPanel(_endpointPath) {
     const panel = document.getElementById('scalar-panel');
     const backdrop = document.getElementById('scalar-backdrop');
-    if (!panel) return;
+    if (!panel || panel.dataset.scalarFailed) return;
     panel.classList.add('is-open');
     if (backdrop) backdrop.style.display = 'block';
     panel.focus();

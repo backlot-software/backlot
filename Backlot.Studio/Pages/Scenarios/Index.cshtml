@@ -46,7 +46,8 @@ else
                         </div>
                         <button class="btn btn-primary btn-sm"
                                 style="min-height:44px"
-                                onclick="openScalarPanel('@s.Endpoints.FirstOrDefault()')">
+                                data-endpoint="@s.Endpoints.FirstOrDefault()"
+                                data-action="open-scalar">
                             Open API Docs
                         </button>
                     </div>
