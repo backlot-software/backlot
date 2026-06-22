@@ -22,4 +22,9 @@ body:has(aside#sidebar.collapsed) main {
     margin-left: 64px !important;
 }
 
-/* === Phase 2 additions below === */
+/* === Phase 2: Scalar side panel slide-in === */
+
+/* Panel open state — overrides the base translateX(100%) inline style */
+#scalar-panel.is-open {
+    transform: translateX(0);
+}

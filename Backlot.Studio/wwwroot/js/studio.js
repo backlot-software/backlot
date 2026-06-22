@@ -21,4 +21,51 @@ document.addEventListener('turbo:load', function () {
     };
 });
 
-// === Phase 2 additions below ===
+// === Phase 2: Scalar API Reference side panel ===
+// Initializes Scalar once across Turbo Drive navigations using a sentinel on the permanent element.
+
+document.addEventListener('turbo:load', function () {
+    const panel = document.getElementById('scalar-panel');
+    // Return early if panel is missing or already initialized (single-init sentinel)
+    if (!panel || panel.dataset.scalarInitialized) return;
+
+    // Guard: typeof check in case CDN loads slowly or is blocked
+    if (typeof Scalar === 'undefined') return;
+
+    Scalar.createApiReference('#scalar-mount', {
+        url: '/openapidoc.json',
+        darkMode: false,
+        defaultOpenAllTags: false,
+    });
+    panel.dataset.scalarInitialized = 'true';
+});
+
+// Reset open state before Turbo Drive navigates away (does NOT destroy the Scalar instance)
+document.addEventListener('turbo:before-visit', function () {
+    const panel = document.getElementById('scalar-panel');
+    if (panel) panel.classList.remove('is-open');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
+});
+
+function openScalarPanel(endpointPath) {
+    const panel = document.getElementById('scalar-panel');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (!panel) return;
+    panel.classList.add('is-open');
+    if (backdrop) backdrop.style.display = 'block';
+    panel.focus();
+    // v1: open at top level; hash deep-linking deferred (hash format is Scalar-version-internal)
+}
+
+function closeScalarPanel() {
+    const panel = document.getElementById('scalar-panel');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (panel) panel.classList.remove('is-open');
+    if (backdrop) backdrop.style.display = 'none';
+}
+
+// Escape key closes the panel
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeScalarPanel();
+});
