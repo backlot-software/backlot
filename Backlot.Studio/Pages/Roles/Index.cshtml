@@ -1,0 +1,151 @@
+@page "/roles"
+@model Backlot.Studio.Pages.Roles.IndexModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Roles";
+    ViewData["ActiveNav"] = "roles";
+}
+
+<h4 class="fw-semibold mb-4">Roles</h4>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.ErrorMessage <a href="/roles" class="alert-link">Retry</a>
+    </div>
+}
+
+<turbo-frame id="role-list" data-turbo-action="advance">
+    <!-- Search form -->
+    <form method="get" action="/roles" class="d-flex align-items-center gap-2 mb-3">
+        <input type="text"
+               name="q"
+               value="@Model.SearchQuery"
+               class="form-control"
+               placeholder="Search by field…"
+               aria-label="Search roles" />
+        <button type="submit" class="btn btn-primary" style="min-height:44px">Search</button>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <a href="/roles" class="btn btn-outline-secondary" style="min-height:44px">Clear</a>
+        }
+    </form>
+
+    <!-- Result count -->
+    @if (Model.RoleResult != null)
+    {
+        if (Model.TotalCount == 0)
+        {
+            <small class="text-muted d-block mb-2">No roles found.</small>
+        }
+        else
+        {
+            <small class="text-muted d-block mb-2">
+                Showing @Model.StartItem&ndash;@Model.EndItem of @Model.TotalCount roles
+                @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                {
+                    <text> matching &ldquo;@Model.SearchQuery&rdquo;</text>
+                }
+            </small>
+        }
+    }
+
+    @if (Model.RoleResult != null && Model.TotalCount == 0)
+    {
+        <!-- Empty state -->
+        <div class="text-center mt-5">
+            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+            {
+                <h5 class="fw-semibold">No roles match your search</h5>
+                <p class="text-muted">Try a different search term or <a href="/roles">Clear search</a> to see all roles.</p>
+            }
+            else
+            {
+                <h5 class="fw-semibold">No roles registered</h5>
+                <p class="text-muted">The Backlot API returned no persisted roles. Roles appear here after scenarios that create them have been executed.</p>
+            }
+        </div>
+    }
+    else if (Model.RoleResult != null && Model.TotalCount > 0)
+    {
+        <!-- Role list table -->
+        <div class="position-relative">
+            <table class="table table-hover" id="roles-table">
+                <thead>
+                    <tr>
+                        <th data-col="Uid">UID</th>
+                        <th data-col="Type">Type</th>
+                        <th data-col="Actions" class="text-end"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.RoleResult.Results)
+                    {
+                        var uid = IndexModel.GetField(row, "Uid");
+                        var primarySkill = IndexModel.GetPrimarySkill(row);
+                        var allFields = System.Text.Json.JsonSerializer.Serialize(
+                            row.EnumerateObject().Select(p => p.Name).ToArray());
+                        <tr data-primary-skill="@primarySkill" data-fields="@Html.Raw(allFields)">
+                            <td data-col="Uid">
+                                <button type="button"
+                                        class="btn btn-link p-0 me-1"
+                                        style="min-height:44px"
+                                        data-action="copy-uid"
+                                        data-uid="@uid"
+                                        aria-label="Copy UID to clipboard">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                                <span class="font-monospace small" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
+                            </td>
+                            <td data-col="Type">
+                                @if (string.IsNullOrWhiteSpace(primarySkill))
+                                {
+                                    <span class="text-muted">&mdash;</span>
+                                }
+                                else
+                                {
+                                    @primarySkill
+                                }
+                            </td>
+                            <td data-col="Actions" class="text-end">
+                                <a href="/roles/@uid"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   style="min-height:44px"
+                                   data-turbo-action="advance">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Role list pages">
+                <ul class="pagination gap-1">
+                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage - 1)" aria-label="Previous">
+                            &laquo; Previous
+                        </a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@p">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage + 1)" aria-label="Next">
+                            Next &raquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</turbo-frame>
+
+@section Scripts {
+    <script src="/js/column-config.js"></script>
+}

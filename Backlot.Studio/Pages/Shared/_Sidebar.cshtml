@@ -16,10 +16,12 @@
             </a>
         </li>
         <li class="nav-item">
-            <span class="nav-link disabled text-muted" aria-disabled="true">
+            <a href="/roles"
+               class="nav-link @(activeNav == "roles" ? "active fw-semibold text-primary" : "text-muted")"
+               data-turbo-action="advance">
                 <i class="bi bi-boxes me-2"></i>
                 <span class="sidebar-label">Roles</span>
-            </span>
+            </a>
         </li>
     </ul>
 

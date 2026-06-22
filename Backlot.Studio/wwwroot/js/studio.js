@@ -62,3 +62,40 @@ function closeScalarPanel() {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeScalarPanel();
 });
+
+// === Phase 3: Copy UID to clipboard ===
+// Event delegation for copy-uid buttons on the role list page.
+// Wired as a top-level document listener (not inside turbo:load) so it persists
+// across Turbo Frame updates that replace the table without a full page navigation.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-action="copy-uid"]');
+    if (!btn) return;
+
+    const uid = btn.dataset.uid;
+    if (!uid) return;
+
+    navigator.clipboard.writeText(uid).then(function () {
+        // Success: swap icon and add visually-hidden announcement
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.remove('bi-clipboard');
+            icon.classList.add('bi-clipboard-check');
+        }
+        const announcement = document.createElement('span');
+        announcement.className = 'visually-hidden';
+        announcement.textContent = 'Copied!';
+        btn.appendChild(announcement);
+
+        setTimeout(function () {
+            if (icon) {
+                icon.classList.remove('bi-clipboard-check');
+                icon.classList.add('bi-clipboard');
+            }
+            if (announcement.parentNode === btn) {
+                btn.removeChild(announcement);
+            }
+        }, 1500);
+    }).catch(function () {
+        // Silently ignore clipboard failures — the UID is visible and can be manually copied
+    });
+});
