@@ -1,0 +1,39 @@
+@{
+    var activeNav = ViewData["ActiveNav"] as string ?? "";
+}
+<nav class="d-flex flex-column h-100 p-3" style="background: var(--bs-tertiary-bg)">
+    <!-- App name — hidden in collapsed icon-rail mode via CSS -->
+    <div class="fw-semibold mb-4 px-1 sidebar-label">Backlot Studio</div>
+
+    <!-- Nav items (Phase 1: both disabled — activated in their respective phases) -->
+    <ul class="nav nav-pills flex-column mb-auto gap-1">
+        <li class="nav-item">
+            <span class="nav-link disabled text-muted" aria-disabled="true">
+                <i class="bi bi-play-circle me-2"></i>
+                <span class="sidebar-label">Scenarios</span>
+            </span>
+        </li>
+        <li class="nav-item">
+            <span class="nav-link disabled text-muted" aria-disabled="true">
+                <i class="bi bi-boxes me-2"></i>
+                <span class="sidebar-label">Roles</span>
+            </span>
+        </li>
+    </ul>
+
+    <!-- Identity block (bottom) -->
+    <div class="border-top pt-3 mt-3">
+        <small class="text-muted d-block sidebar-label">@ViewData["Username"]</small>
+        <form method="post" action="/logout" class="mt-1">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-link p-0 text-muted small">Sign out</button>
+        </form>
+    </div>
+
+    <!-- Toggle button — 44px min tap target per UI-SPEC -->
+    <button id="sidebar-toggle" class="btn btn-link p-2 mt-2 text-muted"
+            aria-label="Collapse sidebar"
+            style="min-height:44px; min-width:44px">
+        <i class="bi bi-list fs-5"></i>
+    </button>
+</nav>

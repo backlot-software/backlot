@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Backlot Studio</title>
+    <!-- Bootstrap 5.3.8 -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous" />
+    <!-- Bootstrap Icons 1.13.1 -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+          integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk"
+          crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/css/studio.css" />
+</head>
+<body>
+<div class="d-flex" style="min-height:100vh">
+    <aside id="sidebar" data-turbo-permanent
+           style="width:240px; flex-shrink:0; position:fixed; top:0; left:0; height:100vh; overflow-y:auto;">
+        <partial name="_Sidebar" />
+    </aside>
+    <main class="flex-grow-1 p-4" style="margin-left:240px">
+        @RenderBody()
+    </main>
+</div>
+
+<!-- Hotwired Turbo 8.0.23 — ESM module; must be type="module" -->
+<script src="https://cdn.jsdelivr.net/npm/@@hotwired/turbo@@8.0.23/dist/turbo.es2017.esm.js"
+        type="module"
+        integrity="sha384-5E/CJNUXKFd9vTEUiWhLAX1T0T5p7iFD6pDlMsH27u64irAG8MWDJy19du84KTH/"
+        crossorigin="anonymous"></script>
+<!-- Bootstrap 5.3.8 JS bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+<script src="~/js/studio.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
