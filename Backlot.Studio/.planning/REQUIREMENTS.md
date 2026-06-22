@@ -19,9 +19,9 @@
 
 ### Roles
 
-- [ ] **ROLE-01**: User can browse a paginated list of all roles via `POST /api/role/simplequery/find` (page size 25, showing total count)
-- [ ] **ROLE-02**: User can search and filter roles by field using the `Criteria` parameter, with a visible result count and a "clear search" affordance
-- [ ] **ROLE-03**: The Edit action on role list and detail pages is hidden or disabled when `__Permission.CanWrite` is false
+- [x] **ROLE-01**: User can browse a paginated list of all roles via `POST /api/role/simplequery/find` (page size 25, showing total count)
+- [x] **ROLE-02**: User can search and filter roles by field using the `Criteria` parameter, with a visible result count and a "clear search" affordance
+- [x] **ROLE-03**: The Edit action on role list and detail pages is hidden or disabled when `__Permission.CanWrite` is false
 
 ### Role Detail
 
@@ -72,9 +72,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-04 | Phase 1 | Complete |
 | SCEN-01 | Phase 2 | Pending |
 | SCEN-02 | Phase 2 | Complete |
-| ROLE-01 | Phase 3 | Pending |
-| ROLE-02 | Phase 3 | Pending |
-| ROLE-03 | Phase 3 | Pending |
+| ROLE-01 | Phase 3 | Complete |
+| ROLE-02 | Phase 3 | Complete |
+| ROLE-03 | Phase 3 | Complete |
 | DETL-01 | Phase 3 | Pending |
 | DETL-02 | Phase 3 | Pending |
 | DETL-03 | Phase 3 | Pending |

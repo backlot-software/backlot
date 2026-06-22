@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 02
-current_phase_name: scenarios-api-explorer
+current_phase: 03
+current_phase_name: role-browsing-detail
 status: executing
 stopped_at: Phase 03 context gathered
-last_updated: "2026-06-22T14:06:22.526Z"
+last_updated: "2026-06-22T17:31:30.584Z"
 last_activity: 2026-06-22
-last_activity_desc: Phase 02 execution resumed (wave continue)
+last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 50
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A developer or operator can find any role in the system, inspect its state and relations, and edit it — without writing a single API call by hand.
-**Current focus:** Phase 02 — scenarios-api-explorer
+**Current focus:** Phase 03 — role-browsing-detail
 
 ## Current Position
 
-Phase: 02 (scenarios-api-explorer) — EXECUTING
+Phase: 03 (role-browsing-detail) — EXECUTING
 Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-22 — Phase 02 execution resumed (wave continue)
+Last activity: 2026-06-22 — Phase 03 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 3 | 2 tasks | 7 files |
 | Phase 01 P03 | 1 | 2 tasks | 6 files |
 | Phase 02 P02 | 3 | 2 tasks | 4 files |
+| Phase 03 P01 | 3 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Scalar CDN pinned to 1.60.0 with sha384 SRI integrity hash — computed from live CDN file, satisfies T-02-04 supply-chain mitigation
 - [Phase ?]: openapidoc.json moved to wwwroot/ (not custom PhysicalFileProvider) — avoids exposing appsettings; served cleanly by UseStaticFiles
 - [Phase ?]: Scalar single-init sentinel (panel.dataset.scalarInitialized) on data-turbo-permanent element prevents double-mount across Turbo Drive navigations
+- [Phase ?]: PostAsJsonAsync + EnsureSuccessStatusCode + ReadFromJsonAsync
+- [Phase ?]: field extraction via static GetField/GetPrimarySkill helpers in PageModel
+- [Phase ?]: survives Turbo Frame partial updates that replace the table
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-22T14:06:22.520Z
+Last session: 2026-06-22T17:31:02.305Z
 Stopped at: Phase 03 context gathered
 Resume file: .planning/phases/03-role-browsing-detail/03-CONTEXT.md

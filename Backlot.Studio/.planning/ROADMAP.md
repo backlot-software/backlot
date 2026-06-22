@@ -80,12 +80,12 @@ Plans:
   4. User can see related roles (`persist/relations`) and click any of them to navigate to its detail page
   5. The Edit action is hidden or disabled wherever `__Permission.CanWrite` is false, and any UID can be copied to the clipboard with one click
 
-**Plans**: 2 plans
+**Plans**: 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Service layer (PostEnvelopeAsync + FindRolesAsync/GetRoleDetailAsync/GetRoleRelationsAsync), Role List page /roles with Turbo Frame search + pagination, sidebar Roles link, copy-uid JS
+- [x] 03-01-PLAN.md — Service layer (PostEnvelopeAsync + FindRolesAsync/GetRoleDetailAsync/GetRoleRelationsAsync), Role List page /roles with Turbo Frame search + pagination, sidebar Roles link, copy-uid JS
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
-| 3. Role Browsing & Detail | 0/2 | Not started | - |
+| 3. Role Browsing & Detail | 1/2 | In Progress|  |
 | 4. Role Editing | 0/2 | Not started | - |
