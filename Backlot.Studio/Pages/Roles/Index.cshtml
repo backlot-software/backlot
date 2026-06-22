@@ -74,6 +74,8 @@
                 <thead>
                     <tr>
                         <th data-col="Uid">UID</th>
+                        <th data-col="Name">Name</th>
+                        <th data-col="LastModified">Last Modified</th>
                         <th data-col="Type">Type</th>
                         <th data-col="Actions" class="text-end"><span class="visually-hidden">Actions</span></th>
                     </tr>
@@ -96,6 +98,28 @@
                                     <i class="bi bi-clipboard"></i>
                                 </button>
                                 <span class="font-monospace small" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
+                            </td>
+                            <td data-col="Name">
+                                @{var name = IndexModel.GetField(row, "Name");}
+                                @if (string.IsNullOrWhiteSpace(name))
+                                {
+                                    <span class="text-muted">&mdash;</span>
+                                }
+                                else
+                                {
+                                    @name
+                                }
+                            </td>
+                            <td data-col="LastModified">
+                                @{var lastMod = IndexModel.GetField(row, "__LastModifiedDate");}
+                                @if (string.IsNullOrWhiteSpace(lastMod))
+                                {
+                                    <span class="text-muted">&mdash;</span>
+                                }
+                                else
+                                {
+                                    <span class="font-monospace small">@lastMod</span>
+                                }
                             </td>
                             <td data-col="Type">
                                 @if (string.IsNullOrWhiteSpace(primarySkill))

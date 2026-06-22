@@ -10,7 +10,7 @@
 (function () {
     'use strict';
 
-    var DEFAULT_COLUMNS = ['Uid', 'Type', 'Actions'];
+    var DEFAULT_COLUMNS = ['Uid', 'Name', 'LastModified', 'Type', 'Actions'];
     var ALWAYS_VISIBLE = ['Actions'];
     var NON_TOGGLEABLE = ['Uid', 'Actions'];
 
