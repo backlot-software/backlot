@@ -24,13 +24,12 @@ body:has(aside#sidebar.collapsed) main {
 
 /* === Phase 2: Scalar side panel slide-in === */
 
-/* Default hidden state — kept in CSS so .is-open can override it */
+/* Slide transition (complements the inline transform:translateX(100%) default) */
 #scalar-panel {
-    transform: translateX(100%);
     transition: transform .25s ease;
 }
 
-/* Panel open state */
+/* !important overrides the inline style so the class wins */
 #scalar-panel.is-open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
 }

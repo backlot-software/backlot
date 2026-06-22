@@ -37,7 +37,9 @@ document.addEventListener('turbo:load', function () {
         return;
     }
 
-    Scalar.createApiReference('#scalar-mount', {
+    const mountEl = document.getElementById('scalar-mount');
+    if (!mountEl) return;
+    Scalar.createApiReference(mountEl, {
         url: '/openapidoc.json',
         darkMode: false,
         defaultOpenAllTags: false,
