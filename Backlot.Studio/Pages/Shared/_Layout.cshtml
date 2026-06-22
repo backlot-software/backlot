@@ -14,9 +14,6 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
           integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk"
           crossorigin="anonymous" />
-    <!-- Scalar API Reference 1.60.0 — must be in <head> so Scalar global is available before turbo:load -->
-    <script src="https://cdn.jsdelivr.net/npm/@@scalar/api-reference@@1.60.0/dist/browser/standalone.min.js"
-            crossorigin="anonymous"></script>
     <link rel="stylesheet" href="~/css/studio.css" />
 </head>
 <body>
@@ -38,7 +35,10 @@
             aria-label="Close API Reference panel"
             onclick="closeScalarPanel()">
     </button>
-    <div id="scalar-mount"></div>
+    <div id="scalar-mount">
+        <!-- Scalar auto-init: CDN script below discovers this element and renders the API reference here -->
+        <script id="api-reference" data-url="/openapidoc.json"></script>
+    </div>
 </div>
 <div id="scalar-backdrop" data-turbo-permanent
      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1054;"
@@ -55,6 +55,9 @@
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
 <script src="~/js/studio.js"></script>
+<!-- Scalar API Reference 1.60.0 — after #api-reference config element and after studio.js -->
+<script src="https://cdn.jsdelivr.net/npm/@@scalar/api-reference@@1.60.0/dist/browser/standalone.min.js"
+        crossorigin="anonymous"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

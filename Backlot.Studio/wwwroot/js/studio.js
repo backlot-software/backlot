@@ -22,30 +22,9 @@ document.addEventListener('turbo:load', function () {
 });
 
 // === Phase 2: Scalar API Reference side panel ===
-// Initializes Scalar once across Turbo Drive navigations using a sentinel on the permanent element.
-
-document.addEventListener('turbo:load', function () {
-    const panel = document.getElementById('scalar-panel');
-    // Return early if panel is missing or already initialized (single-init sentinel)
-    if (!panel || panel.dataset.scalarInitialized) return;
-
-    // Guard: typeof check in case CDN loads slowly or is blocked.
-    // Set scalarFailed so openScalarPanel() silently ignores clicks rather
-    // than showing a blank slide-in panel.
-    if (typeof Scalar === 'undefined') {
-        panel.dataset.scalarFailed = 'true';
-        return;
-    }
-
-    const mountEl = document.getElementById('scalar-mount');
-    if (!mountEl) return;
-    Scalar.createApiReference(mountEl, {
-        url: '/openapidoc.json',
-        darkMode: false,
-        defaultOpenAllTags: false,
-    });
-    panel.dataset.scalarInitialized = 'true';
-});
+// Scalar initializes via auto-init: the CDN script discovers <script id="api-reference" data-url="...">
+// and renders into #scalar-mount. The panel is data-turbo-permanent, so content persists across
+// Turbo Drive navigations. Studio only manages open/close state.
 
 // Reset open state before Turbo Drive navigates away (does NOT destroy the Scalar instance)
 document.addEventListener('turbo:before-visit', function () {
@@ -60,17 +39,16 @@ document.addEventListener('turbo:before-visit', function () {
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('[data-action="open-scalar"]');
     if (!btn) return;
-    openScalarPanel(btn.dataset.endpoint ?? '');
+    openScalarPanel();
 });
 
-function openScalarPanel(_endpointPath) {
+function openScalarPanel() {
     const panel = document.getElementById('scalar-panel');
     const backdrop = document.getElementById('scalar-backdrop');
-    if (!panel || panel.dataset.scalarFailed) return;
+    if (!panel) return;
     panel.classList.add('is-open');
     if (backdrop) backdrop.style.display = 'block';
     panel.focus();
-    // v1: open at top level; hash deep-linking deferred (hash format is Scalar-version-internal)
 }
 
 function closeScalarPanel() {
