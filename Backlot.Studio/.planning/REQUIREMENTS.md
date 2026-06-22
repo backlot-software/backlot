@@ -25,9 +25,9 @@
 
 ### Role Detail
 
-- [ ] **DETL-01**: User can view a role's full field set, including `__Permission` (CanCreate/CanRead/CanWrite) and `__Skills` badges, on a detail page via `POST /api/role/seekbase/detail`
-- [ ] **DETL-02**: User can view a list of roles related to the current role (from `POST /api/role/persist/relations`) and click any related role to navigate to its detail page
-- [ ] **DETL-03**: User can copy any UID value to the clipboard with a single click (copy-to-clipboard button alongside UID fields)
+- [x] **DETL-01**: User can view a role's full field set, including `__Permission` (CanCreate/CanRead/CanWrite) and `__Skills` badges, on a detail page via `POST /api/role/seekbase/detail`
+- [x] **DETL-02**: User can view a list of roles related to the current role (from `POST /api/role/persist/relations`) and click any related role to navigate to its detail page
+- [x] **DETL-03**: User can copy any UID value to the clipboard with a single click (copy-to-clipboard button alongside UID fields)
 
 ### Role Edit
 
@@ -75,9 +75,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROLE-01 | Phase 3 | Complete |
 | ROLE-02 | Phase 3 | Complete |
 | ROLE-03 | Phase 3 | Complete |
-| DETL-01 | Phase 3 | Pending |
-| DETL-02 | Phase 3 | Pending |
-| DETL-03 | Phase 3 | Pending |
+| DETL-01 | Phase 3 | Complete |
+| DETL-02 | Phase 3 | Complete |
+| DETL-03 | Phase 3 | Complete |
 | EDIT-01 | Phase 4 | Pending |
 | EDIT-02 | Phase 4 | Pending |
 | EDIT-03 | Phase 4 | Pending |

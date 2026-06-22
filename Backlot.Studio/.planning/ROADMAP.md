@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
 - [x] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel (completed 2026-06-22)
-- [ ] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation
+- [x] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation (completed 2026-06-22)
 - [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save
 
 ## Phase Details
@@ -80,7 +80,7 @@ Plans:
   4. User can see related roles (`persist/relations`) and click any of them to navigate to its detail page
   5. The Edit action is hidden or disabled wherever `__Permission.CanWrite` is false, and any UID can be copied to the clipboard with one click
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -89,7 +89,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — Role Detail page /roles/{uid} with dynamic fields + __Permission/__Skills badges + CanWrite-gated Edit, Related Roles turbo-frame partial /roles/{uid}/relations
+- [x] 03-02-PLAN.md — Role Detail page /roles/{uid} with dynamic fields + __Permission/__Skills badges + CanWrite-gated Edit, Related Roles turbo-frame partial /roles/{uid}/relations
 
 ### Phase 4: Role Editing
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
-| 3. Role Browsing & Detail | 1/2 | In Progress|  |
+| 3. Role Browsing & Detail | 2/2 | Complete   | 2026-06-22 |
 | 4. Role Editing | 0/2 | Not started | - |
