@@ -16,13 +16,9 @@ Two Razor Pages + one partial that deliver role browsing and detail inspection. 
 ### Search / Filter Behavior
 
 - **D-01:** Search bar uses `field:value` syntax. Parser: if input contains `:`, split on first colon → `Field` (left) and `Value` (right), map to `Criteria: [{Field, Condition: 'Contains', Value}]`. If no colon, fall back to Contains match on both `Name` and `Uid` (two Criteria entries — researcher to confirm whether OR semantics are supported by the API or if sequential fallback is needed).
-- **D-02:** Search input placeholder: `"Name:John or Uid:abc123 or plain text"` to communicate the syntax.
-- **D-03:** Condition is always `Contains` (never Equals or StartsWith) for v1 simplicity.
 
 ### Role List Columns
 
-- **D-04:** Default column set for mixed-type view (all roles): `Uid`, `Name`, `LastModified`. This is the displayed column set when no per-skill config exists or when multiple role types are visible.
-- **D-05:** The role's type(s) are identified by `__Skills` — this array contains the interface/role names (e.g., `["Product", "Persist", "Uid"]`). Display the first entry in `__Skills` as the "Type" indicator in a Role Type column.
 - **D-06:** Column configuration is per-skill-type, stored in `localStorage` under a key like `studio_columns_{skillType}`. Accessible via a gear icon near the column headers on the list page. Gear opens an inline panel showing available fields from the current result set with checkboxes; changes save immediately to localStorage.
 - **D-07:** Per-skill config only applies when all visible roles share the same primary skill type (i.e., the list is filtered to a single type via search). Mixed-type view always uses the default columns (D-04).
 
@@ -37,6 +33,10 @@ Two Razor Pages + one partial that deliver role browsing and detail inspection. 
 
 ### Claude's Discretion
 
+- D-02: Exact placeholder text wording (UI string, derivable from D-01 search syntax)
+- D-03: Condition=Contains hardcoded implementation detail (derivable from D-01 v1 simplicity rule)
+- D-04: Default Uid/Name/LastModified column set (derivable from D-06/D-07 mixed-type fallback)
+- D-05: GetPrimarySkill() helper returning first __Skills entry (derivable from D-06/D-07 per-skill logic)
 - C# model types for dynamic role data (e.g., `Dictionary<string, JsonElement>` vs `JsonElement` for `seekbase/detail` body and `simplequery/find` results)
 - Razor Page route structure for `/roles/{uid}/relations` partial (separate page vs named handler)
 - Exact localStorage key schema for column config

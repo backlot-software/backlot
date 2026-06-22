@@ -83,8 +83,12 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 03-01-PLAN.md — Service layer (PostEnvelopeAsync + FindRolesAsync/GetRoleDetailAsync/GetRoleRelationsAsync), Role List page /roles with Turbo Frame search + pagination, sidebar Roles link, copy-uid JS
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 03-02-PLAN.md — Role Detail page /roles/{uid} with dynamic fields + __Permission/__Skills badges + CanWrite-gated Edit, Related Roles turbo-frame partial /roles/{uid}/relations
 
 ### Phase 4: Role Editing
