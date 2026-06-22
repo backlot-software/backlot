@@ -1,0 +1,1154 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Backlot API Documentation",
+    "description": "This is the OpenAPI documentation for all the endpoints exposed by the Backlot API. This documentation is currently in experimental phase and is not meant to be used in production.",
+    "version": "0.0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:7221/"
+    }
+  ],
+  "paths": {
+    "/api/role/director/dummy": {
+      "post": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Dummy.With(Persist).With(Formula).Play())",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Persist": {
+                    "type": "object",
+                    "properties": {
+                      "Name": {
+                        "type": "string",
+                        "example": "John Doe"
+                      },
+                      "Uid": {
+                        "type": "string",
+                        "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                      }
+                    }
+                  },
+                  "Formula": {
+                    "type": "object",
+                    "properties": {
+                      "Uid": {
+                        "type": "string",
+                        "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "string",
+                      "example": "lorem ipsum dolor sit amet"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/uid": {
+      "get": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Uid.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "string",
+                      "example": "lorem ipsum dolor sit amet"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/uisettings": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "UiSettings.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/simplequery/find": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Find.Play(SimpleQuery)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "For": {
+                    "type": "string",
+                    "example": "lorem ipsum dolor sit amet"
+                  },
+                  "Criteria": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Field": {
+                          "type": "string",
+                          "example": "lorem ipsum dolor sit amet"
+                        },
+                        "Condition": {
+                          "type": "string",
+                          "example": "lorem ipsum dolor sit amet"
+                        },
+                        "ConditionEnum": {
+                          "type": "object"
+                        },
+                        "Value": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "PageSize": {
+                    "type": "integer",
+                    "example": 123
+                  },
+                  "Page": {
+                    "type": "integer",
+                    "example": 123
+                  },
+                  "OrderBy": {
+                    "type": "string",
+                    "example": "lorem ipsum dolor sit amet"
+                  },
+                  "From": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Till": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object",
+                      "properties": {
+                        "Page": {
+                          "type": "integer",
+                          "example": 123
+                        },
+                        "PageSize": {
+                          "type": "integer",
+                          "example": 123
+                        },
+                        "Total": {
+                          "type": "integer",
+                          "example": 123
+                        },
+                        "Results": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/seekbase/detail": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Detail.Play(SeekBase)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "For": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/role/isvalid": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "IsValid.Play(Persist)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "Uid": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/persist/persist": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Persist.Play(Persist)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "Uid": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object",
+                      "properties": {
+                        "Name": {
+                          "type": "string",
+                          "example": "John Doe"
+                        },
+                        "LastModified": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "__Permission": {
+                          "type": "object",
+                          "example": {
+                            "CanCreate": true,
+                            "CanRead": true,
+                            "CanWrite": true,
+                            "Encrypted": "****"
+                          }
+                        },
+                        "Uid": {
+                          "type": "string",
+                          "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                        },
+                        "__Skills": {
+                          "type": "array",
+                          "example": [
+                            "Role",
+                            "Permission",
+                            "..."
+                          ]
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/referencecollection/relate": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Relate.Play(ReferenceCollection)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "References": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Uid": {
+                          "type": "string",
+                          "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                        },
+                        "Info": {
+                          "type": "string",
+                          "example": "lorem ipsum dolor sit amet"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Item1": {
+                            "type": "string",
+                            "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                          },
+                          "Item2": {
+                            "type": "string",
+                            "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/persist/relations": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Relations.Play(Persist)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "Uid": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Uid": {
+                            "type": "string",
+                            "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                          },
+                          "Info": {
+                            "type": "string",
+                            "example": "lorem ipsum dolor sit amet"
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/seekbase/revisions": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Revisions.Play(SeekBase)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "For": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Reference": {
+                            "type": "string",
+                            "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                          },
+                          "Checksum": {
+                            "type": "string",
+                            "example": "lorem ipsum dolor sit amet"
+                          },
+                          "Content": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/seek/transformation": {
+      "post": {
+        "tags": [
+          "Persistance"
+        ],
+        "summary": "Transformation.Play(Seek)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "StartingPoint": {
+                    "type": "string",
+                    "example": "lorem ipsum dolor sit amet"
+                  },
+                  "Steps": {
+                    "type": "integer",
+                    "example": 123
+                  },
+                  "Command": {
+                    "type": "string",
+                    "example": "lorem ipsum dolor sit amet"
+                  },
+                  "For": {
+                    "type": "string",
+                    "example": "000EXAMPLED64GUIDFD074EA415A6000"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/configurationinfos": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "ConfigurationInfos.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "Value": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/roles": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Roles.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Role": {
+                            "type": "string",
+                            "example": "lorem ipsum dolor sit amet"
+                          },
+                          "Fields": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Field": {
+                                  "type": "string",
+                                  "example": "lorem ipsum dolor sit amet"
+                                },
+                                "Type": {
+                                  "type": "string",
+                                  "example": "lorem ipsum dolor sit amet"
+                                },
+                                "Characteristics": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Characteristic": {
+                                        "type": "string",
+                                        "example": "lorem ipsum dolor sit amet"
+                                      },
+                                      "Parameters": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "Name": {
+                                              "type": "string",
+                                              "example": "John Doe"
+                                            },
+                                            "Value": {
+                                              "type": "object"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "Skills": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Chars": {
+                                  "type": "object"
+                                },
+                                "Length": {
+                                  "type": "integer",
+                                  "example": 123
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/scenarios": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "Scenarios.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Scenario": {
+                            "type": "string",
+                            "example": "lorem ipsum dolor sit amet"
+                          },
+                          "Result": {
+                            "type": "string",
+                            "example": "lorem ipsum dolor sit amet"
+                          },
+                          "Roles": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Chars": {
+                                  "type": "object"
+                                },
+                                "Length": {
+                                  "type": "integer",
+                                  "example": 123
+                                }
+                              }
+                            }
+                          },
+                          "Tags": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Chars": {
+                                  "type": "object"
+                                },
+                                "Length": {
+                                  "type": "integer",
+                                  "example": 123
+                                }
+                              }
+                            }
+                          },
+                          "Endpoints": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Chars": {
+                                  "type": "object"
+                                },
+                                "Length": {
+                                  "type": "integer",
+                                  "example": 123
+                                }
+                              }
+                            }
+                          },
+                          "Configurations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Chars": {
+                                  "type": "object"
+                                },
+                                "Length": {
+                                  "type": "integer",
+                                  "example": 123
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/configurationinfo/tryupdateconfiguration": {
+      "post": {
+        "tags": [
+          "Configuration"
+        ],
+        "summary": "TryUpdateConfiguration.Play(ConfigurationInfo)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "Value": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/isauthenticated": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "IsAuthenticated.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/role/director/whoami": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "WhoAmI.Play()",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Body": {
+                      "type": "object"
+                    },
+                    "TimeInMs": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "ExecutionTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Backlot.Demo.Web"
+    }
+  ]
+}
