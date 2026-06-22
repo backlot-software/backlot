@@ -1,0 +1,25 @@
+/* wwwroot/css/studio.css */
+
+/* === Phase 1: Sidebar collapse === */
+
+/* Smooth width animation */
+aside#sidebar {
+    transition: width 0.2s ease;
+}
+
+/* Collapsed icon-rail state (64px) */
+aside#sidebar.collapsed {
+    width: 64px !important;
+}
+
+/* Hide text labels in collapsed mode */
+aside#sidebar.collapsed .sidebar-label {
+    display: none;
+}
+
+/* Adjust main content margin when sidebar is collapsed */
+body:has(aside#sidebar.collapsed) main {
+    margin-left: 64px !important;
+}
+
+/* === Phase 2 additions below === */
