@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Backlot.Studio.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,11 @@ builder.Services.AddHttpClient<IBacklotApiClient, BacklotApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["BacklotApi:BaseUrl"]
         ?? "https://localhost:7221");
 }).AddHttpMessageHandler<BasicAuthHandler>();
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
 
 builder.Services.AddRazorPages();
 
