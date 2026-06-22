@@ -80,13 +80,12 @@ Plans:
   4. User can see related roles (`persist/relations`) and click any of them to navigate to its detail page
   5. The Edit action is hidden or disabled wherever `__Permission.CanWrite` is false, and any UID can be copied to the clipboard with one click
 
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
 
 Plans:
 
-- [ ] 03-01: Role list — `/roles` with `simplequery/find`, server-side pagination, search/filter via `Criteria`, result count + clear-search, Turbo Frame in-place updates (Frame convention established here)
-- [ ] 03-02: Role detail — `/roles/{uid}` dynamic fields + `__Permission` + `__Skills`, lazy Turbo Frame for related roles, permission-gated Edit affordance, copy-to-clipboard UID
+- [ ] 03-01-PLAN.md — Service layer (PostEnvelopeAsync + FindRolesAsync/GetRoleDetailAsync/GetRoleRelationsAsync), Role List page /roles with Turbo Frame search + pagination, sidebar Roles link, copy-uid JS
+- [ ] 03-02-PLAN.md — Role Detail page /roles/{uid} with dynamic fields + __Permission/__Skills badges + CanWrite-gated Edit, Related Roles turbo-frame partial /roles/{uid}/relations
 
 ### Phase 4: Role Editing
 
