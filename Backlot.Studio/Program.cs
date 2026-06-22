@@ -47,9 +47,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();             // must come before UseAuthentication so session is available during auth
 app.UseAuthentication();      // must come before UseAuthorization
 app.UseAuthorization();
-app.UseSession();             // MUST come after UseRouting; MUST come before MapRazorPages
 app.MapRazorPages();
 
 app.Run();
