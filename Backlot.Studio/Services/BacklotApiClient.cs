@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Backlot.Studio.Models.Api;
 
 namespace Backlot.Studio.Services;
 
@@ -29,6 +30,13 @@ public class BacklotApiClient : IBacklotApiClient
     public async Task<object?> WhoAmIAsync()
     {
         var envelope = await GetEnvelopeAsync<object>("api/role/director/whoami");
+        return envelope?.Body;
+    }
+
+    // GetScenariosAsync — fetches all registered scenarios from the Backlot API
+    public async Task<IEnumerable<ScenarioItem>?> GetScenariosAsync()
+    {
+        var envelope = await GetEnvelopeAsync<IEnumerable<ScenarioItem>>("api/role/director/scenarios");
         return envelope?.Body;
     }
 }
