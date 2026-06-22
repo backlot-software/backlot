@@ -81,6 +81,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.WebApp", "Backlot.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Http.DependencyInjection.Autofac", "Backlot.Http.DependencyInjection.Autofac\Backlot.Http.DependencyInjection.Autofac.csproj", "{9BB1C8AD-A088-4F9D-B86A-E2BA48393909}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{A7A06642-D1D6-4C20-ADF3-C7107B171CF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
