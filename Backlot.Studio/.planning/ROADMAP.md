@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. An authenticated user sees their current identity (from `whoami`) in the navbar of the Bootstrap + Turbo shell
   5. Every outbound API call is issued by a pooled typed HttpClient with the Basic Auth header injected by a `DelegatingHandler` reading session per request (no `new HttpClient()`)
 
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -42,7 +42,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — Typed API service layer: `IBacklotApiClient`/`BacklotApiClient`, `ApiEnvelope<T>`, `BasicAuthHandler` (IHttpContextAccessor, session-read-in-SendAsync), `BacklotApiUnauthorizedException`, `AuthenticatedPageModel` (Turbo-Visit-Control 401 redirect), Program.cs DI wiring
+- [x] 01-02-PLAN.md — Typed API service layer: `IBacklotApiClient`/`BacklotApiClient`, `ApiEnvelope<T>`, `BasicAuthHandler` (IHttpContextAccessor, session-read-in-SendAsync), `BacklotApiUnauthorizedException`, `AuthenticatedPageModel` (Turbo-Visit-Control 401 redirect), Program.cs DI wiring
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Auth | 1/3 | In Progress|  |
+| 1. Foundation & Auth | 2/3 | In Progress|  |
 | 2. Scenarios & API Explorer | 0/2 | Not started | - |
 | 3. Role Browsing & Detail | 0/2 | Not started | - |
 | 4. Role Editing | 0/2 | Not started | - |
