@@ -38,7 +38,17 @@ public class LoginModel : PageModel
 
         // 2. Temporarily store so BasicAuthHandler can inject it on the validation call
         HttpContext.Session.SetString("BasicAuthHeader", encoded);
-        var isValid = await _apiClient.IsAuthenticatedAsync();
+        bool isValid;
+        try
+        {
+            isValid = await _apiClient.IsAuthenticatedAsync();
+        }
+        catch
+        {
+            HttpContext.Session.Remove("BasicAuthHeader");
+            ModelState.AddModelError(string.Empty, "Could not reach the Backlot API. Try again.");
+            return Page();
+        }
 
         if (!isValid)
         {
