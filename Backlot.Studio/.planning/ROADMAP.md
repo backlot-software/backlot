@@ -13,7 +13,7 @@ Backlot.Studio is built as a thin, server-rendered presentation layer over the B
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything
+- [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
 - [ ] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel
 - [ ] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation
 - [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save
@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. An authenticated user sees their current identity (from `whoami`) in the navbar of the Bootstrap + Turbo shell
   5. Every outbound API call is issued by a pooled typed HttpClient with the Basic Auth header injected by a `DelegatingHandler` reading session per request (no `new HttpClient()`)
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -46,7 +46,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — Auth flow pages: Login (centered card, credential validation, session store, SignIn), Logout (Session.Clear + SignOut), Index (whoami → ViewData["Username"] in sidebar)
+- [x] 01-03-PLAN.md — Auth flow pages: Login (centered card, credential validation, session store, SignIn), Logout (Session.Clear + SignOut), Index (whoami → ViewData["Username"] in sidebar)
 
 ### Phase 2: Scenarios & API Explorer
 
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Auth | 2/3 | In Progress|  |
+| 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 0/2 | Not started | - |
 | 3. Role Browsing & Detail | 0/2 | Not started | - |
 | 4. Role Editing | 0/2 | Not started | - |

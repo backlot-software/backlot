@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: foundation-auth
-status: executing
-stopped_at: Phase 01 UI-SPEC approved
-last_updated: "2026-06-22T08:07:16.243Z"
+status: verifying
+stopped_at: Completed Phase 01 plan 3 of 3 — auth flow pages complete
+last_updated: "2026-06-22T08:11:10.374Z"
 last_activity: 2026-06-22
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 Phase: 01 (foundation-auth) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-22 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 4 | - tasks | - files |
 | Phase 01 P02 | 3 | 2 tasks | 7 files |
+| Phase 01 P03 | 1 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Razor @@ escape for CDN URLs with @ in .cshtml
 - [Phase ?]: sidebar-toggle uses onclick assignment inside turbo:load to prevent duplicate event listeners
 - [Phase ?]: CSS :has() selector for sidebar-collapsed main margin-left (Chromium 105+, FF 121+, Safari 15.4+)
+- [Phase ?]: LoginModel stores session key before IsAuthenticatedAsync call, removes it on failure — ensures BasicAuthHandler reads credentials during validation without persisting invalid credentials
+- [Phase ?]: IndexModel uses JsonElement string extraction for WhoAmIAsync result — WhoAmIAsync returns object? which may be a JsonElement at runtime; .GetString() on String ValueKind avoids JSON literal leakage in sidebar
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-22T08:07:16.239Z
-Stopped at: Phase 01 UI-SPEC approved
-Resume file: .planning/phases/01-foundation-auth/01-UI-SPEC.md
+Last session: 2026-06-22T08:11:10.367Z
+Stopped at: Completed Phase 01 plan 3 of 3 — auth flow pages complete
+Resume file: None
