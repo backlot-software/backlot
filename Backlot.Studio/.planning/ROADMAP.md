@@ -29,12 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When the API returns 401 (expired/invalid credentials), the user is redirected to the login page at the top level (not inside a Turbo Frame)
   4. An authenticated user sees their current identity (from `whoami`) in the navbar of the Bootstrap + Turbo shell
   5. Every outbound API call is issued by a pooled typed HttpClient with the Basic Auth header injected by a `DelegatingHandler` reading session per request (no `new HttpClient()`)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Project scaffold — `Backlot.Studio.csproj` added to solution, `Program.cs` DI wiring, Bootstrap + pinned Turbo CDN `_Layout.cshtml`, config (`Backlot:BaseUrl`)
-- [ ] 01-02: Typed API service layer — `IRoleApi`/`IScenarioApi`/`IAuthApi`, `Envelope<T>` unwrap, `BasicAuthHandler` reading creds from session
-- [ ] 01-03: Auth flow — login/logout pages, session config (HttpOnly/Secure/SameSite, absolute IdleTimeout), auth-guard middleware, 401→top-level redirect contract, `whoami` navbar chrome
+- [ ] 01-01-PLAN.md — Project scaffold: `Backlot.Studio.csproj` added to solution, Bootstrap 5.3.8 + Turbo 8.0.23 CDN shell (`_Layout.cshtml`, `_LoginLayout.cshtml`, `_Sidebar.cshtml`), sidebar collapse CSS/JS, `appsettings.json`
+- [ ] 01-02-PLAN.md — Typed API service layer: `IBacklotApiClient`/`BacklotApiClient`, `ApiEnvelope<T>`, `BasicAuthHandler` (IHttpContextAccessor, session-read-in-SendAsync), `BacklotApiUnauthorizedException`, `AuthenticatedPageModel` (Turbo-Visit-Control 401 redirect), Program.cs DI wiring
+- [ ] 01-03-PLAN.md — Auth flow pages: Login (centered card, credential validation, session store, SignIn), Logout (Session.Clear + SignOut), Index (whoami → ViewData["Username"] in sidebar)
 
 ### Phase 2: Scenarios & API Explorer
 **Goal**: A user can browse all registered scenarios and open an interactive Scalar API reference for any of them, proving the end-to-end auth + fetch + render path on read-only pages and isolating the riskiest third-party-JS + Turbo integration.
@@ -90,7 +90,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Auth | 0/3 | Not started | - |
+| 1. Foundation & Auth | 0/3 | Planned | - |
 | 2. Scenarios & API Explorer | 0/2 | Not started | - |
 | 3. Role Browsing & Detail | 0/2 | Not started | - |
 | 4. Role Editing | 0/2 | Not started | - |
