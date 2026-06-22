@@ -1,0 +1,45 @@
+@page "/roles/{uid}/relations"
+@model Backlot.Studio.Pages.Roles.RelationsModel
+@{ Layout = null; }
+
+<turbo-frame id="related-roles">
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-warning" role="alert">
+        @Model.ErrorMessage <a href="/roles/@Model.Uid" class="alert-link">Retry</a>
+    </div>
+}
+else if (!Model.Relations.Any())
+{
+    <p class="text-muted small">No related roles.</p>
+}
+else
+{
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>UID</th>
+                <th>Info</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rel in Model.Relations)
+            {
+                <tr>
+                    <td>
+                        <button data-action="copy-uid" data-uid="@rel.Uid" aria-label="Copy UID to clipboard" class="btn btn-link p-0 me-1" style="min-height:44px">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <span class="font-monospace small" title="@rel.Uid">@(rel.Uid.Length > 12 ? rel.Uid[..12] : rel.Uid)</span>
+                    </td>
+                    <td>@rel.Info</td>
+                    <td>
+                        <a href="/roles/@rel.Uid" class="btn btn-outline-secondary btn-sm" style="min-height:44px" data-turbo-frame="_top" data-turbo-action="advance">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+</turbo-frame>
