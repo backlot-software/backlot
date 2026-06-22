@@ -14,7 +14,7 @@ Backlot.Studio is built as a thin, server-rendered presentation layer over the B
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
-- [ ] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel
+- [x] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel (completed 2026-06-22)
 - [ ] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation
 - [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save
 
@@ -59,13 +59,13 @@ Plans:
   2. User can open a slide-in Scalar API reference side panel keyed to any scenario and see its interactive endpoint docs
   3. The Scalar panel re-initializes correctly after Turbo navigations (no blanking, duplication, or stale content) and uses a pinned CDN version
 
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 **UI hint**: yes
 
 Plans:
 
-- [ ] 02-01-PLAN.md — Scenario overview page: `/scenarios` DTOs + `GetScenariosAsync`, grouped cards, empty/error states, active sidebar nav (SCEN-01)
-- [ ] 02-02-PLAN.md — Scalar side panel: `openapidoc.json` served from wwwroot, `data-turbo-permanent` mount, single-init on `turbo:load`, open/close/Escape, pinned 1.60.0 (SCEN-02)
+- [x] 02-01-PLAN.md — Scenario overview page: `/scenarios` DTOs + `GetScenariosAsync`, grouped cards, empty/error states, active sidebar nav (SCEN-01)
+- [x] 02-02-PLAN.md — Scalar side panel: `openapidoc.json` served from wwwroot, `data-turbo-permanent` mount, single-init on `turbo:load`, open/close/Escape, pinned 1.60.0 (SCEN-02)
 
 ### Phase 3: Role Browsing & Detail
 
@@ -115,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
-| 2. Scenarios & API Explorer | 0/2 | Not started | - |
+| 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
 | 3. Role Browsing & Detail | 0/2 | Not started | - |
 | 4. Role Editing | 0/2 | Not started | - |

@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 01
-current_phase_name: foundation-auth
-status: verifying
+current_phase: 02
+current_phase_name: scenarios-api-explorer
+status: executing
 stopped_at: Completed Phase 01 plan 3 of 3 — auth flow pages complete
-last_updated: "2026-06-22T08:11:10.374Z"
+last_updated: "2026-06-22T09:18:42.359Z"
 last_activity: 2026-06-22
-last_activity_desc: Phase 01 execution started
+last_activity_desc: Phase 02 execution resumed (wave continue)
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 3
-  percent: 25
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A developer or operator can find any role in the system, inspect its state and relations, and edit it — without writing a single API call by hand.
-**Current focus:** Phase 01 — foundation-auth
+**Current focus:** Phase 02 — scenarios-api-explorer
 
 ## Current Position
 
-Phase: 01 (foundation-auth) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-06-22 — Phase 01 execution started
+Phase: 02 (scenarios-api-explorer) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-06-22 — Phase 02 execution resumed (wave continue)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 4 | - tasks | - files |
 | Phase 01 P02 | 3 | 2 tasks | 7 files |
 | Phase 01 P03 | 1 | 2 tasks | 6 files |
+| Phase 02 P02 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Recent decisions affecting current work:
 - [Phase ?]: CSS :has() selector for sidebar-collapsed main margin-left (Chromium 105+, FF 121+, Safari 15.4+)
 - [Phase ?]: LoginModel stores session key before IsAuthenticatedAsync call, removes it on failure — ensures BasicAuthHandler reads credentials during validation without persisting invalid credentials
 - [Phase ?]: IndexModel uses JsonElement string extraction for WhoAmIAsync result — WhoAmIAsync returns object? which may be a JsonElement at runtime; .GetString() on String ValueKind avoids JSON literal leakage in sidebar
+- [Phase ?]: Scalar CDN pinned to 1.60.0 with sha384 SRI integrity hash — computed from live CDN file, satisfies T-02-04 supply-chain mitigation
+- [Phase ?]: openapidoc.json moved to wwwroot/ (not custom PhysicalFileProvider) — avoids exposing appsettings; served cleanly by UseStaticFiles
+- [Phase ?]: Scalar single-init sentinel (panel.dataset.scalarInitialized) on data-turbo-permanent element prevents double-mount across Turbo Drive navigations
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-22T08:11:10.367Z
+Last session: 2026-06-22T09:18:24.566Z
 Stopped at: Completed Phase 01 plan 3 of 3 — auth flow pages complete
 Resume file: None

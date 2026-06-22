@@ -15,7 +15,7 @@
 ### Scenarios
 
 - [ ] **SCEN-01**: User can view a list of all registered scenarios from `GET /api/role/director/scenarios`, grouped or tagged by category
-- [ ] **SCEN-02**: User can open a Scalar API reference side panel (slide-in overlay) keyed to any scenario, showing the endpoint's interactive docs
+- [x] **SCEN-02**: User can open a Scalar API reference side panel (slide-in overlay) keyed to any scenario, showing the endpoint's interactive docs
 
 ### Roles
 
@@ -71,7 +71,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 1 | Complete |
 | SCEN-01 | Phase 2 | Pending |
-| SCEN-02 | Phase 2 | Pending |
+| SCEN-02 | Phase 2 | Complete |
 | ROLE-01 | Phase 3 | Pending |
 | ROLE-02 | Phase 3 | Pending |
 | ROLE-03 | Phase 3 | Pending |
