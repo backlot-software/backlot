@@ -29,8 +29,13 @@ document.addEventListener('turbo:load', function () {
     // Return early if panel is missing or already initialized (single-init sentinel)
     if (!panel || panel.dataset.scalarInitialized) return;
 
-    // Guard: typeof check in case CDN loads slowly or is blocked
-    if (typeof Scalar === 'undefined') return;
+    // Guard: typeof check in case CDN loads slowly or is blocked.
+    // Set scalarFailed so openScalarPanel() silently ignores clicks rather
+    // than showing a blank slide-in panel.
+    if (typeof Scalar === 'undefined') {
+        panel.dataset.scalarFailed = 'true';
+        return;
+    }
 
     Scalar.createApiReference('#scalar-mount', {
         url: '/openapidoc.json',
