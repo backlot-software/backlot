@@ -11,4 +11,7 @@ public interface IBacklotApiClient
     Task<FindResult?> FindRolesAsync(FindRequest request, CancellationToken ct = default);
     Task<JsonElement?> GetRoleDetailAsync(string uid, CancellationToken ct = default);
     Task<IEnumerable<RelationItem>?> GetRoleRelationsAsync(string uid, CancellationToken ct = default);
+    Task<IReadOnlyList<RoleSchema>?> GetRoleSchemaAsync(CancellationToken ct = default);
+    Task<ValidationOutcome?> ValidateRoleAsync(object roleData, CancellationToken ct = default);
+    Task<JsonElement?> PersistRoleAsync(object roleData, CancellationToken ct = default);
 }

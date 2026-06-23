@@ -69,4 +69,25 @@ public class BacklotApiClient : IBacklotApiClient
         var envelope = await PostEnvelopeAsync<IEnumerable<RelationItem>>("api/role/persist/relations", new { Uid = uid }, ct);
         return envelope?.Body;
     }
+
+    // GetRoleSchemaAsync — fetches all role-type field schemas via director/roles
+    public async Task<IReadOnlyList<RoleSchema>?> GetRoleSchemaAsync(CancellationToken ct = default)
+    {
+        var envelope = await GetEnvelopeAsync<IReadOnlyList<RoleSchema>>("api/role/director/roles", ct);
+        return envelope?.Body;
+    }
+
+    // ValidateRoleAsync — server-side validation via role/isvalid (does not persist)
+    public async Task<ValidationOutcome?> ValidateRoleAsync(object roleData, CancellationToken ct = default)
+    {
+        var envelope = await PostEnvelopeAsync<ValidationOutcome>("api/role/role/isvalid", roleData, ct);
+        return envelope?.Body;
+    }
+
+    // PersistRoleAsync — saves/updates a role via persist/persist
+    public async Task<JsonElement?> PersistRoleAsync(object roleData, CancellationToken ct = default)
+    {
+        var envelope = await PostEnvelopeAsync<JsonElement>("api/role/persist/persist", roleData, ct);
+        return envelope?.Body;
+    }
 }
