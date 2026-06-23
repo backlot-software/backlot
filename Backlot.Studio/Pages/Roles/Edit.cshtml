@@ -38,7 +38,14 @@
     </div>
 }
 
-@if (Model.Schema != null && !Model.SchemaFields.Any())
+@if (Model.Schema == null && Model.ErrorMessage == null)
+{
+    <div class="text-center mt-5">
+        <h5 class="fw-semibold">Nothing to edit</h5>
+        <p class="text-muted">No editable schema matches this role's primary skill.</p>
+    </div>
+}
+else if (Model.Schema != null && !Model.SchemaFields.Any())
 {
     <div class="text-center mt-5">
         <h5 class="fw-semibold">Nothing to edit</h5>

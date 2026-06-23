@@ -163,23 +163,18 @@ public class EditModel : TurboEditPageModel
     }
 
     // Match the schema row to the role by its primary skill (__Skills[0] == schema.Role,
-    // RESEARCH Pattern 3). Fall back to the first __Skills entry that matches any schema.Role.
+    // RESEARCH Pattern 3). Match the PRIMARY skill ONLY — do not fall back to secondary skills
+    // (WR-06). The matched schema dictates which fields are editable/coerced/persisted, so
+    // guessing from a later skill could write fields under the wrong role contract. When the
+    // primary skill has no schema row, return null so the caller treats it as an explicit
+    // "no editable schema" state rather than silently editing the wrong field set.
     private static RoleSchema? MatchSchema(System.Text.Json.JsonElement detail, IReadOnlyList<RoleSchema> schemas)
     {
-        var skills = DetailModel.GetSkills(detail).ToList();
-        var primary = skills.FirstOrDefault();
-        if (primary != null)
-        {
-            var match = schemas.FirstOrDefault(r => string.Equals(r.Role, primary, StringComparison.OrdinalIgnoreCase));
-            if (match != null) return match;
-        }
-        // Fallback: first skill that matches any schema row.
-        foreach (var skill in skills)
-        {
-            var match = schemas.FirstOrDefault(r => string.Equals(r.Role, skill, StringComparison.OrdinalIgnoreCase));
-            if (match != null) return match;
-        }
-        return null;
+        var primary = DetailModel.GetSkills(detail).FirstOrDefault();
+        if (primary == null)
+            return null;
+
+        return schemas.FirstOrDefault(r => string.Equals(r.Role, primary, StringComparison.OrdinalIgnoreCase));
     }
 
     // Build the persist/isvalid payload from the SCHEMA field list (never the posted keys).
