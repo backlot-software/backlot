@@ -17,6 +17,14 @@
 }
 else
 {
+    @if (Model.Saved)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Role saved.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <h4 class="fw-semibold mb-3">@Model.PageTitle</h4>
 
     <div class="d-flex align-items-center gap-2 mb-3">

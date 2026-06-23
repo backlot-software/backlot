@@ -14,6 +14,12 @@ public class DetailModel : AuthenticatedPageModel
     [BindProperty(SupportsGet = true)]
     public string Uid { get; set; } = string.Empty;
 
+    // Drives the "Role saved." success banner. Set via the ?saved=1 query flag on the
+    // 303 redirect target from the edit save path (D-08: query-flag mechanism, no server
+    // state carried across the redirect). Binds on GET.
+    [BindProperty(SupportsGet = true)]
+    public bool Saved { get; set; }
+
     public JsonElement? RoleData { get; private set; }
     public string? ErrorMessage { get; private set; }
     public bool CanWrite { get; private set; }
