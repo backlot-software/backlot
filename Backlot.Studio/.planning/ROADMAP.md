@@ -102,13 +102,17 @@ Plans:
   2. Before saving, field-level validation errors from `role/isvalid` are shown inline next to the relevant fields
   3. User can save via `persist/persist`; on success they are redirected (303) to the role detail page, and on validation failure the form re-renders (422) with errors visible — including after a prior Turbo navigation
 
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
+**Wave 1**
 
-- [ ] 04-01: Schema-driven edit form — `/roles/{uid}/edit` rendering editable fields from `director/roles` schema, reusing detail fetch/bind
-- [ ] 04-02: Validation + persist — `role/isvalid` inline errors, `persist/persist` save, antiforgery, base PageModel 303-on-success / 422-on-invalid helper, Turbo smoke test
+- [ ] 04-01-PLAN.md — Service layer (GetRoleSchemaAsync/ValidateRoleAsync/PersistRoleAsync) + RoleSchema/ValidationOutcome DTOs + TurboEditPageModel (303/422 helpers) + schema-driven `/roles/{uid}/edit` form; front-loaded Turbo 303/422 smoke test against the running API (EDIT-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — Production save orchestration: mass-assignment-safe BuildPayload, `role/isvalid` summary-block errors (422, D-07), `persist/persist` save (303), and the TempData-free `?saved=1` "Role saved." banner on the detail page (D-08) (EDIT-02, EDIT-03)
 
 ## Progress
 
