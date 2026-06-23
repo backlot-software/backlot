@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
 - [x] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel (completed 2026-06-22)
 - [x] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation (completed 2026-06-22)
-- [x] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save (completed 2026-06-23)
+- [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save (plans complete; awaiting human verification)
 
 ## Phase Details
 
@@ -124,4 +124,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
 | 3. Role Browsing & Detail | 2/2 | Complete   | 2026-06-22 |
-| 4. Role Editing | 2/2 | Complete   | 2026-06-23 |
+| 4. Role Editing | 2/2 | Verifying  | —          |
