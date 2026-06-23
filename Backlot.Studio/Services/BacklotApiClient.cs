@@ -7,25 +7,44 @@ namespace Backlot.Studio.Services;
 public class BacklotApiClient : IBacklotApiClient
 {
     private readonly HttpClient _httpClient;
-    private static readonly JsonSerializerOptions PascalOptions = new(JsonSerializerDefaults.General);
+
+    // One shared options instance used for BOTH serialization and deserialization so casing
+    // behaviour is intentional and consistent (WR-04). Backlot envelopes and nested DTOs
+    // (ValidationOutcome.Results[].ErrorMessage/MemberNames) are PascalCase; General defaults
+    // use PascalCase property naming. PropertyNameCaseInsensitive stays on as a tolerant
+    // fallback while the live PascalCase shape is being confirmed.
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.General)
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public BacklotApiClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
+    // Throw a rich BacklotApiException (status + body) on non-success instead of the bare
+    // EnsureSuccessStatusCode HttpRequestException, which discards the API's diagnostic body
+    // (WR-05). The body is read before throwing so callers/logs retain the detail.
+    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        if (response.IsSuccessStatusCode) return;
+        var body = await response.Content.ReadAsStringAsync(ct);
+        throw new BacklotApiException(response.StatusCode, body);
+    }
+
     private async Task<ApiEnvelope<T>?> GetEnvelopeAsync<T>(string path, CancellationToken ct = default)
     {
         var response = await _httpClient.GetAsync(path, ct);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(cancellationToken: ct);
+        await EnsureSuccessAsync(response, ct);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
     }
-    
+
     private async Task<ApiEnvelope<T>?> PostEnvelopeAsync<T>(string path, object body, CancellationToken ct = default)
     {
-        var response = await _httpClient.PostAsJsonAsync(path, body, PascalOptions, ct);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(cancellationToken: ct);
+        var response = await _httpClient.PostAsJsonAsync(path, body, JsonOptions, ct);
+        await EnsureSuccessAsync(response, ct);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
     }
 
     // IsAuthenticatedAsync — called from Login.cshtml.cs to validate credentials
@@ -77,10 +96,45 @@ public class BacklotApiClient : IBacklotApiClient
         return envelope?.Body;
     }
 
-    // ValidateRoleAsync — server-side validation via role/isvalid (does not persist)
+    // ValidateRoleAsync — server-side validation via role/isvalid (does not persist).
+    // The API may signal validation failure with a non-2xx status while still returning a
+    // structured ValidationOutcome body. Read and deserialize that body for 4xx responses
+    // rather than throwing on EnsureSuccessStatusCode, so per-field validation results survive
+    // and reach the 422 form path instead of collapsing into the generic "Save failed" banner
+    // (WR-02). Auth (401/403) and 5xx responses still throw so the caller surfaces them.
     public async Task<ValidationOutcome?> ValidateRoleAsync(object roleData, CancellationToken ct = default)
     {
-        var envelope = await PostEnvelopeAsync<ValidationOutcome>("api/role/role/isvalid", roleData, ct);
+        var response = await _httpClient.PostAsJsonAsync("api/role/role/isvalid", roleData, JsonOptions, ct);
+
+        var isClientValidationFailure =
+            (int)response.StatusCode is >= 400 and < 500
+            && response.StatusCode != System.Net.HttpStatusCode.Unauthorized
+            && response.StatusCode != System.Net.HttpStatusCode.Forbidden;
+
+        if (!response.IsSuccessStatusCode && !isClientValidationFailure)
+        {
+            await EnsureSuccessAsync(response, ct);
+        }
+
+        if (isClientValidationFailure)
+        {
+            // Try to recover the structured outcome from the error body. If the body isn't a
+            // recognizable envelope, fall back to throwing the rich exception so the failure
+            // isn't silently swallowed.
+            try
+            {
+                var failEnvelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<ValidationOutcome>>(JsonOptions, ct);
+                if (failEnvelope?.Body is { } body)
+                    return body;
+            }
+            catch (JsonException)
+            {
+                // fall through to throw with the raw body
+            }
+            await EnsureSuccessAsync(response, ct);
+        }
+
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<ValidationOutcome>>(JsonOptions, ct);
         return envelope?.Body;
     }
 
