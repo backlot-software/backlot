@@ -7,6 +7,7 @@ namespace Backlot.Studio.Services;
 public class BacklotApiClient : IBacklotApiClient
 {
     private readonly HttpClient _httpClient;
+    private static readonly JsonSerializerOptions PascalOptions = new(JsonSerializerDefaults.General);
 
     public BacklotApiClient(HttpClient httpClient)
     {
@@ -19,10 +20,10 @@ public class BacklotApiClient : IBacklotApiClient
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(cancellationToken: ct);
     }
-
+    
     private async Task<ApiEnvelope<T>?> PostEnvelopeAsync<T>(string path, object body, CancellationToken ct = default)
     {
-        var response = await _httpClient.PostAsJsonAsync(path, body, ct);
+        var response = await _httpClient.PostAsJsonAsync(path, body, PascalOptions, ct);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(cancellationToken: ct);
     }

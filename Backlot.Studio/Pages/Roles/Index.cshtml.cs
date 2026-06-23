@@ -113,7 +113,6 @@ public class IndexModel : AuthenticatedPageModel
 
         return new FindRequest
         {
-            For = null,
             Criteria = criteria,
             PageSize = PageSize,
             Page = CurrentPage

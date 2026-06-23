@@ -13,7 +13,7 @@ public class FindCriteria
 /// <summary>POST body for POST /api/role/simplequery/find.</summary>
 public class FindRequest
 {
-    public string? For { get; set; }
+    public string For { get; set; } = "Persist";
     public FindCriteria[]? Criteria { get; set; }
     public int PageSize { get; set; }
     public int Page { get; set; }
