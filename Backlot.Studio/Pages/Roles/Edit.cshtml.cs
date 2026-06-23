@@ -1,3 +1,4 @@
+using System.Globalization;
 using Backlot.Studio.Models.Api;
 using Backlot.Studio.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -191,19 +192,23 @@ public class EditModel : TurboEditPageModel
         if (!IsNumeric(type) || string.IsNullOrWhiteSpace(raw))
             return raw;
 
+        // Parse with InvariantCulture so the `.` decimal separator from HTML number inputs and
+        // the round-trip from CurrentValue is interpreted consistently regardless of the host's
+        // configured culture (CR-01: a comma-decimal locale would otherwise corrupt "1.5" → 15).
+        var inv = CultureInfo.InvariantCulture;
         return type switch
         {
-            "Byte" => byte.TryParse(raw, out var b) ? b : (object?)raw,
-            "SByte" => sbyte.TryParse(raw, out var sb) ? sb : (object?)raw,
-            "Int16" => short.TryParse(raw, out var s) ? s : (object?)raw,
-            "UInt16" => ushort.TryParse(raw, out var us) ? us : (object?)raw,
-            "Int32" => int.TryParse(raw, out var i) ? i : (object?)raw,
-            "UInt32" => uint.TryParse(raw, out var ui) ? ui : (object?)raw,
-            "Int64" => long.TryParse(raw, out var l) ? l : (object?)raw,
-            "UInt64" => ulong.TryParse(raw, out var ul) ? ul : (object?)raw,
-            "Decimal" => decimal.TryParse(raw, out var dec) ? dec : (object?)raw,
-            "Double" => double.TryParse(raw, out var d) ? d : (object?)raw,
-            "Single" => float.TryParse(raw, out var fl) ? fl : (object?)raw,
+            "Byte" => byte.TryParse(raw, NumberStyles.Integer, inv, out var b) ? b : (object?)raw,
+            "SByte" => sbyte.TryParse(raw, NumberStyles.Integer, inv, out var sb) ? sb : (object?)raw,
+            "Int16" => short.TryParse(raw, NumberStyles.Integer, inv, out var s) ? s : (object?)raw,
+            "UInt16" => ushort.TryParse(raw, NumberStyles.Integer, inv, out var us) ? us : (object?)raw,
+            "Int32" => int.TryParse(raw, NumberStyles.Integer, inv, out var i) ? i : (object?)raw,
+            "UInt32" => uint.TryParse(raw, NumberStyles.Integer, inv, out var ui) ? ui : (object?)raw,
+            "Int64" => long.TryParse(raw, NumberStyles.Integer, inv, out var l) ? l : (object?)raw,
+            "UInt64" => ulong.TryParse(raw, NumberStyles.Integer, inv, out var ul) ? ul : (object?)raw,
+            "Decimal" => decimal.TryParse(raw, NumberStyles.Number, inv, out var dec) ? dec : (object?)raw,
+            "Double" => double.TryParse(raw, NumberStyles.Float | NumberStyles.AllowThousands, inv, out var d) ? d : (object?)raw,
+            "Single" => float.TryParse(raw, NumberStyles.Float | NumberStyles.AllowThousands, inv, out var fl) ? fl : (object?)raw,
             _ => raw
         };
     }
