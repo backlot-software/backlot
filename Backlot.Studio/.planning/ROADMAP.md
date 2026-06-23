@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
 - [x] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel (completed 2026-06-22)
 - [x] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation (completed 2026-06-22)
-- [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save
+- [x] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save (completed 2026-06-23)
 
 ## Phase Details
 
@@ -102,7 +102,7 @@ Plans:
   2. Before saving, field-level validation errors from `role/isvalid` are shown inline next to the relevant fields
   3. User can save via `persist/persist`; on success they are redirected (303) to the role detail page, and on validation failure the form re-renders (422) with errors visible — including after a prior Turbo navigation
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 **UI hint**: yes
 
 Plans:
@@ -112,7 +112,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — Production save orchestration: mass-assignment-safe BuildPayload, `role/isvalid` summary-block errors (422, D-07), `persist/persist` save (303), and the TempData-free `?saved=1` "Role saved." banner on the detail page (D-08) (EDIT-02, EDIT-03)
+- [x] 04-02-PLAN.md — Production save orchestration: mass-assignment-safe BuildPayload, `role/isvalid` summary-block errors (422, D-07), `persist/persist` save (303), and the TempData-free `?saved=1` "Role saved." banner on the detail page (D-08) (EDIT-02, EDIT-03)
 
 ## Progress
 
@@ -124,4 +124,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
 | 3. Role Browsing & Detail | 2/2 | Complete   | 2026-06-22 |
-| 4. Role Editing | 1/2 | In Progress|  |
+| 4. Role Editing | 2/2 | Complete   | 2026-06-23 |

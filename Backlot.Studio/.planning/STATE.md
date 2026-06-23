@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 current_phase_name: role-editing
-status: executing
+status: verifying
 stopped_at: Phase 04 UI-SPEC approved
-last_updated: "2026-06-23T12:59:19.246Z"
+last_updated: "2026-06-23T13:05:32.965Z"
 last_activity: 2026-06-23
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
-  percent: 75
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 Phase: 04 (role-editing) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-23 — Phase 04 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P02 | 3 | 2 tasks | 4 files |
 | Phase 03 P01 | 3 | 3 tasks | 8 files |
 | Phase 04 P01 | 4 | 2 tasks | 7 files |
+| Phase 04 P02 | 6min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [Phase ?]: survives Turbo Frame partial updates that replace the table
 - [Phase ?]: [Phase 04-01]: TurboEditPageModel sets 303 (TurboRedirect) / 422 (TurboInvalidPage) directly on Response — RedirectToPage(302)/bare Page(200) do not work under Turbo form submit
 - [Phase ?]: [Phase 04-01]: edit POST rebuilds the payload from the re-fetched schema field list, never posted keys — mass-assignment guard T-04-03
+- [Phase 04]: CoerceByType returns raw string on numeric parse failure so bad input becomes an isvalid validation error, not a server crash
+- [Phase 04]: Server-side CanWrite re-check short-circuits a forbidden edit POST to a 422 re-render (T-04-02 defense-in-depth)
+- [Phase 04]: Success banner uses ?saved=1 query flag read by BindProperty(SupportsGet) bool Saved — no TempData (D-08)
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-23T12:58:52.807Z
+Last session: 2026-06-23T13:04:41.734Z
 Stopped at: Phase 04 UI-SPEC approved
 Resume file: .planning/phases/04-role-editing/04-UI-SPEC.md
