@@ -28,7 +28,7 @@ public static class RoleExtensions
                 var scene = s as IScenario;
                 if (scene == null) throw new ArgumentException("Unknown scene while authenticating.");
 
-                if (scene.Info.Access.Contains("*")) // when this scenario is open for everyone
+                if (scene.Info.Access.Contains("*")) // when this scenario is open for all users
                 {
                     return Task.CompletedTask;
                 }
@@ -37,11 +37,16 @@ public static class RoleExtensions
 
                 if (scene.Info.Access.Contains(UserContext.Current.UserName)) return Task.CompletedTask;
 
-                foreach (var role in scene.Info.Access)
+                if (UserContext.Current.IsAuthenticated)
                 {
-                    if (UserContext.Current.IsInGroup(role))
+                    if(scene.Info.Access.Any(a => a == Access.Everyone)) return Task.CompletedTask;
+                    
+                    foreach (var userrole in scene.Info.Access)
                     {
-                        return Task.CompletedTask;
+                        if (UserContext.Current.IsInGroup(userrole))
+                        {
+                            return Task.CompletedTask;
+                        }
                     }
                 }
 
