@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 03
-status: completed
-stopped_at: Phase 04 context gathered
-last_updated: "2026-06-23T11:20:12.922Z"
-last_activity: 2026-06-22
-last_activity_desc: Phase 03 marked complete
+current_phase: 04
+current_phase_name: role-editing
+status: executing
+stopped_at: Phase 04 UI-SPEC approved
+last_updated: "2026-06-23T12:59:19.246Z"
+last_activity: 2026-06-23
+last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 75
-current_phase_name: role-browsing-detail
 ---
 
 # Project State
@@ -24,14 +24,14 @@ current_phase_name: role-browsing-detail
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A developer or operator can find any role in the system, inspect its state and relations, and edit it — without writing a single API call by hand.
-**Current focus:** Phase 03 — role-browsing-detail
+**Current focus:** Phase 04 — role-editing
 
 ## Current Position
 
-Phase: 03 — COMPLETE
+Phase: 04 (role-editing) — EXECUTING
 Plan: 2 of 2
-Status: Phase 03 complete
-Last activity: 2026-06-22 — Phase 03 marked complete
+Status: Ready to execute
+Last activity: 2026-06-23 — Phase 04 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 1 | 2 tasks | 6 files |
 | Phase 02 P02 | 3 | 2 tasks | 4 files |
 | Phase 03 P01 | 3 | 3 tasks | 8 files |
+| Phase 04 P01 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase ?]: PostAsJsonAsync + EnsureSuccessStatusCode + ReadFromJsonAsync
 - [Phase ?]: field extraction via static GetField/GetPrimarySkill helpers in PageModel
 - [Phase ?]: survives Turbo Frame partial updates that replace the table
+- [Phase ?]: [Phase 04-01]: TurboEditPageModel sets 303 (TurboRedirect) / 422 (TurboInvalidPage) directly on Response — RedirectToPage(302)/bare Page(200) do not work under Turbo form submit
+- [Phase ?]: [Phase 04-01]: edit POST rebuilds the payload from the re-fetched schema field list, never posted keys — mass-assignment guard T-04-03
 
 ### Pending Todos
 
@@ -91,6 +94,7 @@ None yet.
 
 - Phase 4 (Edit): schema-driven form from `Characteristics` is HIGH complexity; consider thin generic form for v1, deepen post-validation. Turbo 303/422/antiforgery survival is MEDIUM-confidence — validate against real app early.
 - Phase 2 (Scalar): `createApiReference()` init/teardown under Turbo is MEDIUM-confidence — warrants a focused spike against the pinned 1.60.0 build.
+- Phase 04 live Turbo 303/422 + antiforgery round-trip and isvalid casing (A1/A4) remain runtime-unverified: Demo.Web host runs but only a hashed password is available (no plaintext creds); endpoints confirmed routing (401/500). Verify with valid Basic Auth creds before phase sign-off.
 
 ## Deferred Items
 
@@ -102,6 +106,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-23T11:20:12.918Z
-Stopped at: Phase 04 context gathered
-Resume file: .planning/phases/04-role-editing/04-CONTEXT.md
+Last session: 2026-06-23T12:58:52.807Z
+Stopped at: Phase 04 UI-SPEC approved
+Resume file: .planning/phases/04-role-editing/04-UI-SPEC.md

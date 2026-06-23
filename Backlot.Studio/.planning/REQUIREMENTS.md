@@ -31,7 +31,7 @@
 
 ### Role Edit
 
-- [ ] **EDIT-01**: User can navigate to `/roles/:uid/edit` and see a form with all editable fields, dynamically rendered from the role's field schema (`GET /api/role/director/roles`)
+- [x] **EDIT-01**: User can navigate to `/roles/:uid/edit` and see a form with all editable fields, dynamically rendered from the role's field schema (`GET /api/role/director/roles`)
 - [ ] **EDIT-02**: Before saving, field-level validation errors from `POST /api/role/role/isvalid` are shown inline next to the relevant fields
 - [ ] **EDIT-03**: User can save changes to a role via `POST /api/role/persist/persist`; on success the user is redirected to the role detail page; on failure, validation errors are re-displayed
 
@@ -78,7 +78,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DETL-01 | Phase 3 | Complete |
 | DETL-02 | Phase 3 | Complete |
 | DETL-03 | Phase 3 | Complete |
-| EDIT-01 | Phase 4 | Pending |
+| EDIT-01 | Phase 4 | Complete |
 | EDIT-02 | Phase 4 | Pending |
 | EDIT-03 | Phase 4 | Pending |
 

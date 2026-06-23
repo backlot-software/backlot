@@ -102,13 +102,13 @@ Plans:
   2. Before saving, field-level validation errors from `role/isvalid` are shown inline next to the relevant fields
   3. User can save via `persist/persist`; on success they are redirected (303) to the role detail page, and on validation failure the form re-renders (422) with errors visible — including after a prior Turbo navigation
 
-**Plans**: 2 plans
+**Plans**: 1/2 plans executed
 **UI hint**: yes
 
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Service layer (GetRoleSchemaAsync/ValidateRoleAsync/PersistRoleAsync) + RoleSchema/ValidationOutcome DTOs + TurboEditPageModel (303/422 helpers) + schema-driven `/roles/{uid}/edit` form; front-loaded Turbo 303/422 smoke test against the running API (EDIT-01)
+- [x] 04-01-PLAN.md — Service layer (GetRoleSchemaAsync/ValidateRoleAsync/PersistRoleAsync) + RoleSchema/ValidationOutcome DTOs + TurboEditPageModel (303/422 helpers) + schema-driven `/roles/{uid}/edit` form; front-loaded Turbo 303/422 smoke test against the running API (EDIT-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -124,4 +124,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
 | 3. Role Browsing & Detail | 2/2 | Complete   | 2026-06-22 |
-| 4. Role Editing | 0/2 | Not started | - |
+| 4. Role Editing | 1/2 | In Progress|  |
