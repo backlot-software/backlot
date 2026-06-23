@@ -1,0 +1,92 @@
+@page "/roles/{uid}/edit"
+@model Backlot.Studio.Pages.Roles.EditModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+    ViewData["ActiveNav"] = "roles";
+}
+
+<a href="/roles/@Model.Uid" class="btn btn-link p-0 mb-3"><i class="bi bi-arrow-left me-1"></i>Back to @Model.PageTitle</a>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.ErrorMessage
+        <a href="/roles/@Model.Uid" class="alert-link ms-1">Back to role</a>
+    </div>
+}
+
+<h4 class="fw-semibold mb-3">@Model.PageTitle</h4>
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <code class="text-muted small">@Model.Uid</code>
+    <button data-action="copy-uid" data-uid="@Model.Uid" aria-label="Copy UID to clipboard" class="btn btn-link p-0" style="min-height:44px">
+        <i class="bi bi-clipboard"></i>
+    </button>
+    <span class="text-muted small">This identifier cannot be changed.</span>
+</div>
+
+@if (Model.ValidationErrors.Any())
+{
+    <div class="alert alert-danger" role="alert">
+        Please fix the following before saving:
+        <ul class="mb-0">
+            @foreach (var e in Model.ValidationErrors)
+            {
+                <li>@(e.ErrorMessage ?? "Validation failed.")</li>
+            }
+        </ul>
+    </div>
+}
+
+@if (Model.Schema != null && !Model.SchemaFields.Any())
+{
+    <div class="text-center mt-5">
+        <h5 class="fw-semibold">Nothing to edit</h5>
+        <p class="text-muted">This role has no editable fields in its schema.</p>
+    </div>
+}
+else if (Model.Schema != null)
+{
+    <form method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Uid" />
+
+        @foreach (var f in Model.SchemaFields)
+        {
+            var val = Model.CurrentValue(f.Field);
+            if (Backlot.Studio.Pages.Roles.EditModel.IsReadOnly(f))
+            {
+                <div class="mb-3">
+                    <label class="form-label"><code>@f.Field</code> <span class="text-muted small">Read-only</span></label>
+                    <input type="text" class="form-control bg-light" value="@val" disabled aria-disabled="true" />
+                </div>
+            }
+            else if (Backlot.Studio.Pages.Roles.EditModel.IsBool(f.Type))
+            {
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="field_@f.Field" name="Fields[@f.Field]" value="true" @(val == "true" ? "checked" : "") />
+                    <label class="form-check-label" for="field_@f.Field"><code>@f.Field</code></label>
+                </div>
+            }
+            else if (Backlot.Studio.Pages.Roles.EditModel.IsNumeric(f.Type))
+            {
+                <div class="mb-3">
+                    <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
+                    <input type="number" class="form-control" id="field_@f.Field" name="Fields[@f.Field]" value="@val" />
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
+                    <input type="text" class="form-control" id="field_@f.Field" name="Fields[@f.Field]" value="@val" />
+                </div>
+            }
+        }
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" style="min-height:44px">Save changes</button>
+            <a href="/roles/@Model.Uid" class="btn btn-outline-secondary" style="min-height:44px">Cancel</a>
+        </div>
+    </form>
+}
