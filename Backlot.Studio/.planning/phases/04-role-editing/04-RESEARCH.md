@@ -361,17 +361,21 @@ Not a rename/refactor/migration phase — **N/A**. This phase adds a new page an
 
 **The API was not running during research** (probe to `https://localhost:7221` returned no connection). All shape claims (Q2, Q3) were resolved from **framework source in this repo**, which is higher authority than a single live probe, but the casing (A1) and the runtime Turbo behavior (A4) still warrant a one-time confirmation on first execution.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+Both items below are **design-resolved at HIGH confidence from in-repo framework source**. They are deliberately runtime-only confirmations (the Backlot API was not running at research time — see A4), and both are already operationalized in the plans, so neither is a genuine unresolved design question.
 
 1. **Live antiforgery + 303 + 422 end-to-end smoke test.**
    - What we know: each piece is individually verified (token is a hidden form field; 303/422 are standard Turbo contracts; app already uses Drive).
    - What's unclear: nothing in theory — but STATE.md explicitly flags this as the phase's risk and wants real-app validation.
    - Recommendation: **plan a first task that loads `/roles/{uid}/edit` via a Drive link from Detail and exercises both invalid (422 body swap) and valid (303 → detail + banner) paths against the running API before building out all widgets.** Gate the phase on this.
+   - **RESOLVED:** design-confirmed from source; runtime confirmation carried into **04-01 Task 1** (the front-loaded smoke test).
 
 2. **`isvalid` property casing on the wire (A1).**
    - What we know: source returns `new { IsValid, Results }`; ValidationResult → `{ErrorMessage, MemberNames}`; client deserializes PascalCase elsewhere.
    - What's unclear: whether the interaction serializer applies any naming transform.
    - Recommendation: confirm with one live response; keep the defensive parse regardless.
+   - **RESOLVED:** design-confirmed from source; runtime confirmation recorded in the **04-01 SUMMARY** contract; defensive parse specified regardless.
 
 ## Environment Availability
 
