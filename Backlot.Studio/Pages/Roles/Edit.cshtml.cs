@@ -103,6 +103,15 @@ public class EditModel : TurboEditPageModel
                 return TurboInvalidPage();
             }
 
+            // Defense-in-depth (T-04-02): re-check write permission server-side before
+            // touching isvalid/persist. The Backlot API also enforces IPermission, but
+            // never rely solely on the disabled Edit button rendered client-side.
+            if (!CanWrite)
+            {
+                ErrorMessage = "You don't have permission to edit this role.";
+                return TurboInvalidPage();
+            }
+
             var payload = BuildPayload(Schema.Fields);
 
             var (outcome, r2) = await SafeApiCall(async () => await _api.ValidateRoleAsync(payload));
@@ -110,7 +119,14 @@ public class EditModel : TurboEditPageModel
 
             if (outcome is null || !outcome.IsValid)
             {
-                ValidationErrors = outcome?.Results ?? [];
+                // Defensive parse (RESEARCH Q2): Body is typed bare object and "can change
+                // without notice". When invalid but Results is empty/missing, surface a single
+                // generic item so the summary block is never blank. Null ErrorMessage items are
+                // tolerated by the view (`e.ErrorMessage ?? "Validation failed."`).
+                var results = outcome?.Results ?? [];
+                ValidationErrors = results.Count > 0
+                    ? results
+                    : [new ValidationResultItem { ErrorMessage = "Validation failed." }];
                 return TurboInvalidPage(); // 422
             }
 
@@ -149,6 +165,8 @@ public class EditModel : TurboEditPageModel
 
     // Build the persist/isvalid payload from the SCHEMA field list (never the posted keys).
     // Skip Calculated/read-only fields; default missing bool fields to false (Pitfall 3).
+    // T-04-03: only schema-known fields plus the hidden Uid are forwarded, so arbitrary
+    // posted keys cannot be injected.
     private Dictionary<string, object?> BuildPayload(IReadOnlyList<FieldSchema> schema)
     {
         var payload = new Dictionary<string, object?> { ["Uid"] = Uid };
@@ -156,9 +174,38 @@ public class EditModel : TurboEditPageModel
         {
             if (IsReadOnly(f)) continue;
             Fields.TryGetValue(f.Field, out var raw);
-            payload[f.Field] = IsBool(f.Type) ? raw == "true" : raw;
+            payload[f.Field] = CoerceByType(f.Type, raw);
         }
         return payload;
+    }
+
+    // Coerce a posted string to the schema Type. Bool defaults to false when the checkbox
+    // posts nothing (Pitfall 3 — unchecked boxes send no key). Numerics parse to the matching
+    // CLR type; on parse failure the raw string is returned unchanged so the API surfaces a
+    // validation error rather than the form crashing. Everything else passes through as-is.
+    private static object? CoerceByType(string type, string? raw)
+    {
+        if (IsBool(type))
+            return raw == "true";
+
+        if (!IsNumeric(type) || string.IsNullOrWhiteSpace(raw))
+            return raw;
+
+        return type switch
+        {
+            "Byte" => byte.TryParse(raw, out var b) ? b : (object?)raw,
+            "SByte" => sbyte.TryParse(raw, out var sb) ? sb : (object?)raw,
+            "Int16" => short.TryParse(raw, out var s) ? s : (object?)raw,
+            "UInt16" => ushort.TryParse(raw, out var us) ? us : (object?)raw,
+            "Int32" => int.TryParse(raw, out var i) ? i : (object?)raw,
+            "UInt32" => uint.TryParse(raw, out var ui) ? ui : (object?)raw,
+            "Int64" => long.TryParse(raw, out var l) ? l : (object?)raw,
+            "UInt64" => ulong.TryParse(raw, out var ul) ? ul : (object?)raw,
+            "Decimal" => decimal.TryParse(raw, out var dec) ? dec : (object?)raw,
+            "Double" => double.TryParse(raw, out var d) ? d : (object?)raw,
+            "Single" => float.TryParse(raw, out var fl) ? fl : (object?)raw,
+            _ => raw
+        };
     }
 
     // View helpers — read-only iff the field carries the Calculated characteristic exactly
