@@ -134,7 +134,13 @@ public class EditModel : TurboEditPageModel
             var (_, r3) = await SafeApiCall(async () => await _api.PersistRoleAsync(payload));
             if (r3 != null) return r3;
 
-            return TurboRedirect($"/roles/{Uid}?saved=1"); // 303
+            // Encode the user-supplied Uid before placing it in the Location header so special
+            // URL characters can't produce a malformed redirect target or header injection
+            // (WR-01). Url.Page builds a framework-encoded path; fall back to a manually escaped
+            // segment if the page route can't be resolved.
+            var location = Url.Page("/Roles/Detail", new { uid = Uid, saved = 1 })
+                ?? $"/roles/{Uri.EscapeDataString(Uid)}?saved=1";
+            return TurboRedirect(location); // 303
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
