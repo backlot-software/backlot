@@ -104,9 +104,11 @@ public class EditModel : TurboEditPageModel
                 return TurboInvalidPage();
             }
 
-            // Defense-in-depth (T-04-02): re-check write permission server-side before
-            // touching isvalid/persist. The Backlot API also enforces IPermission, but
-            // never rely solely on the disabled Edit button rendered client-side.
+            // UX-only pre-check (T-04-02, WR-03): short-circuit before isvalid/persist when the
+            // detail fetch shows no write permission, so the user gets immediate feedback rather
+            // than a round-trip rejection. This is NOT the security boundary — the Backlot API
+            // enforces IPermission authoritatively, and a 401/403 from persist is handled in the
+            // catch below in case permissions change between this fetch and the write (TOCTOU).
             if (!CanWrite)
             {
                 ErrorMessage = "You don't have permission to edit this role.";
@@ -141,6 +143,16 @@ public class EditModel : TurboEditPageModel
             var location = Url.Page("/Roles/Detail", new { uid = Uid, saved = 1 })
                 ?? $"/roles/{Uri.EscapeDataString(Uid)}?saved=1";
             return TurboRedirect(location); // 303
+        }
+        catch (BacklotApiException ex) when (
+            ex.StatusCode is System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.Unauthorized)
+        {
+            // The API is the authoritative permission boundary (WR-03): the local CanWrite gate
+            // above is UX-only. If permissions changed between the detail fetch and persist, the
+            // API rejects the write — surface that explicitly instead of a generic save failure.
+            _logger.LogWarning(ex, "Permission denied saving role uid={Uid} (status {Status})", Uid, ex.StatusCode);
+            ErrorMessage = "You don't have permission to edit this role.";
+            return TurboInvalidPage();
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
