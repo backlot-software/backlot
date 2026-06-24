@@ -42,14 +42,14 @@
 {
     <div class="text-center mt-5">
         <h5 class="fw-semibold">Nothing to edit</h5>
-        <p class="text-muted">No editable schema matches this role's primary skill.</p>
+        <p class="text-muted">No editable schema is visible for this role. This can happen when your account doesn't have access to a scenario that uses this role, so its editable schema isn't returned to you.</p>
     </div>
 }
 else if (Model.Schema != null && !Model.SchemaFields.Any())
 {
     <div class="text-center mt-5">
         <h5 class="fw-semibold">Nothing to edit</h5>
-        <p class="text-muted">This role has no editable fields in its schema.</p>
+        <p class="text-muted">This role's schema was found, but it defines no editable fields.</p>
     </div>
 }
 else if (Model.Schema != null)
