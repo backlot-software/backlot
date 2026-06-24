@@ -75,11 +75,34 @@ public class BacklotApiClient : IBacklotApiClient
         return envelope?.Body;
     }
 
-    // GetRoleDetailAsync — fetches full dynamic role detail by UID via seekbase/detail
+    // GetRoleDetailAsync — fetches full dynamic role detail by UID via seekbase/detail.
+    // The returned element is the UNWRAPPED role: Body.Role when the seekbase/detail wrapper
+    // (`{ "Role": {…flattened role…}, "Relations": [...] }`) is present, else Body itself.
+    // Unwrapping at this single chokepoint means every consumer
+    // (DetailModel.GetPermissions/GetSkills/GetNonSystemFields/GetPageTitle and the Edit-page
+    // server-side CanWrite gate + field seeding) reads __Permission/__Skills/__LastModifiedDate
+    // and data fields at the correct level without any PageModel change.
     public async Task<JsonElement?> GetRoleDetailAsync(string uid, CancellationToken ct = default)
     {
         var envelope = await PostEnvelopeAsync<JsonElement>("api/role/seekbase/detail", new { For = uid }, ct);
-        return envelope?.Body;
+        if (envelope is null) return null;
+        return UnwrapRoleDetail(envelope.Body);
+    }
+
+    // UnwrapRoleDetail — defensively descends into the seekbase/detail `Role` wrapper.
+    // Only descends when the Body is an object that actually contains a `Role` object, so a
+    // future flat response shape (role fields already at the top level, no Role wrapper) and any
+    // non-object Body pass through unchanged. role.Clone() detaches the sub-tree so the returned
+    // JsonElement stays valid after the parent JsonDocument (from ReadFromJsonAsync) is disposed.
+    private static JsonElement UnwrapRoleDetail(JsonElement body)
+    {
+        if (body.ValueKind != JsonValueKind.Object)
+            return body;
+
+        if (body.TryGetProperty("Role", out var role) && role.ValueKind == JsonValueKind.Object)
+            return role.Clone();
+
+        return body;
     }
 
     // GetRoleRelationsAsync — fetches related roles for a given UID via persist/relations
