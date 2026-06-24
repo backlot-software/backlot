@@ -114,6 +114,10 @@ Plans:
 
 - [x] 04-02-PLAN.md — Production save orchestration: mass-assignment-safe BuildPayload, `role/isvalid` summary-block errors (422, D-07), `persist/persist` save (303), and the TempData-free `?saved=1` "Role saved." banner on the detail page (D-08) (EDIT-02, EDIT-03)
 
+**Gap closure** *(from 04-UAT.md — Edit button permanently disabled)*
+
+- [ ] 04-03-PLAN.md — Defensive `Role`-wrapper unwrap in `GetRoleDetailAsync` so `__Permission`/`__Skills`/fields read at the correct level (Edit button enables; UAT Tests 1/2/3 unblocked); drop the always-false CanCreate badge (EDIT-01, EDIT-02, EDIT-03)
+
 ## Progress
 
 **Execution Order:**
