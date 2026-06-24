@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Auth** - Project scaffold, typed API service layer, and session-based Basic Auth boundary that gates everything (completed 2026-06-22)
 - [x] **Phase 2: Scenarios & API Explorer** - Scenario overview page plus the slide-in Scalar API reference panel (completed 2026-06-22)
 - [x] **Phase 3: Role Browsing & Detail** - Searchable paginated role list, role detail with permissions/skills, and clickable related-roles navigation (completed 2026-06-22)
-- [ ] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save (plans complete; awaiting human verification)
+- [x] **Phase 4: Role Editing** - Schema-driven edit form with inline validation and Turbo-safe save (plans complete; awaiting human verification) (completed 2026-06-24)
 
 ## Phase Details
 
@@ -102,7 +102,7 @@ Plans:
   2. Before saving, field-level validation errors from `role/isvalid` are shown inline next to the relevant fields
   3. User can save via `persist/persist`; on success they are redirected (303) to the role detail page, and on validation failure the form re-renders (422) with errors visible — including after a prior Turbo navigation
 
-**Plans**: 4 plans (2 base + 2 gap closure)
+**Plans**: 4/4 plans complete
 **UI hint**: yes
 
 Plans:
@@ -116,9 +116,9 @@ Plans:
 
 **Gap closure** *(from 04-UAT.md — Edit button permanently disabled)*
 
-- [ ] 04-03-PLAN.md — Defensive `Role`-wrapper unwrap in `GetRoleDetailAsync` so `__Permission`/`__Skills`/fields read at the correct level (Edit button enables; UAT Tests 1/2/3 unblocked); drop the always-false CanCreate badge (EDIT-01, EDIT-02, EDIT-03)
+- [x] 04-03-PLAN.md — Defensive `Role`-wrapper unwrap in `GetRoleDetailAsync` so `__Permission`/`__Skills`/fields read at the correct level (Edit button enables; UAT Tests 1/2/3 unblocked); drop the always-false CanCreate badge (EDIT-01, EDIT-02, EDIT-03)
 
-- [ ] 04-04-PLAN.md — Fix `MatchSchema` to select the schema row by the role's own/most-derived skill instead of the base-marker `__Skills[0]` (edit form renders zero fields → renders all fields; UAT Tests 2-5 unblocked); reconcile WR-06's false premise; disambiguate empty-state copy; live UAT re-run checkpoint (EDIT-01, EDIT-02, EDIT-03)
+- [x] 04-04-PLAN.md — Fix `MatchSchema` to select the schema row by the role's own/most-derived skill instead of the base-marker `__Skills[0]` (edit form renders zero fields → renders all fields; UAT Tests 2-5 unblocked); reconcile WR-06's false premise; disambiguate empty-state copy; live UAT re-run checkpoint (EDIT-01, EDIT-02, EDIT-03)
 
 ## Progress
 
@@ -130,4 +130,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Auth | 3/3 | Complete   | 2026-06-22 |
 | 2. Scenarios & API Explorer | 2/2 | Complete   | 2026-06-22 |
 | 3. Role Browsing & Detail | 2/2 | Complete   | 2026-06-22 |
-| 4. Role Editing | 2/2 | Verifying  | —          |
+| 4. Role Editing | 4/4 | Complete   | 2026-06-24 |
