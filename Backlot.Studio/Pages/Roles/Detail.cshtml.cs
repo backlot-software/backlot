@@ -114,8 +114,13 @@ public class DetailModel : AuthenticatedPageModel
         }
     }
 
+    // The role's own/most-derived skill is the LAST element of __Skills (Type.GetInterfaces()
+    // appends the role's own concrete name last; inherited base markers like Persist/Permission
+    // come first). Use LastOrDefault() so the page title / "Edit {title}" header shows the
+    // concrete role name (e.g. "Message"), not a base marker (e.g. "Persist"). This shares the
+    // same most-derived-skill selection as MatchSchema in Edit.cshtml.cs.
     public static string GetPageTitle(JsonElement data)
     {
-        return GetSkills(data).FirstOrDefault() ?? "Role";
+        return GetSkills(data).LastOrDefault() ?? "Role";
     }
 }

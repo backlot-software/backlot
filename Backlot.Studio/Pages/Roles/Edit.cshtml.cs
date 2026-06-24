@@ -162,19 +162,32 @@ public class EditModel : TurboEditPageModel
         }
     }
 
-    // Match the schema row to the role by its primary skill (__Skills[0] == schema.Role,
-    // RESEARCH Pattern 3). Match the PRIMARY skill ONLY — do not fall back to secondary skills
-    // (WR-06). The matched schema dictates which fields are editable/coerced/persisted, so
-    // guessing from a later skill could write fields under the wrong role contract. When the
-    // primary skill has no schema row, return null so the caller treats it as an explicit
-    // "no editable schema" state rather than silently editing the wrong field set.
+    // Match the schema row to the role by the role's OWN/most-derived skill (EDIT-01).
+    // __Skills is built from Type.GetInterfaces() (Backlot.Core/Loader.cs:280-296), which lists
+    // the inherited base markers (Persist, Permission, Role, Uid) FIRST and appends the role's
+    // own concrete name LAST. The director/roles schema rows are keyed by the concrete role name
+    // (role.GetRoleName(), e.g. "Message"). We therefore walk __Skills from most-derived (last)
+    // to least-derived (first) and return the first schema row whose Role matches a skill
+    // (case-insensitive). Returns null only when NO skill matches any schema row — the caller
+    // treats null as the explicit "no schema" state and never edits a guessed field set.
+    //
+    // WR-06 reconciliation: WR-06 ("match the primary skill == __Skills[0] ONLY; do not fall
+    // back to secondary skills") was written on the FALSE premise that __Skills[0] is the role's
+    // own type. __Skills[0] is actually a base marker (e.g. "Persist"), so the old match never
+    // resolved the concrete role row and the form rendered ZERO fields. WR-06's underlying intent
+    // — bind exactly ONE deterministic schema row and never edit fields under the wrong role
+    // contract — is preserved here: this logic still resolves to a single row, PREFERS the role's
+    // own/most-derived contract, and returns null when nothing matches (no guessing).
     private static RoleSchema? MatchSchema(System.Text.Json.JsonElement detail, IReadOnlyList<RoleSchema> schemas)
     {
-        var primary = DetailModel.GetSkills(detail).FirstOrDefault();
-        if (primary == null)
-            return null;
-
-        return schemas.FirstOrDefault(r => string.Equals(r.Role, primary, StringComparison.OrdinalIgnoreCase));
+        var skills = DetailModel.GetSkills(detail).ToList();
+        for (var i = skills.Count - 1; i >= 0; i--)
+        {
+            var match = schemas.FirstOrDefault(r => string.Equals(r.Role, skills[i], StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+                return match;
+        }
+        return null;
     }
 
     // Build the persist/isvalid payload from the SCHEMA field list (never the posted keys).
