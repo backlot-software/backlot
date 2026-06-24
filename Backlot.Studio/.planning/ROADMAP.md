@@ -102,7 +102,7 @@ Plans:
   2. Before saving, field-level validation errors from `role/isvalid` are shown inline next to the relevant fields
   3. User can save via `persist/persist`; on success they are redirected (303) to the role detail page, and on validation failure the form re-renders (422) with errors visible — including after a prior Turbo navigation
 
-**Plans**: 2/2 plans complete
+**Plans**: 4 plans (2 base + 2 gap closure)
 **UI hint**: yes
 
 Plans:
@@ -117,6 +117,8 @@ Plans:
 **Gap closure** *(from 04-UAT.md — Edit button permanently disabled)*
 
 - [ ] 04-03-PLAN.md — Defensive `Role`-wrapper unwrap in `GetRoleDetailAsync` so `__Permission`/`__Skills`/fields read at the correct level (Edit button enables; UAT Tests 1/2/3 unblocked); drop the always-false CanCreate badge (EDIT-01, EDIT-02, EDIT-03)
+
+- [ ] 04-04-PLAN.md — Fix `MatchSchema` to select the schema row by the role's own/most-derived skill instead of the base-marker `__Skills[0]` (edit form renders zero fields → renders all fields; UAT Tests 2-5 unblocked); reconcile WR-06's false premise; disambiguate empty-state copy; live UAT re-run checkpoint (EDIT-01, EDIT-02, EDIT-03)
 
 ## Progress
 
