@@ -69,17 +69,16 @@ WR-06 ("match the primary skill == `__Skills[0]` ONLY; do not fall back to secon
 - Code inspection: `MatchSchema` reverse-iterates the skill set and matches `schema.Role`; no `FirstOrDefault()`/`__Skills[0]` match key remains; `GetPageTitle` uses `LastOrDefault()`; `OnPostAsync` reuses the shared `MatchSchema`. `BuildPayload`, `CoerceByType`, `IsReadOnly`, `IsBool`, `IsNumeric`, and the field-seeding loop are unchanged.
 - Empty-state copy distinguishes the visibility-filtered case from the field-less case.
 
-## Task 4 — Live UAT (PENDING HUMAN CHECKPOINT)
+## Task 4 — Live UAT (PASSED — confirmed by user 2026-06-24)
 
-Task 4 is a `checkpoint:human-verify` with `gate="blocking"`. The live re-run of UAT Tests 2-5 against the authenticated edit page was NOT performed by the executor — it is returned to the orchestrator as an AWAITING HUMAN CHECKPOINT. It remains gated on the carried-forward blocker A1/A4: the Demo.Web host runs but only a hashed password was available (no plaintext Basic Auth creds). The human must obtain plaintext credentials, run the Backlot API + Studio, and verify:
+Task 4 is a `checkpoint:human-verify` with `gate="blocking"`. The user ran the live re-run of UAT Tests 2-5 against the authenticated edit page and **all passed** (confirmed 2026-06-24). The carried-forward A1/A4 creds blocker is resolved for this verification.
 
-- UAT Test 2 — Form renders editable fields pre-filled, type-matched widgets, disabled Calculated, Uid+copy, Save+Cancel (the test that previously showed zero fields).
-- UAT Test 3 — Invalid save → 422 re-render in place with validation summary + preserved values.
-- UAT Test 4 — Valid save → 303 to `/roles/{uid}?saved=1` with the green "Role saved." banner; detail reflects saved values.
-- UAT Test 5 — Decimal/Double/Single round-trips 1.5 as 1.5 (ideally on a comma-decimal locale host).
-- Optional regression — empty-state copy for a visibility-filtered role.
+- UAT Test 2 — PASS: form renders editable fields pre-filled, type-matched widgets, disabled Calculated, Uid+copy, Save+Cancel (the test that previously showed zero fields).
+- UAT Test 3 — PASS: invalid save → 422 re-render in place with validation summary + preserved values.
+- UAT Test 4 — PASS: valid save → 303 to `/roles/{uid}?saved=1` with the green "Role saved." banner; detail reflects saved values.
+- UAT Test 5 — PASS: Decimal/Double/Single round-trips 1.5 as 1.5.
 
-`.planning/phases/04-role-editing/04-UAT.md` Tests 2-5 to be updated by the human based on observed results.
+`.planning/phases/04-role-editing/04-UAT.md` Tests 2-5 updated to `pass` with the live re-run note; the major Test 2 gap is marked resolved. All 6 UAT tests now pass (`status: passed`).
 
 ## Deviations from Plan
 

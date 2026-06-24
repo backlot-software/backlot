@@ -5,7 +5,7 @@ milestone_name: milestone
 current_phase: 04
 current_phase_name: role-editing
 status: executing
-stopped_at: Phase 04 gap closure (04-04) Tasks 1-3 complete — Task 4 live UAT awaiting human checkpoint
+stopped_at: Phase 04 gap closure (04-04) complete — all 4 tasks done; UAT Tests 2-5 passed live (user-confirmed 2026-06-24)
 last_updated: "2026-06-24T15:13:58.753Z"
 last_activity: 2026-06-24
 last_activity_desc: Phase 04 execution started
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 ## Current Position
 
-Phase: 04 (role-editing) — EXECUTING
-Plan: 4 of 4 (gap closure 04-04)
-Status: Tasks 1-3 complete; Task 4 live UAT awaiting human checkpoint
-Last activity: 2026-06-24 — 04-04 MatchSchema fix executed (Tasks 1-3)
+Phase: 04 (role-editing) — COMPLETE
+Plan: 4 of 4 (gap closure 04-04) — complete
+Status: All 4 tasks done; UAT Tests 2-5 passed live (user-confirmed 2026-06-24)
+Last activity: 2026-06-24 — 04-04 MatchSchema fix + live UAT sign-off
 
-Progress: [██████████] 100% (4/4 plans; Task 4 live UAT pending human checkpoint)
+Progress: [██████████] 100% (4/4 plans; UAT Tests 1-6 all pass)
 
 ## Performance Metrics
 
