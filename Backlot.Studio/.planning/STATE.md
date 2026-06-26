@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 Phase: 04 — COMPLETE
 Plan: 4 of 4 (gap closure 04-04) — complete
 Status: Phase 04 complete
-Last activity: 2026-06-26 - Completed quick task 260626-ou7: BacklotApiClient generic PlayAsync refactor
+Last activity: 2026-06-26 - Completed quick task 260626-rk0: inline API client call sites to Play primitives, remove typed wrappers
 
 Progress: [██████████] 100% (4/4 plans; UAT Tests 1-6 all pass)
 
@@ -106,6 +106,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260626-ou7 | Refactor BacklotApiClient to expose a generic PlayAsync primitive; typed methods become thin wrappers | 2026-06-26 | 8d68433 | [260626-ou7-refactor-backlotapiclient-to-expose-a-ge](./quick/260626-ou7-refactor-backlotapiclient-to-expose-a-ge/) |
+| 260626-rk0 | Inline 7 API-client call sites to PlayAsync/PlayAllowingClientErrorAsync; expose UnwrapRoleDetail; delete the 7 typed wrappers | 2026-06-26 | e8629be | [260626-rk0-convert-call-sites-of-getscenariosasync-](./quick/260626-rk0-convert-call-sites-of-getscenariosasync-/) |
 
 ## Deferred Items
 
