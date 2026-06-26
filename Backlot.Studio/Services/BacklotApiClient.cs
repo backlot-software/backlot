@@ -33,20 +33,6 @@ public class BacklotApiClient : IBacklotApiClient
         throw new BacklotApiException(response.StatusCode, body);
     }
 
-    private async Task<ApiEnvelope<T>?> GetEnvelopeAsync<T>(string path, CancellationToken ct = default)
-    {
-        var response = await _httpClient.GetAsync(path, ct);
-        await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
-    }
-
-    private async Task<ApiEnvelope<T>?> PostEnvelopeAsync<T>(string path, object body, CancellationToken ct = default)
-    {
-        var response = await _httpClient.PostAsJsonAsync(path, body, JsonOptions, ct);
-        await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
-    }
-
     // PlayAsync (GET) — generic primitive for the api/role/{rolename}/{scenario} convention.
     // The uid is appended as the sole query param only when non-empty (mirroring the GET branch in
     // ApplicationBuilding.cs: director scenarios pass no uid; other roles require uid as the only
@@ -114,28 +100,28 @@ public class BacklotApiClient : IBacklotApiClient
     // IsAuthenticatedAsync — called from Login.cshtml.cs to validate credentials
     public async Task<bool> IsAuthenticatedAsync()
     {
-        var envelope = await GetEnvelopeAsync<bool>("api/role/director/isauthenticated");
+        var envelope = await PlayAsync<bool>("director", "isauthenticated");
         return envelope?.Body ?? false;
     }
 
     // WhoAmIAsync — called server-side from authenticated PageModels
     public async Task<object?> WhoAmIAsync()
     {
-        var envelope = await GetEnvelopeAsync<object>("api/role/director/whoami");
+        var envelope = await PlayAsync<object>("director", "whoami");
         return envelope?.Body;
     }
 
     // GetScenariosAsync — fetches all registered scenarios from the Backlot API
     public async Task<IEnumerable<ScenarioItem>?> GetScenariosAsync()
     {
-        var envelope = await GetEnvelopeAsync<IEnumerable<ScenarioItem>>("api/role/director/scenarios");
+        var envelope = await PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios");
         return envelope?.Body;
     }
 
     // FindRolesAsync — searches/paginates roles via simplequery/find
     public async Task<FindResult?> FindRolesAsync(FindRequest request, CancellationToken ct = default)
     {
-        var envelope = await PostEnvelopeAsync<FindResult>("api/role/simplequery/find", request, ct);
+        var envelope = await PlayAsync<FindResult>("simplequery", "find", request, ct);
         return envelope?.Body;
     }
 
@@ -148,7 +134,7 @@ public class BacklotApiClient : IBacklotApiClient
     // and data fields at the correct level without any PageModel change.
     public async Task<JsonElement?> GetRoleDetailAsync(string uid, CancellationToken ct = default)
     {
-        var envelope = await PostEnvelopeAsync<JsonElement>("api/role/seekbase/detail", new { For = uid }, ct);
+        var envelope = await PlayAsync<JsonElement>("seekbase", "detail", new { For = uid }, ct);
         if (envelope is null) return null;
         return UnwrapRoleDetail(envelope.Body);
     }
@@ -172,14 +158,14 @@ public class BacklotApiClient : IBacklotApiClient
     // GetRoleRelationsAsync — fetches related roles for a given UID via persist/relations
     public async Task<IEnumerable<RelationItem>?> GetRoleRelationsAsync(string uid, CancellationToken ct = default)
     {
-        var envelope = await PostEnvelopeAsync<IEnumerable<RelationItem>>("api/role/persist/relations", new { Uid = uid }, ct);
+        var envelope = await PlayAsync<IEnumerable<RelationItem>>("persist", "relations", new { Uid = uid }, ct);
         return envelope?.Body;
     }
 
     // GetRoleSchemaAsync — fetches all role-type field schemas via director/roles
     public async Task<IReadOnlyList<RoleSchema>?> GetRoleSchemaAsync(CancellationToken ct = default)
     {
-        var envelope = await GetEnvelopeAsync<IReadOnlyList<RoleSchema>>("api/role/director/roles", ct);
+        var envelope = await PlayAsync<IReadOnlyList<RoleSchema>>("director", "roles", ct: ct);
         return envelope?.Body;
     }
 
@@ -191,44 +177,14 @@ public class BacklotApiClient : IBacklotApiClient
     // (WR-02). Auth (401/403) and 5xx responses still throw so the caller surfaces them.
     public async Task<ValidationOutcome?> ValidateRoleAsync(object roleData, CancellationToken ct = default)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/role/role/isvalid", roleData, JsonOptions, ct);
-
-        var isClientValidationFailure =
-            (int)response.StatusCode is >= 400 and < 500
-            && response.StatusCode != System.Net.HttpStatusCode.Unauthorized
-            && response.StatusCode != System.Net.HttpStatusCode.Forbidden;
-
-        if (!response.IsSuccessStatusCode && !isClientValidationFailure)
-        {
-            await EnsureSuccessAsync(response, ct);
-        }
-
-        if (isClientValidationFailure)
-        {
-            // Try to recover the structured outcome from the error body. If the body isn't a
-            // recognizable envelope, fall back to throwing the rich exception so the failure
-            // isn't silently swallowed.
-            try
-            {
-                var failEnvelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<ValidationOutcome>>(JsonOptions, ct);
-                if (failEnvelope?.Body is { } body)
-                    return body;
-            }
-            catch (JsonException)
-            {
-                // fall through to throw with the raw body
-            }
-            await EnsureSuccessAsync(response, ct);
-        }
-
-        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<ValidationOutcome>>(JsonOptions, ct);
+        var envelope = await PlayAllowingClientErrorAsync<ValidationOutcome>("role", "isvalid", roleData, ct);
         return envelope?.Body;
     }
 
     // PersistRoleAsync — saves/updates a role via persist/persist
     public async Task<JsonElement?> PersistRoleAsync(object roleData, CancellationToken ct = default)
     {
-        var envelope = await PostEnvelopeAsync<JsonElement>("api/role/persist/persist", roleData, ct);
+        var envelope = await PlayAsync<JsonElement>("persist", "persist", roleData, ct);
         return envelope?.Body;
     }
 }
