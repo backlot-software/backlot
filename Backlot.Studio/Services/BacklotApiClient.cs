@@ -111,40 +111,12 @@ public class BacklotApiClient : IBacklotApiClient
         return envelope?.Body;
     }
 
-    // GetScenariosAsync — fetches all registered scenarios from the Backlot API
-    public async Task<IEnumerable<ScenarioItem>?> GetScenariosAsync()
-    {
-        var envelope = await PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios");
-        return envelope?.Body;
-    }
-
-    // FindRolesAsync — searches/paginates roles via simplequery/find
-    public async Task<FindResult?> FindRolesAsync(FindRequest request, CancellationToken ct = default)
-    {
-        var envelope = await PlayAsync<FindResult>("simplequery", "find", request, ct);
-        return envelope?.Body;
-    }
-
-    // GetRoleDetailAsync — fetches full dynamic role detail by UID via seekbase/detail.
-    // The returned element is the UNWRAPPED role: Body.Role when the seekbase/detail wrapper
-    // (`{ "Role": {…flattened role…}, "Relations": [...] }`) is present, else Body itself.
-    // Unwrapping at this single chokepoint means every consumer
-    // (DetailModel.GetPermissions/GetSkills/GetNonSystemFields/GetPageTitle and the Edit-page
-    // server-side CanWrite gate + field seeding) reads __Permission/__Skills/__LastModifiedDate
-    // and data fields at the correct level without any PageModel change.
-    public async Task<JsonElement?> GetRoleDetailAsync(string uid, CancellationToken ct = default)
-    {
-        var envelope = await PlayAsync<JsonElement>("seekbase", "detail", new { For = uid }, ct);
-        if (envelope is null) return null;
-        return UnwrapRoleDetail(envelope.Body);
-    }
-
     // UnwrapRoleDetail — defensively descends into the seekbase/detail `Role` wrapper.
     // Only descends when the Body is an object that actually contains a `Role` object, so a
     // future flat response shape (role fields already at the top level, no Role wrapper) and any
     // non-object Body pass through unchanged. role.Clone() detaches the sub-tree so the returned
     // JsonElement stays valid after the parent JsonDocument (from ReadFromJsonAsync) is disposed.
-    private static JsonElement UnwrapRoleDetail(JsonElement body)
+    public static JsonElement UnwrapRoleDetail(JsonElement body)
     {
         if (body.ValueKind != JsonValueKind.Object)
             return body;
@@ -153,38 +125,5 @@ public class BacklotApiClient : IBacklotApiClient
             return role.Clone();
 
         return body;
-    }
-
-    // GetRoleRelationsAsync — fetches related roles for a given UID via persist/relations
-    public async Task<IEnumerable<RelationItem>?> GetRoleRelationsAsync(string uid, CancellationToken ct = default)
-    {
-        var envelope = await PlayAsync<IEnumerable<RelationItem>>("persist", "relations", new { Uid = uid }, ct);
-        return envelope?.Body;
-    }
-
-    // GetRoleSchemaAsync — fetches all role-type field schemas via director/roles
-    public async Task<IReadOnlyList<RoleSchema>?> GetRoleSchemaAsync(CancellationToken ct = default)
-    {
-        var envelope = await PlayAsync<IReadOnlyList<RoleSchema>>("director", "roles", ct: ct);
-        return envelope?.Body;
-    }
-
-    // ValidateRoleAsync — server-side validation via role/isvalid (does not persist).
-    // The API may signal validation failure with a non-2xx status while still returning a
-    // structured ValidationOutcome body. Read and deserialize that body for 4xx responses
-    // rather than throwing on EnsureSuccessStatusCode, so per-field validation results survive
-    // and reach the 422 form path instead of collapsing into the generic "Save failed" banner
-    // (WR-02). Auth (401/403) and 5xx responses still throw so the caller surfaces them.
-    public async Task<ValidationOutcome?> ValidateRoleAsync(object roleData, CancellationToken ct = default)
-    {
-        var envelope = await PlayAllowingClientErrorAsync<ValidationOutcome>("role", "isvalid", roleData, ct);
-        return envelope?.Body;
-    }
-
-    // PersistRoleAsync — saves/updates a role via persist/persist
-    public async Task<JsonElement?> PersistRoleAsync(object roleData, CancellationToken ct = default)
-    {
-        var envelope = await PlayAsync<JsonElement>("persist", "persist", roleData, ct);
-        return envelope?.Body;
     }
 }
