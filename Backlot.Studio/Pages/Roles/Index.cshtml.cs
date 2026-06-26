@@ -41,9 +41,9 @@ public class IndexModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.FindRolesAsync(request));
+            var (result, redirect) = await SafeApiCall(async () => await _api.PlayAsync<FindResult>("simplequery", "find", request));
             if (redirect != null) return redirect;
-            RoleResult = result;
+            RoleResult = result?.Body;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

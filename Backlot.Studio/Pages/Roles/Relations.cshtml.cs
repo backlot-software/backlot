@@ -32,9 +32,9 @@ public class RelationsModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.GetRoleRelationsAsync(Uid));
+            var (result, redirect) = await SafeApiCall(async () => await _api.PlayAsync<IEnumerable<RelationItem>>("persist", "relations", new { Uid = Uid }));
             if (redirect != null) return redirect;
-            Relations = result ?? [];
+            Relations = result?.Body ?? [];
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

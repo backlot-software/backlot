@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Backlot.Studio.Models.Api;
 using Backlot.Studio.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -41,11 +42,13 @@ public class EditModel : TurboEditPageModel
 
         try
         {
-            var (detail, r1) = await SafeApiCall(async () => await _api.GetRoleDetailAsync(Uid));
+            var (env, r1) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (r1 != null) return r1;
+            JsonElement? detail = env is null ? null : BacklotApiClient.UnwrapRoleDetail(env.Body);
 
-            var (schema, r2) = await SafeApiCall(async () => await _api.GetRoleSchemaAsync());
+            var (schemaEnv, r2) = await SafeApiCall(async () => await _api.PlayAsync<IReadOnlyList<RoleSchema>>("director", "roles"));
             if (r2 != null) return r2;
+            var schema = schemaEnv?.Body;
 
             if (detail.HasValue && schema != null)
             {
@@ -78,15 +81,17 @@ public class EditModel : TurboEditPageModel
         {
             // Re-fetch the schema: it is the authoritative field list. Never trust the
             // posted keys (mass-assignment / field-injection guard, T-04-03 / RESEARCH Q5).
-            var (schema, r0) = await SafeApiCall(async () => await _api.GetRoleSchemaAsync());
+            var (schemaEnv, r0) = await SafeApiCall(async () => await _api.PlayAsync<IReadOnlyList<RoleSchema>>("director", "roles"));
             if (r0 != null) return r0;
+            var schema = schemaEnv?.Body;
 
             // Match by the posted skill carried via the schema; fall back to re-deriving
             // from a detail fetch is unnecessary here because the schema row is identified
             // by the same set of fields the form rendered. Re-resolve from the role detail
             // so the schema row is matched the same way as on GET.
-            var (detail, r1) = await SafeApiCall(async () => await _api.GetRoleDetailAsync(Uid));
+            var (env, r1) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (r1 != null) return r1;
+            JsonElement? detail = env is null ? null : BacklotApiClient.UnwrapRoleDetail(env.Body);
 
             if (schema == null || !detail.HasValue)
             {
@@ -117,8 +122,9 @@ public class EditModel : TurboEditPageModel
 
             var payload = BuildPayload(Schema.Fields);
 
-            var (outcome, r2) = await SafeApiCall(async () => await _api.ValidateRoleAsync(payload));
+            var (outcomeEnv, r2) = await SafeApiCall(async () => await _api.PlayAllowingClientErrorAsync<ValidationOutcome>("role", "isvalid", payload));
             if (r2 != null) return r2;
+            var outcome = outcomeEnv?.Body;
 
             if (outcome is null || !outcome.IsValid)
             {
@@ -133,7 +139,7 @@ public class EditModel : TurboEditPageModel
                 return TurboInvalidPage(); // 422
             }
 
-            var (_, r3) = await SafeApiCall(async () => await _api.PersistRoleAsync(payload));
+            var (_, r3) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("persist", "persist", payload));
             if (r3 != null) return r3;
 
             // Encode the user-supplied Uid before placing it in the Location header so special

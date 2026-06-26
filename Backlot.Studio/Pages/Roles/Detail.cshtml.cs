@@ -39,9 +39,9 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.GetRoleDetailAsync(Uid));
+            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (redirect != null) return redirect;
-            RoleData = result;
+            RoleData = env is null ? null : BacklotApiClient.UnwrapRoleDetail(env.Body);
 
             if (RoleData.HasValue)
             {
