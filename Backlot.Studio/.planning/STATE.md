@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 Phase: 04 — COMPLETE
 Plan: 4 of 4 (gap closure 04-04) — complete
 Status: Phase 04 complete
-Last activity: 2026-06-24 — Phase 04 marked complete
+Last activity: 2026-06-26 - Completed quick task 260626-ou7: BacklotApiClient generic PlayAsync refactor
 
 Progress: [██████████] 100% (4/4 plans; UAT Tests 1-6 all pass)
 
@@ -100,6 +100,12 @@ None yet.
 - Phase 4 (Edit): schema-driven form from `Characteristics` is HIGH complexity; consider thin generic form for v1, deepen post-validation. Turbo 303/422/antiforgery survival is MEDIUM-confidence — validate against real app early.
 - Phase 2 (Scalar): `createApiReference()` init/teardown under Turbo is MEDIUM-confidence — warrants a focused spike against the pinned 1.60.0 build.
 - Phase 04 live Turbo 303/422 + antiforgery round-trip and isvalid casing (A1/A4) remain runtime-unverified: Demo.Web host runs but only a hashed password is available (no plaintext creds); endpoints confirmed routing (401/500). Verify with valid Basic Auth creds before phase sign-off.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260626-ou7 | Refactor BacklotApiClient to expose a generic PlayAsync primitive; typed methods become thin wrappers | 2026-06-26 | 8d68433 | [260626-ou7-refactor-backlotapiclient-to-expose-a-ge](./quick/260626-ou7-refactor-backlotapiclient-to-expose-a-ge/) |
 
 ## Deferred Items
 
