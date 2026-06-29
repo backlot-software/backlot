@@ -44,7 +44,7 @@ public class EditModel : TurboEditPageModel
         {
             var (env, r1) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (r1 != null) return r1;
-            JsonElement? detail = env is null ? null : BacklotApiClient.UnwrapRoleDetail(env.Body);
+            JsonElement? detail = env is null ? null : env.Body.Unwrap("Role");;
 
             var (schemaEnv, r2) = await SafeApiCall(async () => await _api.PlayAsync<IReadOnlyList<RoleSchema>>("director", "roles"));
             if (r2 != null) return r2;
@@ -91,7 +91,7 @@ public class EditModel : TurboEditPageModel
             // so the schema row is matched the same way as on GET.
             var (env, r1) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (r1 != null) return r1;
-            JsonElement? detail = env is null ? null : BacklotApiClient.UnwrapRoleDetail(env.Body);
+            JsonElement? detail = env is null ? null : env.Body.Unwrap("Role");;
 
             if (schema == null || !detail.HasValue)
             {

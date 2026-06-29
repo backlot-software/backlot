@@ -1,6 +1,3 @@
-using System.Text.Json;
-using Backlot.Studio.Models.Api;
-
 namespace Backlot.Studio.Services;
 
 public interface IBacklotApiClient
@@ -15,4 +12,6 @@ public interface IBacklotApiClient
     Task<ApiEnvelope<T>?> PlayAsync<T>(string roleName, string scenario, string? uid = null, CancellationToken ct = default);
     Task<ApiEnvelope<T>?> PlayAsync<T>(string roleName, string scenario, object body, CancellationToken ct = default);
     Task<ApiEnvelope<T>?> PlayAllowingClientErrorAsync<T>(string roleName, string scenario, object body, CancellationToken ct = default);
+    
+    
 }

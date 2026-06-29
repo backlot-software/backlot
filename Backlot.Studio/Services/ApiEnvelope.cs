@@ -1,5 +1,9 @@
 namespace Backlot.Studio.Services;
 
+/// <summary>
+///
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class ApiEnvelope<T>
 {
     public T? Body { get; set; }

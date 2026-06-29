@@ -110,20 +110,4 @@ public class BacklotApiClient : IBacklotApiClient
         var envelope = await PlayAsync<object>("director", "whoami");
         return envelope?.Body;
     }
-
-    // UnwrapRoleDetail — defensively descends into the seekbase/detail `Role` wrapper.
-    // Only descends when the Body is an object that actually contains a `Role` object, so a
-    // future flat response shape (role fields already at the top level, no Role wrapper) and any
-    // non-object Body pass through unchanged. role.Clone() detaches the sub-tree so the returned
-    // JsonElement stays valid after the parent JsonDocument (from ReadFromJsonAsync) is disposed.
-    public static JsonElement UnwrapRoleDetail(JsonElement body)
-    {
-        if (body.ValueKind != JsonValueKind.Object)
-            return body;
-
-        if (body.TryGetProperty("Role", out var role) && role.ValueKind == JsonValueKind.Object)
-            return role.Clone();
-
-        return body;
-    }
 }
