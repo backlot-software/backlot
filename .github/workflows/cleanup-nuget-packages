@@ -1,0 +1,110 @@
+name: Cleanup NuGet Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository-name:
+        description: 'Repository name to clean up packages for (e.g. backlot)'
+        required: true
+        type: string
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all NuGet packages for the specified repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG: ${{ github.repository_owner }}
+          TARGET_REPO: ${{ inputs.repository-name }}
+        run: |
+          set -euo pipefail
+
+          echo "🔍 Fetching all NuGet packages for org: $ORG"
+          echo "🎯 Filtering for repository: $TARGET_REPO"
+          echo ""
+
+          # Fetch all NuGet packages for the organization (paginated)
+          # The API returns a 'repository' object with 'full_name' and 'name' for each package
+          ALL_PACKAGES=$(gh api \
+            --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/$ORG/packages?package_type=nuget" \
+            2>/dev/null || echo "[]")
+
+          if [ "$ALL_PACKAGES" = "[]" ] || [ -z "$ALL_PACKAGES" ]; then
+            echo "ℹ️  No NuGet packages found for org '$ORG'."
+            exit 0
+          fi
+
+          # Filter packages whose repository.full_name matches ORG/TARGET_REPO
+          # or whose repository.name matches TARGET_REPO
+          # Some packages may not have a repository field — those are skipped
+          MATCHED=$(echo "$ALL_PACKAGES" | jq -r \
+            --arg org "$ORG" \
+            --arg repo "$TARGET_REPO" \
+            '.[] | select(
+              (.repository.full_name // "" | ascii_downcase) == (("\($org)/\($repo)") | ascii_downcase)
+              or
+              (.repository.name // "" | ascii_downcase) == ($repo | ascii_downcase)
+            ) | .name')
+
+          if [ -z "$MATCHED" ]; then
+            echo "ℹ️  No NuGet packages found for repository '$ORG/$TARGET_REPO'."
+            echo ""
+            echo "Packages in org '$ORG' (for debugging):"
+            echo "$ALL_PACKAGES" | jq -r '.[] | "  - \(.)name (repo: \(.repository.full_name // "none"))"' 2>/dev/null || true
+            exit 0
+          fi
+
+          echo "📦 Found packages to delete:"
+          echo "$MATCHED" | sed 's/^/   - /'
+          echo ""
+
+          # Delete each matched package (entire package — all versions)
+          DELETED=0
+          FAILED=0
+
+          while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+
+            echo "🗑️  Deleting package: $pkg"
+
+            response=$(gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/$ORG/packages/nuget/$pkg" \
+              -i 2>&1) || true
+
+            status=$(echo "$response" | head -n 1 | awk '{print $2}')
+
+            case "$status" in
+              204)
+                echo "   ✅ Deleted successfully"
+                DELETED=$((DELETED + 1))
+                ;;
+              404)
+                echo "   ⚠️  Package not found (may already be deleted)"
+                ;;
+              *)
+                echo "   ❌ Failed (HTTP $status)"
+                echo "$response" | head -n 5
+                FAILED=$((FAILED + 1))
+                ;;
+            esac
+          done <<< "$MATCHED"
+
+          echo ""
+          echo "================================"
+          echo "  Cleanup Summary"
+          echo "================================"
+          echo "  Organization:  $ORG"
+          echo "  Repository:    $TARGET_REPO"
+          echo "  Deleted:       $DELETED"
+          echo "  Failed:        $FAILED"
+          echo "  Restore window: 30 days"
+          echo "================================"
