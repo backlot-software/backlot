@@ -129,7 +129,7 @@
 
         var gearBtn = document.createElement('button');
         gearBtn.type = 'button';
-        gearBtn.className = 'btn btn-link p-0';
+        gearBtn.className = 'text-gray-600 hover:text-gray-800 bg-transparent border-none p-0 cursor-pointer';
         gearBtn.setAttribute('aria-label', 'Configure columns');
         gearBtn.setAttribute('aria-expanded', 'false');
         gearBtn.id = 'col-config-btn';
@@ -149,11 +149,11 @@
         // Create panel
         var panel = document.createElement('div');
         panel.id = 'col-config-panel';
-        panel.className = 'card shadow-sm p-3 position-absolute';
-        panel.style.cssText = 'z-index:100;display:none;min-width:220px;top:0;right:0;';
+        panel.className = 'bg-white shadow-md p-3 absolute z-10 hidden';
+        panel.style.cssText = 'min-width:220px;top:0;right:0;';
 
         var header = document.createElement('div');
-        header.className = 'fw-semibold mb-2';
+        header.className = 'font-semibold mb-2';
         header.textContent = 'Visible columns';
         panel.appendChild(header);
 
@@ -164,7 +164,7 @@
 
         toggleableFields.forEach(function (field) {
             var label = document.createElement('label');
-            label.className = 'd-flex align-items-center gap-2 mb-1';
+            label.className = 'flex items-center gap-2 mb-1';
 
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
@@ -193,7 +193,7 @@
         });
 
         // Insert panel relative to the table container
-        var tableContainer = tableEl.closest('.position-relative') || tableEl.parentElement;
+        var tableContainer = tableEl.closest('.relative') || tableEl.parentElement;
         if (tableContainer) {
             tableContainer.style.position = 'relative';
             tableContainer.appendChild(panel);
@@ -203,14 +203,14 @@
         if (mode !== 'mixed') {
             gearBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
-                var isOpen = panel.style.display !== 'none';
-                panel.style.display = isOpen ? 'none' : 'block';
+                var isOpen = !panel.classList.contains('hidden');
+                panel.classList.toggle('hidden');
                 gearBtn.setAttribute('aria-expanded', String(!isOpen));
             });
 
             document.addEventListener('click', function closeOnOutside(e) {
                 if (!panel.contains(e.target) && e.target !== gearBtn) {
-                    panel.style.display = 'none';
+                    panel.classList.add('hidden');
                     gearBtn.setAttribute('aria-expanded', 'false');
                 }
             });

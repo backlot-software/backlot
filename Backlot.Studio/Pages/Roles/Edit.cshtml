@@ -1,38 +1,66 @@
 @page "/roles/{uid}/edit"
 @model Backlot.Studio.Pages.Roles.EditModel
 @{
-    ViewData["Title"] = Model.PageTitle;
+    ViewData["Title"] = "Edit " + Model.PageTitle;
     ViewData["ActiveNav"] = "roles";
 }
 
-<a href="/roles/@Model.Uid" class="btn btn-link p-0 mb-3"><i class="bi bi-arrow-left me-1"></i>Back to @Model.PageTitle</a>
+<!-- Breadcrumb and back navigation -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <a href="/roles/@Model.Uid" class="text-primary-600 hover:text-primary-700 text-sm mb-2 flex items-center gap-1">
+            <i class="bi bi-arrow-left"></i>Back to @Model.PageTitle
+        </a>
+        <h1 class="text-2xl font-bold text-secondary-900">Edit @Model.PageTitle</h1>
+    </div>
+</div>
 
+<!-- Error message -->
 @if (Model.ErrorMessage != null)
 {
-    <div class="alert alert-danger" role="alert">
-        @Model.ErrorMessage
-        <a href="/roles/@Model.Uid" class="alert-link ms-1">Back to role</a>
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/roles/@Model.Uid" class="font-medium ml-2">Back to role</a>
     </div>
 }
 
-<h4 class="fw-semibold mb-3">@Model.PageTitle</h4>
-
-<div class="d-flex align-items-center gap-2 mb-3">
-    <code class="text-muted small">@Model.Uid</code>
-    <button data-action="copy-uid" data-uid="@Model.Uid" aria-label="Copy UID to clipboard" class="btn btn-link p-0" style="min-height:44px">
-        <i class="bi bi-clipboard"></i>
-    </button>
-    <span class="text-muted small">This identifier cannot be changed.</span>
+<!-- UID display -->
+<div class="card mb-6 animate-fade-in">
+    <div class="card-body">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-warning-50 rounded-lg flex items-center justify-center">
+                <i class="bi bi-pencil text-warning-600"></i>
+            </div>
+            <div>
+                <div class="font-medium text-secondary-900">Role UID</div>
+                <div class="flex items-center gap-2 mt-1">
+                    <code class="text-secondary-500 text-sm bg-secondary-100 px-2 py-1 rounded">@Model.Uid</code>
+                    <button data-action="copy-uid" data-uid="@Model.Uid" 
+                            aria-label="Copy UID to clipboard" 
+                            class="btn btn-ghost btn-icon text-secondary-500 hover:text-primary-600">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3 text-sm text-secondary-500">
+            <i class="bi bi-info-circle"></i>
+            <span class="ml-1">This identifier cannot be changed.</span>
+        </div>
+    </div>
 </div>
 
+<!-- Validation errors -->
 @if (Model.ValidationErrors.Any())
 {
-    <div class="alert alert-danger" role="alert">
-        Please fix the following before saving:
-        <ul class="mb-0">
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span class="mr-2">Please fix the following before saving:</span>
+        <ul class="list-disc list-inside mt-2">
             @foreach (var e in Model.ValidationErrors)
             {
-                <li>@(e.ErrorMessage ?? "Validation failed.")</li>
+                <li class="ml-4">@(e.ErrorMessage ?? "Validation failed.")</li>
             }
         </ul>
     </div>
@@ -40,60 +68,98 @@
 
 @if (Model.Schema == null && Model.ErrorMessage == null)
 {
-    <div class="text-center mt-5">
-        <h5 class="fw-semibold">Nothing to edit</h5>
-        <p class="text-muted">No editable schema is visible for this role. This can happen when your account doesn't have access to a scenario that uses this role, so its editable schema isn't returned to you.</p>
+    <div class="empty-state">
+        <i class="bi bi-exclamation-triangle"></i>
+        <h3>Nothing to edit</h3>
+        <p>No editable schema is visible for this role. This can happen when your account doesn't have access to a scenario that uses this role, so its editable schema isn't returned to you.</p>
     </div>
 }
 else if (Model.Schema != null && !Model.SchemaFields.Any())
 {
-    <div class="text-center mt-5">
-        <h5 class="fw-semibold">Nothing to edit</h5>
-        <p class="text-muted">This role's schema was found, but it defines no editable fields.</p>
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3>Nothing to edit</h3>
+        <p>This role's schema was found, but it defines no editable fields.</p>
     </div>
 }
 else if (Model.Schema != null)
 {
-    <form method="post">
+    <form method="post" class="space-y-6">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Uid" />
 
-        @foreach (var f in Model.SchemaFields)
-        {
-            var val = Model.CurrentValue(f.Field);
-            if (Backlot.Studio.Pages.Roles.EditModel.IsReadOnly(f))
-            {
-                <div class="mb-3">
-                    <label class="form-label"><code>@f.Field</code> <span class="text-muted small">Read-only</span></label>
-                    <input type="text" class="form-control bg-light" value="@val" disabled aria-disabled="true" />
+        <!-- Edit form card -->
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-secondary-900">Edit Fields</h3>
+                <p class="text-sm text-secondary-500 mt-1">Modify the role data below</p>
+            </div>
+            <div class="card-body">
+                <div class="space-y-5">
+                    @foreach (var f in Model.SchemaFields)
+                    {
+                        var val = Model.CurrentValue(f.Field);
+                        
+                        <!-- Field container -->
+                        <div class="@(Backlot.Studio.Pages.Roles.EditModel.IsReadOnly(f) ? "opacity-60" : "")">
+                            @if (Backlot.Studio.Pages.Roles.EditModel.IsReadOnly(f))
+                            {
+                                <label class="form-label">
+                                    <code>@f.Field</code>
+                                    <span class="text-secondary-400 text-xs ms-2">Read-only</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-input bg-secondary-100 cursor-not-allowed" 
+                                       value="@val" 
+                                       disabled 
+                                       aria-disabled="true" />
+                            }
+                            else if (Backlot.Studio.Pages.Roles.EditModel.IsBool(f.Type))
+                            {
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" 
+                                           class="h-5 w-5 text-primary-600 rounded focus:ring-primary-500" 
+                                           id="field_@f.Field" 
+                                           name="Fields[@f.Field]" 
+                                           value="true" 
+                                           @(val == "true" ? "checked" : "") />
+                                    <label class="form-label cursor-pointer mb-0" for="field_@f.Field"><code>@f.Field</code></label>
+                                </div>
+                            }
+                            else if (Backlot.Studio.Pages.Roles.EditModel.IsNumeric(f.Type))
+                            {
+                                <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
+                                <input type="number" 
+                                       class="form-input" 
+                                       id="field_@f.Field" 
+                                       name="Fields[@f.Field]" 
+                                       value="@val" />
+                            }
+                            else
+                            {
+                                <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
+                                <input type="text" 
+                                       class="form-input" 
+                                       id="field_@f.Field" 
+                                       name="Fields[@f.Field]" 
+                                       value="@val" />
+                            }
+                        </div>
+                    }
                 </div>
-            }
-            else if (Backlot.Studio.Pages.Roles.EditModel.IsBool(f.Type))
-            {
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="field_@f.Field" name="Fields[@f.Field]" value="true" @(val == "true" ? "checked" : "") />
-                    <label class="form-check-label" for="field_@f.Field"><code>@f.Field</code></label>
-                </div>
-            }
-            else if (Backlot.Studio.Pages.Roles.EditModel.IsNumeric(f.Type))
-            {
-                <div class="mb-3">
-                    <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
-                    <input type="number" class="form-control" id="field_@f.Field" name="Fields[@f.Field]" value="@val" />
-                </div>
-            }
-            else
-            {
-                <div class="mb-3">
-                    <label class="form-label" for="field_@f.Field"><code>@f.Field</code></label>
-                    <input type="text" class="form-control" id="field_@f.Field" name="Fields[@f.Field]" value="@val" />
-                </div>
-            }
-        }
+            </div>
+        </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary" style="min-height:44px">Save changes</button>
-            <a href="/roles/@Model.Uid" class="btn btn-outline-secondary" style="min-height:44px">Cancel</a>
+        <!-- Form actions -->
+        <div class="flex flex-col md:flex-row gap-3">
+            <button type="submit" class="btn btn-primary flex-1">
+                <i class="bi bi-check-lg"></i>
+                <span>Save changes</span>
+            </button>
+            <a href="/roles/@Model.Uid" class="btn btn-outline flex-1">
+                <i class="bi bi-x-lg"></i>
+                <span>Cancel</span>
+            </a>
         </div>
     </form>
 }

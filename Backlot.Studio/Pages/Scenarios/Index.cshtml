@@ -5,54 +5,114 @@
     ViewData["ActiveNav"] = "scenarios";
 }
 
-<h4 class="fw-semibold mb-4">Scenarios</h4>
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Scenarios</h1>
+        <p class="text-secondary-500">Explore scenario API's</p>
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-0">
+        <a href="https://localhost:7221/scalar/v1" target="_blank" class="btn btn-outline">
+            <i class="bi bi-people"></i>
+            <span>API Documentation</span>
+        </a>
+    </div>
+</div>
 
+<!-- Error message -->
 @if (Model.ErrorMessage != null)
 {
-    <div class="alert alert-danger" role="alert">
-        @Model.ErrorMessage <a href="/scenarios" class="alert-link">Retry</a>
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/scenarios" class="font-medium ml-2">Retry</a>
     </div>
 }
-else if (!Model.Groups.Any())
+
+<!-- Empty state -->
+@if (!Model.Groups.Any())
 {
-    <div class="text-center mt-5">
-        <h5 class="fw-semibold">No scenarios registered</h5>
-        <p class="text-muted">The Backlot API returned an empty scenario list.
-            Check that your API is running and has registered scenarios.</p>
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3>No scenarios registered</h3>
+        <p>The Backlot API returned an empty scenario list. Check that your API is running and has registered scenarios.</p>
+        <a href="#" class="btn btn-primary mt-4">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span>Refresh</span>
+        </a>
     </div>
 }
 else
 {
-    @foreach (var (category, scenarios) in Model.Groups)
-    {
-        <h6 class="text-muted text-uppercase border-bottom pb-1 mt-4 fw-semibold"
-            style="letter-spacing:.05em">@category</h6>
-        <ul class="list-unstyled">
-            @foreach (var s in scenarios)
-            {
-                <li class="card mb-2 p-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5 class="mb-1 fw-semibold">@s.Scenario</h5>
-                            <small class="text-muted">Returns: @s.Result</small>
-                            @foreach (var role in s.Roles)
+    <!-- Scenarios content -->
+    <div class="space-y-6">
+        @foreach (var (category, scenarios) in Model.Groups)
+        {
+            <!-- Category header -->
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-secondary-900">@category</h2>
+            </div>
+            
+            <!-- Scenarios list -->
+            <div class="grid grid-cols-1 gap-4">
+                @foreach (var s in scenarios)
+                {
+                    <div class="card card-hover">
+                        <div class="card-body">
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <!-- Scenario info -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="text-lg font-semibold text-secondary-900">@s.Scenario</h3>
+                                        <span class="badge badge-info">@s.Endpoints.FirstOrDefault()</span>
+                                    </div>
+                                    
+                                    <!-- Description/Result -->
+                                    <p class="text-secondary-600 text-sm mb-3">
+                                        <strong>Returns:</strong> @s.Result
+                                    </p>
+                                    
+                                  
+                                    <p class="text-secondary-600 text-sm mb-3">
+                                        <strong>Roles:</strong>
+                                        @foreach (var role in s.Roles)
+                                        {
+                                            <span class="badge badge-primary">@role</span>
+                                        }
+                                    </p>
+                                        
+                                    <p class="text-secondary-600 text-sm mb-3">
+                                        <strong>Tags:</strong>
+                                        @foreach (var tag in s.Tags)
+                                        {
+                                            <span class="badge badge-secondary">@tag</span>
+                                        }
+                                    </p>
+                                    
+                                </div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                                        style="min-height:44px">
+                                    Download HTTP Request
+                                </button>
+                            </div>
+                            
+                            <!-- Endpoint info -->
+                            @if (s.Endpoints.Any())
                             {
-                                <span class="badge bg-secondary ms-1">@role</span>
-                            }
-                            @foreach (var tag in s.Tags)
-                            {
-                                <span class="badge bg-light text-dark ms-1">@tag</span>
+                                <div class="mt-4 pt-4 border-t border-secondary-200">
+                                    <div class="text-sm">
+                                        <span class="text-secondary-500">Endpoint:</span>
+                                        <code class="text-primary-600 ml-2">@s.Endpoints.First()</code>
+                                    </div>
+                                </div>
                             }
                         </div>
-                        <button class="btn btn-primary btn-sm"
-                                style="min-height:44px"
-                                data-endpoint="@s.Endpoints.FirstOrDefault()"
-                                data-action="open-scalar">
-                            Open API Docs
-                        </button>
                     </div>
-                </li>
-            }
-        </ul>
-    }
+                }
+            </div>
+        }
+    </div>
 }
+
+<!-- Toast container for notifications -->
+<div class="hidden"></div>

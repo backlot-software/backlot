@@ -6,165 +6,227 @@
     ViewData["ActiveNav"] = "roles";
 }
 
-<h4 class="fw-semibold mb-4">Roles</h4>
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles</h1>
+        <p class="text-secondary-500">Manage and edit role data from your API</p>
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-0">
+        <a href="/scenarios" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Scenarios</span>
+        </a>
+    </div>
+</div>
 
+<!-- Error message -->
 @if (Model.ErrorMessage != null)
 {
-    <div class="alert alert-danger" role="alert">
-        @Model.ErrorMessage <a href="/roles" class="alert-link">Retry</a>
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/roles" class="font-medium ml-2">Retry</a>
     </div>
 }
 
 <turbo-frame id="role-list" data-turbo-action="advance">
-    <!-- Search form -->
-    <form method="get" action="/roles" class="d-flex align-items-center gap-2 mb-3">
-        <input type="text"
-               name="q"
-               value="@Model.SearchQuery"
-               class="form-control"
-               placeholder="Search by field…"
-               aria-label="Search roles" />
-        <button type="submit" class="btn btn-primary" style="min-height:44px">Search</button>
-        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
-        {
-            <a href="/roles" class="btn btn-outline-secondary" style="min-height:44px">Clear</a>
-        }
-    </form>
-
-    <!-- Result count -->
-    @if (Model.RoleResult != null)
-    {
-        if (Model.TotalCount == 0)
-        {
-            <small class="text-muted d-block mb-2">No roles found.</small>
-        }
-        else
-        {
-            <small class="text-muted d-block mb-2">
-                Showing @Model.StartItem&ndash;@Model.EndItem of @Model.TotalCount roles
-                @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
-                {
-                    <text> matching &ldquo;@Model.SearchQuery&rdquo;</text>
-                }
-            </small>
-        }
-    }
+    <!-- Search and filter bar -->
+    <div class="card mb-6 animate-fade-in">
+        <div class="card-body">
+            <!-- Search form -->
+            <form method="get" action="/roles" class="flex flex-col md:flex-row items-center gap-3">
+                <div class="relative flex-1">
+                    <input type="text"
+                           name="q"
+                           value="@Model.SearchQuery"
+                           class="form-input pe-10"
+                           placeholder="Search by field…"
+                           aria-label="Search roles" />
+                    <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary" style="min-height:44px">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                    {
+                        <a href="/roles" class="btn btn-ghost" style="min-height:44px">
+                            <i class="bi bi-x-lg"></i>
+                            <span>Clear</span>
+                        </a>
+                    }
+                </div>
+            </form>
+            
+            <!-- Result count -->
+            @if (Model.RoleResult != null)
+            {
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-secondary-200">
+                    <small class="text-secondary-500">
+                        @if (Model.TotalCount == 0)
+                        {
+                            <text>No roles found.</text>
+                        }
+                        else
+                        {
+                            <text>Showing @Model.StartItem&ndash;@Model.EndItem of @Model.TotalCount roles</text>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                            {
+                                <text> matching &ldquo;@Model.SearchQuery&rdquo;</text>
+                            }
+                        }
+                    </small>
+                    <div class="text-secondary-500">
+                        <span>Sort by: </span>
+                        <select class="bg-transparent border-none text-secondary-600 text-sm" style="min-height:44px">
+                            <option>Newest first</option>
+                            <option>Oldest first</option>
+                            <option>Name (A-Z)</option>
+                            <option>Name (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
     @if (Model.RoleResult != null && Model.TotalCount == 0)
     {
         <!-- Empty state -->
-        <div class="text-center mt-5">
+        <div class="empty-state">
             @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
             {
-                <h5 class="fw-semibold">No roles match your search</h5>
-                <p class="text-muted">Try a different search term or <a href="/roles">Clear search</a> to see all roles.</p>
+                <i class="bi bi-search"></i>
+                <h3>No roles match your search</h3>
+                <p>Try a different search term or <a href="/roles" class="text-primary-600 hover:text-primary-700 font-medium underline">Clear search</a> to see all roles.</p>
             }
             else
             {
-                <h5 class="fw-semibold">No roles registered</h5>
-                <p class="text-muted">The Backlot API returned no persisted roles. Roles appear here after scenarios that create them have been executed.</p>
+                <i class="bi bi-people"></i>
+                <h3>No roles registered</h3>
+                <p>The Backlot API returned no persisted roles. Roles appear here after scenarios that create them have been executed.</p>
             }
         </div>
     }
     else if (Model.RoleResult != null && Model.TotalCount > 0)
     {
         <!-- Role list table -->
-        <div class="position-relative">
-            <table class="table table-hover" id="roles-table">
-                <thead>
-                    <tr>
-                        <th data-col="Uid">UID</th>
-                        <th data-col="Name">Name</th>
-                        <th data-col="LastModified">Last Modified</th>
-                        <th data-col="Type">Type</th>
-                        <th data-col="Actions" class="text-end"><span class="visually-hidden">Actions</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in Model.RoleResult.Results)
-                    {
-                        var uid = IndexModel.GetField(row, "Uid");
-                        var primarySkill = IndexModel.GetPrimarySkill(row);
-                        var allFields = System.Text.Json.JsonSerializer.Serialize(
-                            row.EnumerateObject().Select(p => p.Name).ToArray());
-                        <tr data-primary-skill="@primarySkill" data-fields="@Html.Raw(allFields)">
-                            <td data-col="Uid">
-                                <button type="button"
-                                        class="btn btn-link p-0 me-1"
-                                        style="min-height:44px"
-                                        data-action="copy-uid"
-                                        data-uid="@uid"
-                                        aria-label="Copy UID to clipboard">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                                <span class="font-monospace small" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
-                            </td>
-                            <td data-col="Name">
-                                @{var name = IndexModel.GetField(row, "Name");}
-                                @if (string.IsNullOrWhiteSpace(name))
-                                {
-                                    <span class="text-muted">&mdash;</span>
-                                }
-                                else
-                                {
-                                    @name
-                                }
-                            </td>
-                            <td data-col="LastModified">
-                                @{var lastMod = IndexModel.GetField(row, "__LastModifiedDate");}
-                                @if (string.IsNullOrWhiteSpace(lastMod))
-                                {
-                                    <span class="text-muted">&mdash;</span>
-                                }
-                                else
-                                {
-                                    <span class="font-monospace small">@lastMod</span>
-                                }
-                            </td>
-                            <td data-col="Type">
-                                @if (string.IsNullOrWhiteSpace(primarySkill))
-                                {
-                                    <span class="text-muted">&mdash;</span>
-                                }
-                                else
-                                {
-                                    @primarySkill
-                                }
-                            </td>
-                            <td data-col="Actions" class="text-end">
-                                <a href="/roles/@uid"
-                                   class="btn btn-outline-secondary btn-sm"
-                                   style="min-height:44px"
-                                   data-turbo-action="advance">View</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="card animate-fade-in">
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="w-full text-sm" id="roles-table">
+                        <thead>
+                            <tr class="bg-secondary-50">
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">UID</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Name">Name</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="LastModified">Last Modified</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Type">Type</th>
+                                <th class="text-right p-3 border-b" data-col="Actions"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.RoleResult.Results)
+                            {
+                                var uid = IndexModel.GetField(row, "Uid");
+                                var primarySkill = IndexModel.GetPrimarySkill(row);
+                                var allFields = System.Text.Json.JsonSerializer.Serialize(
+                                    row.EnumerateObject().Select(p => p.Name).ToArray());
+                                <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0" data-primary-skill="@primarySkill" data-fields="@Html.Raw(allFields)">
+                                    <td class="p-3" data-col="Uid">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-ghost btn-icon"
+                                                    data-action="copy-uid"
+                                                    data-uid="@uid"
+                                                    aria-label="Copy UID to clipboard">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <code class="text-secondary-700 font-mono text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</code>
+                                        </div>
+                                    </td>
+                                    <td class="p-3" data-col="Name">
+                                        @{var name = IndexModel.GetField(row, "Name");}
+                                        @if (string.IsNullOrWhiteSpace(name))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-medium text-secondary-900">@name</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="LastModified">
+                                        @{var lastMod = IndexModel.GetField(row, "__LastModifiedDate");}
+                                        @if (string.IsNullOrWhiteSpace(lastMod))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-mono text-sm text-secondary-600">@lastMod</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="Type">
+                                        @if (string.IsNullOrWhiteSpace(primarySkill))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-primary">@primarySkill</span>
+                                        }
+                                    </td>
+                                    <td class="p-3 text-right" data-col="Actions">
+                                        <a href="/roles/@uid"
+                                           class="btn btn-secondary"
+                                           data-turbo-action="advance">
+                                            <i class="bi bi-eye"></i>
+                                            <span>View</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Pagination -->
         @if (Model.TotalPages > 1)
         {
-            <nav aria-label="Role list pages">
-                <ul class="pagination gap-1">
-                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage - 1)" aria-label="Previous">
-                            &laquo; Previous
-                        </a>
-                    </li>
-                    @for (int p = 1; p <= Model.TotalPages; p++)
-                    {
-                        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@p">@p</a>
-                        </li>
-                    }
-                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage + 1)" aria-label="Next">
-                            Next &raquo;
-                        </a>
-                    </li>
-                </ul>
+            <nav aria-label="Role list pages" class="mt-6">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="flex flex-wrap items-center justify-center gap-1">
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage <= 1 ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage <= 1 ? "#" : "/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage - 1)")" 
+                                   aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="ml-1">Previous</span>
+                                </a>
+                            </li>
+                            @for (int p = 1; p <= Model.TotalPages; p++)
+                            {
+                                <li>
+                                    <a class="px-3 py-1.5 rounded-lg border @(p == Model.CurrentPage ? "bg-primary-600 text-white border-primary-600" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                       href="/roles?q=@Model.SearchQuery&page=@p">@p</a>
+                                </li>
+                            }
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage >= Model.TotalPages ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage >= Model.TotalPages ? "#" : "/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage + 1)")" 
+                                   aria-label="Next">
+                                    <span class="mr-1">Next</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </nav>
         }
     }

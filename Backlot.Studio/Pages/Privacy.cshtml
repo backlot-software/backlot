@@ -1,8 +1,53 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
     ViewData["Title"] = "Privacy Policy";
+    ViewData["ActiveNav"] = "";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Privacy Policy</h1>
+        <p class="text-secondary-500">Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p class="text-secondary-600 mb-6">
+                Use this page to detail your site's privacy policy. This page should include information about what data you collect, 
+                how you use it, and how users can manage their personal information.
+            </p>
+
+            <h2 class="text-xl font-semibold text-secondary-900 mb-4">Information We Collect</h2>
+            <div class="bg-secondary-50 border border-secondary-200 rounded-lg p-4 mb-6">
+                <p class="text-secondary-600">Describe the types of information your application collects.</p>
+            </div>
+
+            <h2 class="text-xl font-semibold text-secondary-900 mb-4">How We Use Your Information</h2>
+            <div class="bg-secondary-50 border border-secondary-200 rounded-lg p-4 mb-6">
+                <p class="text-secondary-600">Explain how the collected information is used.</p>
+            </div>
+
+            <h2 class="text-xl font-semibold text-secondary-900 mb-4">Your Privacy Rights</h2>
+            <div class="bg-secondary-50 border border-secondary-200 rounded-lg p-4 mb-6">
+                <p class="text-secondary-600">Detail the rights users have regarding their personal information.</p>
+            </div>
+
+            <h2 class="text-xl font-semibold text-secondary-900 mb-4">Contact Us</h2>
+            <div class="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
+                <p class="text-secondary-600">Provide contact information for privacy-related questions.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-3 mt-6">
+        <a href="/" class="btn btn-primary">
+            <i class="bi bi-house"></i>
+            <span>Return to Home</span>
+        </a>
+        <button onclick="history.back()" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i>
+            <span>Go Back</span>
+        </button>
+    </div>
+</div>
