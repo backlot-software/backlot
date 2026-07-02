@@ -1,10 +1,10 @@
-name: Cleanup NuGet Packages
+name: Cleanup NuGet Packages by Prefix
 
 on:
   workflow_dispatch:
     inputs:
-      repository-name:
-        description: 'Repository name to clean up packages for (e.g. backlot)'
+      package-prefix:
+        description: 'Prefix for NuGet packages to clean up (e.g. "backlot-")'
         required: true
         type: string
 
@@ -16,20 +16,19 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete all NuGet packages for the specified repository
+      - name: Delete NuGet packages matching the prefix
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG: ${{ github.repository_owner }}
-          TARGET_REPO: ${{ inputs.repository-name }}
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
         run: |
           set -euo pipefail
 
           echo "🔍 Fetching all NuGet packages for org: $ORG"
-          echo "🎯 Filtering for repository: $TARGET_REPO"
+          echo "🎯 Filtering for packages with prefix: $PACKAGE_PREFIX"
           echo ""
 
           # Fetch all NuGet packages for the organization (paginated)
-          # The API returns a 'repository' object with 'full_name' and 'name' for each package
           ALL_PACKAGES=$(gh api \
             --paginate \
             -H "Accept: application/vnd.github+json" \
@@ -41,23 +40,16 @@ jobs:
             exit 0
           fi
 
-          # Filter packages whose repository.full_name matches ORG/TARGET_REPO
-          # or whose repository.name matches TARGET_REPO
-          # Some packages may not have a repository field — those are skipped
+          # Filter packages whose name starts with the specified prefix
           MATCHED=$(echo "$ALL_PACKAGES" | jq -r \
-            --arg org "$ORG" \
-            --arg repo "$TARGET_REPO" \
-            '.[] | select(
-              (.repository.full_name // "" | ascii_downcase) == (("\($org)/\($repo)") | ascii_downcase)
-              or
-              (.repository.name // "" | ascii_downcase) == ($repo | ascii_downcase)
-            ) | .name')
+            --arg prefix "$PACKAGE_PREFIX" \
+            '.[] | select(.name | startswith($prefix)) | .name')
 
           if [ -z "$MATCHED" ]; then
-            echo "ℹ️  No NuGet packages found for repository '$ORG/$TARGET_REPO'."
+            echo "ℹ️  No NuGet packages found with prefix '$PACKAGE_PREFIX'."
             echo ""
-            echo "Packages in org '$ORG' (for debugging):"
-            echo "$ALL_PACKAGES" | jq -r '.[] | "  - \(.)name (repo: \(.repository.full_name // "none"))"' 2>/dev/null || true
+            echo "All NuGet packages in org '$ORG' (for debugging):"
+            echo "$ALL_PACKAGES" | jq -r '.[] | "  - \(.name)"' 2>/dev/null || true
             exit 0
           fi
 
@@ -103,7 +95,7 @@ jobs:
           echo "  Cleanup Summary"
           echo "================================"
           echo "  Organization:  $ORG"
-          echo "  Repository:    $TARGET_REPO"
+          echo "  Prefix:        $PACKAGE_PREFIX"
           echo "  Deleted:       $DELETED"
           echo "  Failed:        $FAILED"
           echo "  Restore window: 30 days"
