@@ -76,7 +76,7 @@ jobs:
             dotnet pack "$project" \
               --configuration "${{ steps.config.outputs.configuration }}" \
               --output nupkgs \
-              /p:IncludeBuildOutput=false \
+              /p:IncludeBuildOutput=true \
               --no-build
           done
   
