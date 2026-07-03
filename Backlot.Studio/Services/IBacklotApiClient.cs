@@ -2,6 +2,8 @@ namespace Backlot.Studio.Services;
 
 public interface IBacklotApiClient
 {
+    Uri BaseUrl { get; }
+    
     Task<bool> IsAuthenticatedAsync();
     Task<object?> WhoAmIAsync();
 

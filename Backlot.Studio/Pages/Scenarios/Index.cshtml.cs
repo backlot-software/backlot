@@ -8,6 +8,7 @@ namespace Backlot.Studio.Pages.Scenarios;
 [Authorize]
 public class IndexModel : AuthenticatedPageModel
 {
+    public string ApiBaseUrl { get; set; }
     private readonly IBacklotApiClient _api;
     private readonly ILogger<IndexModel> _logger;
 
@@ -18,6 +19,7 @@ public class IndexModel : AuthenticatedPageModel
     {
         _api = api;
         _logger = logger;
+        ApiBaseUrl = api.BaseUrl.AbsoluteUri;
     }
 
     public async Task<IActionResult> OnGetAsync()

@@ -6,6 +6,8 @@ namespace Backlot.Studio.Services;
 
 public class BacklotApiClient : IBacklotApiClient
 {
+    public Uri BaseUrl { get; private set; }
+    
     private readonly HttpClient _httpClient;
 
     // One shared options instance used for BOTH serialization and deserialization so casing
@@ -21,6 +23,11 @@ public class BacklotApiClient : IBacklotApiClient
     public BacklotApiClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
+
+        if (httpClient.BaseAddress == null)
+            throw new ArgumentException($"BaseAddress is required for {nameof(BacklotApiClient)}");
+        
+        BaseUrl = httpClient.BaseAddress;
     }
 
     // Throw a rich BacklotApiException (status + body) on non-success instead of the bare

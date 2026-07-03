@@ -89,24 +89,42 @@ public class IndexModel : AuthenticatedPageModel
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
-            var colonIndex = SearchQuery.IndexOf(':');
-            if (colonIndex > 0)
+            // Regex pattern: field<operator>value
+            // Matches: (\w+)([:=<>])([^\s]+)
+            // - Group 1: field name (word characters: letters, digits, underscore)
+            // - Group 2: operator (: = < >)
+            // - Group 3: value (non-whitespace characters)
+            var pattern = @"(\w+)([:=<>])([^\s]+)";
+            var matches = System.Text.RegularExpressions.Regex.Matches(SearchQuery, pattern);
+
+            if (matches.Count > 0)
             {
-                // field:value syntax
-                var field = SearchQuery[..colonIndex].Trim();
-                var value = SearchQuery[(colonIndex + 1)..].Trim();
-                criteria =
-                [
-                    new FindCriteria { Field = field, Condition = "Contains", Value = value }
-                ];
+                criteria = new FindCriteria[matches.Count];
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    var match = matches[i];
+                    var field = match.Groups[1].Value;
+                    var op = match.Groups[2].Value;
+                    var value = match.Groups[3].Value;
+
+                    var condition = op switch
+                    {
+                        ":" => "ct",   // contains
+                        "=" => "eq",   // equals
+                        "<" => "lt",   // less than
+                        ">" => "gt",   // greater than
+                        _ => "ct"      // fallback
+                    };
+
+                    criteria[i] = new FindCriteria { Field = field, Condition = condition, Value = value };
+                }
             }
             else
             {
-                // Plain text — search Name and Uid
+                // Fallback for plain text: search Uid with contains
                 criteria =
                 [
-                    new FindCriteria { Field = "Name", Condition = "Contains", Value = SearchQuery },
-                    new FindCriteria { Field = "Uid", Condition = "Contains", Value = SearchQuery }
+                    new FindCriteria { Field = "Uid", Condition = "ct", Value = SearchQuery }
                 ];
             }
         }

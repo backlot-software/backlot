@@ -10,13 +10,7 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles</h1>
-        <p class="text-secondary-500">Manage and edit role data from your API</p>
-    </div>
-    <div class="flex gap-3 mt-4 md:mt-0">
-        <a href="/scenarios" class="btn btn-outline">
-            <i class="bi bi-arrow-left"></i>
-            <span>Back to Scenarios</span>
-        </a>
+        <p class="text-secondary-500">Manage and edit role data</p>
     </div>
 </div>
 
@@ -41,7 +35,7 @@
                            name="q"
                            value="@Model.SearchQuery"
                            class="form-input pe-10"
-                           placeholder="Search by field…"
+                           placeholder="Search, f.e. Name=John Uid:00 shows all records where name equals John and Uid contains 00"
                            aria-label="Search roles" />
                     <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
                 </div>
@@ -78,7 +72,7 @@
                             }
                         }
                     </small>
-                    <div class="text-secondary-500">
+                    @*<div class="text-secondary-500">
                         <span>Sort by: </span>
                         <select class="bg-transparent border-none text-secondary-600 text-sm" style="min-height:44px">
                             <option>Newest first</option>
@@ -86,7 +80,7 @@
                             <option>Name (A-Z)</option>
                             <option>Name (Z-A)</option>
                         </select>
-                    </div>
+                    </div>*@
                 </div>
             }
         </div>
@@ -158,7 +152,7 @@
                                         }
                                     </td>
                                     <td class="p-3" data-col="LastModified">
-                                        @{var lastMod = IndexModel.GetField(row, "__LastModifiedDate");}
+                                        @{var lastMod = IndexModel.GetField(row, "LastModified");}
                                         @if (string.IsNullOrWhiteSpace(lastMod))
                                         {
                                             <span class="text-secondary-400">&mdash;</span>
@@ -231,7 +225,3 @@
         }
     }
 </turbo-frame>
-
-@section Scripts {
-    <script src="/js/column-config.js"></script>
-}

@@ -62,7 +62,7 @@ public class DetailModel : AuthenticatedPageModel
     public string PageTitle => RoleData.HasValue ? GetPageTitle(RoleData.Value) : "Role";
     public (bool CanCreate, bool CanRead, bool CanWrite) Permissions => RoleData.HasValue ? GetPermissions(RoleData.Value) : (false, false, false);
     public IEnumerable<string> Skills => RoleData.HasValue ? GetSkills(RoleData.Value) : [];
-    public string? LastModifiedDate => RoleData.HasValue ? GetStringField(RoleData.Value, "__LastModifiedDate") : null;
+    public string? LastModifiedDate => RoleData.HasValue ? GetStringField(RoleData.Value, "LastModified") : null;
     public IEnumerable<(string Key, string Value)> Fields => RoleData.HasValue ? GetNonSystemFields(RoleData.Value) : [];
 
     // Helper methods

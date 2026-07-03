@@ -1,0 +1,436 @@
+// wwwroot/js/studio.js
+// Modern Administrator Interface JavaScript
+
+// === Utility Functions ===
+
+// Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle function for scroll events
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Show toast notification
+function showToast(message, type = 'info', duration = 5000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'polite');
+    
+    const icons = {
+        success: 'bi-check-circle-fill',
+        warning: 'bi-exclamation-circle-fill',
+        danger: 'bi-x-circle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    toast.innerHTML = `
+        <i class="bi ${icons[type]}"></i>
+        <span>${message}</span>
+        <button class="toast-close" aria-label="Close notification">&times;</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto-remove after duration
+    const timeout = setTimeout(() => {
+        toast.classList.add('toast-hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+    
+    // Close button handler
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.classList.add('toast-hiding');
+        setTimeout(() => toast.remove(), 300);
+    });
+    
+    return toast;
+}
+
+// === Phase 1: Sidebar toggle ===
+// Use turbo:load, not DOMContentLoaded, so the handler runs after every Turbo Drive navigation.
+// The sidebar is data-turbo-permanent, so its DOM node (including .collapsed class) is preserved
+// across navigations — turbo:load only needs to restore the aria-label and re-wire the click handler.
+
+document.addEventListener('turbo:load', function () {
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('main');
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    
+    if (!toggle || !sidebar) return;
+
+    // Restore aria-label based on current collapse state
+    const collapsed = sidebar.classList.contains('collapsed');
+    toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+
+    // Update icon based on state
+    const icon = toggle.querySelector('i');
+    if (icon) {
+        if (collapsed) {
+            icon.classList.remove('bi-chevron-double-left');
+            icon.classList.add('bi-chevron-double-right');
+            if (toggle.querySelector('span')) {
+                toggle.querySelector('span').textContent = 'Expand';
+            }
+        } else {
+            icon.classList.remove('bi-chevron-double-right');
+            icon.classList.add('bi-chevron-double-left');
+            if (toggle.querySelector('span')) {
+                toggle.querySelector('span').textContent = 'Collapse';
+            }
+        }
+    }
+
+    // Wire click handler for sidebar toggle
+    toggle.onclick = function () {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        this.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        
+        // Update icon
+        const icon = this.querySelector('i');
+        if (icon) {
+            if (isCollapsed) {
+                icon.classList.remove('bi-chevron-double-left');
+                icon.classList.add('bi-chevron-double-right');
+                if (this.querySelector('span')) {
+                    this.querySelector('span').textContent = 'Expand';
+                }
+            } else {
+                icon.classList.remove('bi-chevron-double-right');
+                icon.classList.add('bi-chevron-double-left');
+                if (this.querySelector('span')) {
+                    this.querySelector('span').textContent = 'Collapse';
+                }
+            }
+        }
+        
+        // Update main content margin if needed
+        if (main) {
+            main.style.marginLeft = isCollapsed ? '64px' : '256px';
+        }
+    };
+
+    // Mobile menu toggle
+    if (mobileToggle) {
+        mobileToggle.onclick = function() {
+            sidebar.classList.toggle('open');
+            this.setAttribute('aria-label', sidebar.classList.contains('open') ? 'Close menu' : 'Open menu');
+        };
+    }
+    
+    // Close mobile menu and user dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (mobileToggle && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                sidebar.classList.remove('open');
+                mobileToggle.setAttribute('aria-label', 'Open menu');
+            }
+        }
+        
+        // Close user menu dropdown when clicking outside
+        const userMenu = document.getElementById('user-menu');
+        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+        if (userMenu && userMenuDropdown && !userMenu.contains(e.target)) {
+            userMenuDropdown.classList.add('hidden');
+        }
+    });
+});
+
+// === Phase 2: Scalar API Reference side panel ===
+// Scalar initializes via auto-init: the CDN script discovers <script id="api-reference" data-url="...">
+// and renders into #scalar-mount. The panel is data-turbo-permanent, so content persists across
+// Turbo Drive navigations. Studio only manages open/close state.
+
+// Reset open state before Turbo Drive navigates away (does NOT destroy the Scalar instance)
+document.addEventListener('turbo:before-visit', function () {
+    const panel = document.getElementById('scalar-panel');
+    if (panel) panel.classList.remove('is-open');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (backdrop) backdrop.classList.add('hidden');
+});
+
+// Event delegation for "Open API Docs" buttons — reads endpoint from data-* attribute
+// instead of inline onclick, preventing XSS via HTML-entity-decoded event handler context.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-action="open-scalar"]');
+    if (!btn) return;
+    openScalarPanel();
+});
+
+function openScalarPanel() {
+    const panel = document.getElementById('scalar-panel');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (!panel) return;
+    panel.classList.add('is-open');
+    if (backdrop) backdrop.classList.remove('hidden');
+    panel.focus();
+    
+    // Add document body overflow hidden to prevent scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+function closeScalarPanel() {
+    const panel = document.getElementById('scalar-panel');
+    const backdrop = document.getElementById('scalar-backdrop');
+    if (panel) panel.classList.remove('is-open');
+    if (backdrop) backdrop.classList.add('hidden');
+    
+    // Restore document body overflow
+    document.body.style.overflow = '';
+}
+
+// Escape key closes the panel
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeScalarPanel();
+});
+
+// === Phase 3: Copy UID to clipboard ===
+// Event delegation for copy-uid buttons on the role list page.
+// Wired as a top-level document listener (not inside turbo:load) so it persists
+// across Turbo Frame updates that replace the table without a full page navigation.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-action="copy-uid"]');
+    if (!btn) return;
+
+    const uid = btn.dataset.uid;
+    if (!uid) return;
+
+    navigator.clipboard.writeText(uid).then(function () {
+        // Success: swap icon and show toast
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.remove('bi-clipboard');
+            icon.classList.add('bi-clipboard-check');
+        }
+        
+        // Show toast notification
+        showToast('UID copied to clipboard!', 'success', 2000);
+        
+        setTimeout(function () {
+            if (icon) {
+                icon.classList.remove('bi-clipboard-check');
+                icon.classList.add('bi-clipboard');
+            }
+        }, 1500);
+    }).catch(function () {
+        // Show error toast
+        showToast('Failed to copy UID', 'danger', 3000);
+    });
+});
+
+// === Phase 4: Scroll to top button ===
+const scrollToTopBtn = document.getElementById('scroll-to-top-btn') || (() => {
+    const btn = document.createElement('button');
+    btn.id = 'scroll-to-top-btn';
+    btn.className = 'scroll-to-top';
+    btn.innerHTML = '<i class="bi bi-arrow-up"></i>';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Scroll to top');
+    document.body.appendChild(btn);
+    return btn;
+})();
+
+const handleScroll = throttle(function() {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    if (scrollY > 300) {
+        scrollToTopBtn.classList.add('visible');
+    } else {
+        scrollToTopBtn.classList.remove('visible');
+    }
+}, 100);
+
+window.addEventListener('scroll', handleScroll, { passive: true });
+
+scrollToTopBtn.addEventListener('click', function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+
+// === Phase 5: Loading overlay ===
+function showLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+    }
+}
+
+// Show loading on Turbo visit
+document.addEventListener('turbo:visit', showLoading);
+
+// Hide loading on Turbo load
+document.addEventListener('turbo:load', hideLoading);
+
+// Also hide loading if visit is canceled or fails
+document.addEventListener('turbo:before-cache', hideLoading);
+
+// === Phase 6: Smooth scrolling ===
+document.addEventListener('turbo:load', function() {
+    // Add smooth scrolling to all anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const target = document.querySelector(targetId);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+// === Phase 7: Mobile sidebar handling ===
+function initMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('main');
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    
+    if (!sidebar || !mobileToggle) return;
+    
+    // On mobile, sidebar starts collapsed (hidden)
+    if (window.innerWidth < 1024) {
+        sidebar.classList.add('collapsed');
+        if (main) main.style.marginLeft = '0';
+    }
+    
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (window.innerWidth >= 1024) {
+                // Desktop: ensure sidebar is visible
+                sidebar.classList.remove('collapsed', 'open');
+                if (main) main.style.marginLeft = sidebar.offsetWidth + 'px';
+            } else {
+                // Mobile: collapse sidebar
+                sidebar.classList.add('collapsed');
+                sidebar.classList.remove('open');
+                if (main) main.style.marginLeft = '0';
+            }
+        }, 150);
+    });
+}
+
+// Initialize on first load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileSidebar);
+} else {
+    initMobileSidebar();
+}
+
+// === Phase 8: Form enhancements ===
+
+// Auto-focus first form field with error
+document.addEventListener('turbo:load', function() {
+    const firstInvalidField = document.querySelector('.form-input:invalid, input.invalid, textarea.invalid');
+    if (firstInvalidField) {
+        firstInvalidField.focus();
+    }
+});
+
+// Add loading state to form submissions
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (form.tagName !== 'FORM') return;
+    
+    const submitBtn = form.querySelector('[type="submit"]');
+    if (submitBtn) {
+        // Store original content
+        const originalContent = submitBtn.innerHTML;
+        const originalDisabled = submitBtn.disabled;
+        
+        // Disable and show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white border-current mr-2"></span>
+            Processing...
+        `;
+        
+        // Restore on error or if Turbo handles it
+        // Note: This might not work perfectly with Turbo, needs refinement
+    }
+});
+
+// === Phase 9: Animation classes ===
+// Add intersection observer for fade-in animations
+document.addEventListener('turbo:load', function() {
+    const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-slide-up');
+    
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -20px 0px'
+        });
+        
+        animatedElements.forEach(el => observer.observe(el));
+    } else {
+        // Fallback: show all animations
+        animatedElements.forEach(el => el.classList.add('animate-visible'));
+    }
+});
+
+// === Phase 10: Keyboard navigation ===
+
+// Add keyboard support for navigation
+document.addEventListener('keydown', function(e) {
+    // Close dropdowns with Escape
+    if (e.key === 'Escape') {
+        const openDropdowns = document.querySelectorAll('[data-dropdown-open="true"]');
+        openDropdowns.forEach(dropdown => {
+            dropdown.setAttribute('data-dropdown-open', 'false');
+        });
+    }
+});
+
+// Export functions for global access
+window.showToast = showToast;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+window.openScalarPanel = openScalarPanel;
+window.closeScalarPanel = closeScalarPanel;
