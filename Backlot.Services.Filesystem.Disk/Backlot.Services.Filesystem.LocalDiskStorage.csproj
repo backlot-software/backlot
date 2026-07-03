@@ -9,7 +9,7 @@
     <Title>Backlot.Services.Filesystem.LocalDiskStorage</Title>
     <Authors>Jeroen Wijdeven Holding B.V.</Authors>
     <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
-    <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+    <PackageProjectUrl>http://www.backlot.software</PackageProjectUrl>
     <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
     <PackageIcon>bl.png</PackageIcon>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

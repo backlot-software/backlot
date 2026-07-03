@@ -8,6 +8,7 @@ using Backlot.Core.Services;
 using Backlot.Services.LiteDB.Dto;
 using LiteDB;
 using Newtonsoft.Json;
+using LDB = LiteDB;
 
 namespace Backlot.Services.LiteDB;
 
@@ -43,25 +44,25 @@ public class LiteRelationRepository : IRelationRepository
 
     public void Remove(Relation relation)
     {
-        Relations.DeleteMany(e => e.Serialized["Item1.Uid"] == relation.Item1.Uid && e.Serialized["Item2.Uid"] == relation.Item2.Uid);
+        Relations.DeleteMany(e => e.Serialized["Item1"]["Uid"] == relation.Item1.Uid && e.Serialized["Item2"]["Uid"] == relation.Item2.Uid);
     }
 
     public void RemoveAll(RoleReference reference)
     {
-        Relations.DeleteMany(e => e.Serialized["Item1.Uid"] == reference.Uid || e.Serialized["Item2.Uid"] == reference.Uid);
+        Relations.DeleteMany(e => e.Serialized["Item1"]["Uid"] == reference.Uid || e.Serialized["Item2"]["Uid"] == reference.Uid);
     }
 
     public IEnumerable<RoleReference> GetAll(RoleReference brother)
     {
         var relations = Relations
-            .Find(r => r.Serialized["Item1.Uid"]== brother.Uid || r.Serialized["Item2.Uid"] == brother.Uid);
+            .Find(r => r.Serialized["Item1"]["Uid"]== brother.Uid || r.Serialized["Item2"]["Uid"] == brother.Uid);
         
         return relations.Select(r => ToRelation(r.Serialized, Strategy.DeSerializeFromTrustedSource).GetRelatedItem(brother));
     }
     
-    private static Relation ToRelation(string json, Newtonsoft.Json.JsonSerializer strategy)
+    private static Relation ToRelation(BsonDocument bson, Newtonsoft.Json.JsonSerializer strategy)
     {
-        using var reader = new StringReader(json);
+        using var reader = new StringReader(LDB.JsonSerializer.Serialize(bson));
         using var jsonReader = new JsonTextReader(reader);
         return strategy.Deserialize<Relation>(jsonReader);
     }

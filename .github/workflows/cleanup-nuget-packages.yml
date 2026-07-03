@@ -1,0 +1,102 @@
+name: Cleanup NuGet Packages by Prefix
+
+on:
+  workflow_dispatch:
+    inputs:
+      package-prefix:
+        description: 'Prefix for NuGet packages to clean up (e.g. "backlot-")'
+        required: true
+        type: string
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete NuGet packages matching the prefix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG: ${{ github.repository_owner }}
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
+        run: |
+          set -euo pipefail
+
+          echo "🔍 Fetching all NuGet packages for org: $ORG"
+          echo "🎯 Filtering for packages with prefix: $PACKAGE_PREFIX"
+          echo ""
+
+          # Fetch all NuGet packages for the organization (paginated)
+          ALL_PACKAGES=$(gh api \
+            --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/$ORG/packages?package_type=nuget" \
+            2>/dev/null || echo "[]")
+
+          if [ "$ALL_PACKAGES" = "[]" ] || [ -z "$ALL_PACKAGES" ]; then
+            echo "ℹ️  No NuGet packages found for org '$ORG'."
+            exit 0
+          fi
+
+          # Filter packages whose name starts with the specified prefix
+          MATCHED=$(echo "$ALL_PACKAGES" | jq -r \
+            --arg prefix "$PACKAGE_PREFIX" \
+            '.[] | select(.name | startswith($prefix)) | .name')
+
+          if [ -z "$MATCHED" ]; then
+            echo "ℹ️  No NuGet packages found with prefix '$PACKAGE_PREFIX'."
+            echo ""
+            echo "All NuGet packages in org '$ORG' (for debugging):"
+            echo "$ALL_PACKAGES" | jq -r '.[] | "  - \(.name)"' 2>/dev/null || true
+            exit 0
+          fi
+
+          echo "📦 Found packages to delete:"
+          echo "$MATCHED" | sed 's/^/   - /'
+          echo ""
+
+          # Delete each matched package (entire package — all versions)
+          DELETED=0
+          FAILED=0
+
+          while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+
+            echo "🗑️  Deleting package: $pkg"
+
+            response=$(gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/$ORG/packages/nuget/$pkg" \
+              -i 2>&1) || true
+
+            status=$(echo "$response" | head -n 1 | awk '{print $2}')
+
+            case "$status" in
+              204)
+                echo "   ✅ Deleted successfully"
+                DELETED=$((DELETED + 1))
+                ;;
+              404)
+                echo "   ⚠️  Package not found (may already be deleted)"
+                ;;
+              *)
+                echo "   ❌ Failed (HTTP $status)"
+                echo "$response" | head -n 5
+                FAILED=$((FAILED + 1))
+                ;;
+            esac
+          done <<< "$MATCHED"
+
+          echo ""
+          echo "================================"
+          echo "  Cleanup Summary"
+          echo "================================"
+          echo "  Organization:  $ORG"
+          echo "  Prefix:        $PACKAGE_PREFIX"
+          echo "  Deleted:       $DELETED"
+          echo "  Failed:        $FAILED"
+          echo "  Restore window: 30 days"
+          echo "================================"
