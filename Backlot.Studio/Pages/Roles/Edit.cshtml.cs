@@ -53,7 +53,7 @@ public class EditModel : TurboEditPageModel
             if (detail.HasValue && schema != null)
             {
                 Schema = MatchSchema(detail.Value, schema);
-                PageTitle = $"Edit {DetailModel.GetPageTitle(detail.Value)}";
+                PageTitle = $"Edit {Uid}";
                 CanWrite = DetailModel.GetPermissions(detail.Value).CanWrite;
 
                 if (Schema != null)
@@ -100,7 +100,7 @@ public class EditModel : TurboEditPageModel
             }
 
             Schema = MatchSchema(detail.Value, schema);
-            PageTitle = $"Edit {DetailModel.GetPageTitle(detail.Value)}";
+            PageTitle = $"Edit {Uid}";
             CanWrite = DetailModel.GetPermissions(detail.Value).CanWrite;
 
             if (Schema == null)

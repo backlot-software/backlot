@@ -20,7 +20,7 @@ public class DetailModel : AuthenticatedPageModel
     [BindProperty(SupportsGet = true)]
     public bool Saved { get; set; }
 
-    public JsonElement? RoleData { get; private set; }
+    public JsonElement RoleData { get; private set; }
     public string? ErrorMessage { get; private set; }
     public bool CanWrite { get; private set; }
 
@@ -41,13 +41,12 @@ public class DetailModel : AuthenticatedPageModel
         {
             var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
             if (redirect != null) return redirect;
-            RoleData = env is null ? null : env.Body.Unwrap("Role");
+            var rd = env?.Body.Unwrap("Role");
 
-            if (RoleData.HasValue)
-            {
-                var perms = GetPermissions(RoleData.Value);
-                CanWrite = perms.CanWrite;
-            }
+            RoleData = rd ?? new JsonElement();
+
+            var perms = GetPermissions(RoleData);
+            CanWrite = perms.CanWrite;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -59,19 +58,19 @@ public class DetailModel : AuthenticatedPageModel
     }
 
     // Computed properties for the view
-    public string PageTitle => RoleData.HasValue ? GetPageTitle(RoleData.Value) : "Role";
-    public (bool CanCreate, bool CanRead, bool CanWrite) Permissions => RoleData.HasValue ? GetPermissions(RoleData.Value) : (false, false, false);
-    public IEnumerable<string> Skills => RoleData.HasValue ? GetSkills(RoleData.Value) : [];
-    public string? LastModifiedDate => RoleData.HasValue ? GetStringField(RoleData.Value, "LastModified") : null;
-    public IEnumerable<(string Key, string Value)> Fields => RoleData.HasValue ? GetNonSystemFields(RoleData.Value) : [];
+    public string PageTitle => GetStringField(RoleData, "Uid");
+    public (bool CanCreate, bool CanRead, bool CanWrite) Permissions => GetPermissions(RoleData);
+    public IEnumerable<string> Skills => GetSkills(RoleData);
+    public string? LastModifiedDate => GetStringField(RoleData, "LastModified");
+    public IEnumerable<(string Key, string Value)> Fields => GetNonSystemFields(RoleData);
 
     // Helper methods
 
-    public static string? GetStringField(JsonElement data, string key)
+    public static string GetStringField(JsonElement data, string key)
     {
         if (data.TryGetProperty(key, out var v))
             return v.ValueKind == JsonValueKind.String ? v.GetString() : v.ToString();
-        return null;
+        return string.Empty;
     }
 
     public static IEnumerable<string> GetSkills(JsonElement data)
@@ -104,23 +103,31 @@ public class DetailModel : AuthenticatedPageModel
     public static IEnumerable<(string Key, string Value)> GetNonSystemFields(JsonElement data)
     {
         if (data.ValueKind != JsonValueKind.Object) yield break;
-        foreach (var prop in data.EnumerateObject())
+        var props = data.EnumerateObject()
+            .Where(p => !p.Name.StartsWith("__", StringComparison.Ordinal))
+            .ToList();
+        var ordered = props
+            .Where(p => p.Name != "Uid" && p.Name != "LastModified")
+            .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
+        
+        var uid = props.FirstOrDefault(p => p.Name == "Uid");
+        var lastModified = props.FirstOrDefault(p => p.Name == "LastModified");
+        
+        var result = new List<JsonProperty>();
+        
+        if (uid.Value.ValueKind != JsonValueKind.Undefined) 
+            result.Add(uid);
+        
+        result.AddRange(ordered);
+        
+        if (lastModified.Value.ValueKind != JsonValueKind.Undefined) result.Add(lastModified);
+        
+        foreach (var prop in result)
         {
-            if (prop.Name.StartsWith("__", StringComparison.Ordinal)) continue;
             var val = prop.Value.ValueKind == JsonValueKind.String
                 ? prop.Value.GetString() ?? ""
                 : prop.Value.ToString();
             yield return (prop.Name, val);
         }
-    }
-
-    // The role's own/most-derived skill is the LAST element of __Skills (Type.GetInterfaces()
-    // appends the role's own concrete name last; inherited base markers like Persist/Permission
-    // come first). Use LastOrDefault() so the page title / "Edit {title}" header shows the
-    // concrete role name (e.g. "Message"), not a base marker (e.g. "Persist"). This shares the
-    // same most-derived-skill selection as MatchSchema in Edit.cshtml.cs.
-    public static string GetPageTitle(JsonElement data)
-    {
-        return GetSkills(data).LastOrDefault() ?? "Role";
     }
 }
