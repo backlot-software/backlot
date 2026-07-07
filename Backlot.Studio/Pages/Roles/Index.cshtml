@@ -1,6 +1,7 @@
 @page "/roles"
 @model Backlot.Studio.Pages.Roles.IndexModel
 @using System.Text.Json
+@using Backlot.Studio.Models
 @{
     ViewData["Title"] = "Roles";
     ViewData["ActiveNav"] = "roles";
@@ -10,7 +11,6 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles</h1>
-        <p class="text-secondary-500">Manage and edit role data</p>
     </div>
 </div>
 
@@ -110,7 +110,7 @@
         <div class="card animate-fade-in">
             <div class="card-body p-0">
                 <div class="table-container">
-                    <table class="w-full text-sm" id="roles-table">
+                    <table class="w-full text-sm font-sans" id="roles-table">
                         <thead>
                             <tr class="bg-secondary-50">
                                 <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">UID</th>
@@ -124,20 +124,27 @@
                             @foreach (var row in Model.RoleResult.Results)
                             {
                                 var uid = IndexModel.GetField(row, "Uid");
-                                var primarySkill = IndexModel.GetPrimarySkill(row);
-                                var allFields = System.Text.Json.JsonSerializer.Serialize(
-                                    row.EnumerateObject().Select(p => p.Name).ToArray());
-                                <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0" data-primary-skill="@primarySkill" data-fields="@Html.Raw(allFields)">
+                                var skills = new List<string>();
+                                if (row.TryGetProperty("__Skills", out var skillsEl) && skillsEl.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var s in skillsEl.EnumerateArray())
+                                    {
+                                        var sv = s.ValueKind == JsonValueKind.String ? s.GetString() : s.ToString();
+                                        if (!string.IsNullOrWhiteSpace(sv) && Meta.DefaultRoles.All(dr => dr != sv)) skills.Add(sv);
+                                    }
+                                }
+
+                                <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0">
                                     <td class="p-3" data-col="Uid">
                                         <div class="flex items-center gap-2">
                                             <button type="button"
                                                     class="btn btn-ghost btn-icon"
-                                                    data-action="copy-uid"
-                                                    data-uid="@uid"
-                                                    aria-label="Copy UID to clipboard">
+                                                    data-action="copy-detail-url"
+                                                    data-detail-url="/roles/@uid"
+                                                    aria-label="Copy link to detail page">
                                                 <i class="bi bi-clipboard"></i>
                                             </button>
-                                            <code class="text-secondary-700 font-mono text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</code>
+                                            <span class="text-secondary-700 text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
                                         </div>
                                     </td>
                                     <td class="p-3" data-col="Name">
@@ -159,17 +166,22 @@
                                         }
                                         else
                                         {
-                                            <span class="font-mono text-sm text-secondary-600">@lastMod</span>
+                                            <span class="text-sm text-secondary-600">@lastMod</span>
                                         }
                                     </td>
                                     <td class="p-3" data-col="Type">
-                                        @if (string.IsNullOrWhiteSpace(primarySkill))
+                                        @if (skills.Count == 0)
                                         {
                                             <span class="text-secondary-400">&mdash;</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-primary">@primarySkill</span>
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach (var skill in skills)
+                                                {
+                                                    <span class="badge badge-primary">@skill</span>
+                                                }
+                                            </div>
                                         }
                                     </td>
                                     <td class="p-3 text-right" data-col="Actions">
@@ -225,3 +237,32 @@
         }
     }
 </turbo-frame>
+
+@* Copy the absolute detail-page URL to the clipboard. Bound once at document level so it
+   survives Turbo Frame updates that replace the table without a full navigation. *@
+<script>
+    if (!window.__copyDetailUrlBound) {
+        window.__copyDetailUrlBound = true;
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action="copy-detail-url"]');
+            if (!btn) return;
+
+            const path = btn.dataset.detailUrl;
+            if (!path) return;
+
+            const url = new URL(path, window.location.origin).href;
+            const icon = btn.querySelector('i');
+
+            navigator.clipboard.writeText(url).then(function () {
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-clipboard-check');
+                    setTimeout(function () {
+                        icon.classList.remove('bi-clipboard-check');
+                        icon.classList.add('bi-clipboard');
+                    }, 1500);
+                }
+            });
+        });
+    }
+</script>

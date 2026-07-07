@@ -70,4 +70,8 @@
     <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\LICENSE.txt" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.9" />
+  </ItemGroup>
+
 </Project>

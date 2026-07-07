@@ -70,19 +70,6 @@ public class IndexModel : AuthenticatedPageModel
         return "";
     }
 
-    /// <summary>Returns the primary skill type (first entry in __Skills array) for a role row.</summary>
-    public static string GetPrimarySkill(JsonElement row)
-    {
-        if (row.TryGetProperty("__Skills", out var skills) && skills.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var element in skills.EnumerateArray())
-            {
-                return element.GetString() ?? "";
-            }
-        }
-        return "";
-    }
-
     private FindRequest BuildFindRequest()
     {
         FindCriteria[]? criteria = null;

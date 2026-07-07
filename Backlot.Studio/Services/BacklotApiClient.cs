@@ -117,4 +117,13 @@ public class BacklotApiClient : IBacklotApiClient
         var envelope = await PlayAsync<object>("director", "whoami");
         return envelope?.Body;
     }
+    
+    public async Task<ApiEnvelope<StatusBody>?> StatusAsync()
+    {
+        
+        var path = $"api/status";
+        var response = await _httpClient.GetAsync(path);
+        await EnsureSuccessAsync(response, CancellationToken.None);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<StatusBody>>(JsonOptions, CancellationToken.None);
+    }
 }

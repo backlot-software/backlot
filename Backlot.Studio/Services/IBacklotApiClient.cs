@@ -1,3 +1,5 @@
+using Backlot.Studio.Models.Api;
+
 namespace Backlot.Studio.Services;
 
 public interface IBacklotApiClient
@@ -7,6 +9,8 @@ public interface IBacklotApiClient
     Task<bool> IsAuthenticatedAsync();
     Task<object?> WhoAmIAsync();
 
+    Task<ApiEnvelope<StatusBody>?> StatusAsync();
+    
     // PlayAsync — generic primitive mirroring the server convention api/role/{rolename}/{scenario}.
     // GET overload: uid is appended as the sole query param only when non-empty (director scenarios
     // pass none). POST overload: the body is serialized as JSON. PlayAllowingClientErrorAsync is the
