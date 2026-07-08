@@ -2,16 +2,12 @@
 @model Backlot.Studio.Pages.Roles.DetailModel
 @{
     ViewData["Title"] = Model.PageTitle;
-    ViewData["ActiveNav"] = "roles";
     var perms = Model.Permissions;
 }
 
 <!-- Breadcrumb and back navigation -->
 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
-        <a href="/roles" class="text-primary-600 hover:text-primary-700 text-sm mb-2 flex items-center gap-1">
-            <i class="bi bi-arrow-left"></i>Back to Roles
-        </a>
         <h1 class="text-2xl font-bold text-secondary-900">@Model.PageTitle</h1>
     </div>
     <div class="flex gap-3 mt-4 md:mt-0">
@@ -47,7 +43,6 @@
     <div class="alert alert-danger mb-6" role="alert">
         <i class="bi bi-exclamation-circle-fill"></i>
         <span>@Model.ErrorMessage</span>
-        <a href="/roles" class="font-medium ml-2">Back to Roles</a>
     </div>
 }
 else

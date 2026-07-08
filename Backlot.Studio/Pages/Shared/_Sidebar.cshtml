@@ -1,6 +1,4 @@
-@{
-    var activeNav = ViewData["ActiveNav"] as string ?? "";
-}
+
 <nav class="flex flex-col h-full bg-white border-r border-secondary-200">
     <!-- Logo/Brand section -->
     <div class="p-4 border-b border-secondary-200">
@@ -23,25 +21,25 @@
             <ul class="space-y-1">
                 <li>
                     <a href="/"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label @(activeNav == "" || activeNav == "dashboard" ? "bg-primary-50 text-primary-700 font-medium" : "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900")"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900"
                        data-turbo-action="advance">
-                        <i class="bi bi-speedometer2 text-lg @(activeNav == "" || activeNav == "dashboard" ? "text-primary-600" : "text-secondary-400")"></i>
+                        <i class="bi bi-speedometer2 text-lg text-secondary-400"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
                     <a href="/scenarios"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label @(activeNav == "scenarios" ? "bg-primary-50 text-primary-700 font-medium" : "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900")"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900"
                        data-turbo-action="advance">
-                        <i class="bi bi-play-circle text-lg @(activeNav == "scenarios" ? "text-primary-600" : "text-secondary-400")"></i>
+                        <i class="bi bi-play-circle text-lg text-secondary-400"></i>
                         <span>Scenarios</span>
                     </a>
                 </li>
                 <li>
                     <a href="/roles"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label @(activeNav == "roles" ? "bg-primary-50 text-primary-700 font-medium" : "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900")"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg sidebar-label text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900"
                        data-turbo-action="advance">
-                        <i class="bi bi-people text-lg @(activeNav == "roles" ? "text-primary-600" : "text-secondary-400")"></i>
+                        <i class="bi bi-people text-lg text-secondary-400"></i>
                         <span>Roles</span>
                     </a>
                 </li>

@@ -28,7 +28,6 @@ public class IndexModel : AuthenticatedPageModel
         Status = status?.Body;
         
         SetUserContext();
-        ViewData["ActiveNav"] = "";
 
         return Page();
     }

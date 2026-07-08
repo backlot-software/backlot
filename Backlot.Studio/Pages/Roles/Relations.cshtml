@@ -22,7 +22,7 @@ else if (!Model.Relations.Any())
 else
 {
     <div class="table-container">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm font-sans">
             <thead>
                 <tr class="bg-secondary-50">
                     <th class="text-left p-3 border-b font-semibold text-secondary-600">UID</th>
@@ -36,12 +36,14 @@ else
                     <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0">
                         <td class="p-3">
                             <div class="flex items-center gap-2">
-                                <button data-action="copy-uid" data-uid="@rel.Uid" 
-                                        aria-label="Copy UID to clipboard" 
-                                        class="btn btn-ghost btn-icon text-secondary-500 hover:text-primary-600">
+                                <button type="button"
+                                        class="btn btn-ghost btn-icon"
+                                        data-action="copy-uid"
+                                        data-uid="@rel.Uid"
+                                        aria-label="Copy UID to clipboard">
                                     <i class="bi bi-clipboard"></i>
                                 </button>
-                                <code class="text-secondary-700 font-mono text-sm" title="@rel.Uid">@(rel.Uid.Length > 12 ? rel.Uid[..12] : rel.Uid)</code>
+                                <span class="text-secondary-700 text-sm" title="@rel.Uid">@(rel.Uid.Length > 12 ? rel.Uid[..12] : rel.Uid)</span>
                             </div>
                         </td>
                         <td class="p-3">@rel.Info</td>
@@ -60,4 +62,32 @@ else
         </table>
     </div>
 }
+
+@* Copy the role UID to the clipboard. Bound once at document level so it
+   survives Turbo Frame updates that replace the table without a full navigation. *@
+<script>
+    if (!window.__copyUidBound) {
+        window.__copyUidBound = true;
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action="copy-uid"]');
+            if (!btn) return;
+
+            const uid = btn.dataset.uid;
+            if (!uid) return;
+
+            const icon = btn.querySelector('i');
+
+            navigator.clipboard.writeText(uid).then(function () {
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-clipboard-check');
+                    setTimeout(function () {
+                        icon.classList.remove('bi-clipboard-check');
+                        icon.classList.add('bi-clipboard');
+                    }, 1500);
+                }
+            });
+        });
+    }
+</script>
 </turbo-frame>
