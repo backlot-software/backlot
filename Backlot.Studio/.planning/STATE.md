@@ -108,6 +108,7 @@ None yet.
 | 260626-ou7 | Refactor BacklotApiClient to expose a generic PlayAsync primitive; typed methods become thin wrappers | 2026-06-26 | 8d68433 | [260626-ou7-refactor-backlotapiclient-to-expose-a-ge](./quick/260626-ou7-refactor-backlotapiclient-to-expose-a-ge/) |
 | 260626-rk0 | Inline 7 API-client call sites to PlayAsync/PlayAllowingClientErrorAsync; expose UnwrapRoleDetail; delete the 7 typed wrappers | 2026-06-26 | e8629be | [260626-rk0-convert-call-sites-of-getscenariosasync-](./quick/260626-rk0-convert-call-sites-of-getscenariosasync-/) |
 | 260708-lg9 | Remove Edit Roles feature; replace with Download HTTP request (.http file) for POST /api/role/<roletype>/persist | 2026-07-08 | d7f0da7 | [260708-lg9-remove-edit-roles-feature-replace-with-d](./quick/260708-lg9-remove-edit-roles-feature-replace-with-d/) |
+| fast | Copy HTTP request to clipboard with app auth key (inline URL, no comments) — refinement of 260708-lg9 | 2026-07-08 | e6f59c2 | — |
 
 ## Deferred Items
 
