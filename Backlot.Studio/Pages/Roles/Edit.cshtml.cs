@@ -15,6 +15,9 @@ public class EditModel : TurboEditPageModel
 
     [BindProperty(SupportsGet = true)]
     public string Uid { get; set; } = string.Empty;
+    
+    [BindProperty(SupportsGet = true)]
+    public string RoleType { get; set; } = "Persist";
 
     // Posted field values, bound from name="Fields[FieldName]".
     [BindProperty]

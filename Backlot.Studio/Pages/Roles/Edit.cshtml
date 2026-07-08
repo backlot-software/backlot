@@ -1,4 +1,4 @@
-@page "/roles/{uid}/edit"
+@page "/roles/{roletype}/{uid}/edit"
 @model Backlot.Studio.Pages.Roles.EditModel
 @{
     ViewData["Title"] = "Edit " + Model.PageTitle;
@@ -20,7 +20,7 @@
     <div class="alert alert-danger mb-6" role="alert">
         <i class="bi bi-exclamation-circle-fill"></i>
         <span>@Model.ErrorMessage</span>
-        <a href="/roles/@Model.Uid" class="font-medium ml-2">Back to role</a>
+        <a href="/roles/@Model.RoleType/@Model.Uid" class="font-medium ml-2">Back to role</a>
     </div>
 }
 
@@ -155,7 +155,7 @@ else if (Model.Schema != null)
                 <i class="bi bi-check-lg"></i>
                 <span>Save changes</span>
             </button>
-            <a href="/roles/@Model.Uid" class="btn btn-outline flex-1">
+            <a href="/roles/@Model.RoleType/@Model.Uid" class="btn btn-outline flex-1">
                 <i class="bi bi-x-lg"></i>
                 <span>Cancel</span>
             </a>

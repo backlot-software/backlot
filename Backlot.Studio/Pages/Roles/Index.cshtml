@@ -1,4 +1,4 @@
-@page "/roles"
+@page "/roles/{roleType?}"
 @model Backlot.Studio.Pages.Roles.IndexModel
 @using System.Text.Json
 @using Backlot.Studio.Models
@@ -9,7 +9,7 @@
 <!-- Header -->
 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles</h1>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles - @Model.RoleType</h1>
     </div>
 </div>
 
@@ -28,7 +28,7 @@
     <div class="card mb-6 animate-fade-in">
         <div class="card-body">
             <!-- Search form -->
-            <form method="get" action="/roles" class="flex flex-col md:flex-row items-center gap-3">
+            <form method="get" action="/roles/@Model.RoleType" class="flex flex-col md:flex-row items-center gap-3">
                 <div class="relative flex-1">
                     <input type="text"
                            name="q"
@@ -139,7 +139,7 @@
                                             <button type="button"
                                                     class="btn btn-ghost btn-icon"
                                                     data-action="copy-detail-url"
-                                                    data-detail-url="/roles/@uid"
+                                                    data-detail-url="/roles/@Model.RoleType/@uid"
                                                     aria-label="Copy link to detail page">
                                                 <i class="bi bi-clipboard"></i>
                                             </button>
@@ -178,13 +178,15 @@
                                             <div class="flex flex-wrap gap-1">
                                                 @foreach (var skill in skills)
                                                 {
-                                                    <span class="badge badge-primary">@skill</span>
+                                                    <a href="/roles/@skill" class="badge badge-primary hover:badge-primary-focus">
+                                                        @skill
+                                                    </a>
                                                 }
                                             </div>
                                         }
                                     </td>
                                     <td class="p-3 text-right" data-col="Actions">
-                                        <a href="/roles/@uid"
+                                        <a href="/roles/@Model.RoleType/@uid"
                                            class="btn btn-secondary"
                                            data-turbo-frame="_top"
                                            data-turbo-action="advance">

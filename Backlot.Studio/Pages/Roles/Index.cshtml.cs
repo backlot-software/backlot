@@ -20,6 +20,9 @@ public class IndexModel : AuthenticatedPageModel
 
     [FromQuery(Name = "page")]
     public int CurrentPage { get; set; } = 1;
+    
+    [BindProperty(SupportsGet = true)]
+    public string RoleType { get; set; } = "Persist";
 
     public const int PageSize = 25;
 
@@ -118,6 +121,7 @@ public class IndexModel : AuthenticatedPageModel
 
         return new FindRequest
         {
+            For = RoleType,
             Criteria = criteria,
             PageSize = PageSize,
             Page = CurrentPage

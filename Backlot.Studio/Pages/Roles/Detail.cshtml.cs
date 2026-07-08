@@ -13,6 +13,9 @@ public class DetailModel : AuthenticatedPageModel
 
     [BindProperty(SupportsGet = true)]
     public string Uid { get; set; } = string.Empty;
+    
+    [BindProperty(SupportsGet = true)]
+    public string RoleType { get; set; } = "Persist";
 
     // Drives the "Role saved." success banner. Set via the ?saved=1 query flag on the
     // 303 redirect target from the edit save path (D-08: query-flag mechanism, no server
@@ -35,7 +38,7 @@ public class DetailModel : AuthenticatedPageModel
         SetUserContext();
 
         if (string.IsNullOrWhiteSpace(Uid))
-            return RedirectToPage("/Roles/Index");
+            return RedirectToPage("/Roles/Persist");
 
         try
         {
