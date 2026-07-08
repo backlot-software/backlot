@@ -92,7 +92,15 @@ else
                                 {
                                     foreach (var skill in Model.Skills)
                                     {
-                                        <span class="badge badge-secondary">@skill</span>
+                                        @if (skill.Equals(Model.RoleType, StringComparison.CurrentCultureIgnoreCase))
+                                        {
+                                            <span class="badge badge-primary">@skill</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">@skill</span>    
+                                        }
+                                        
                                     }
                                 }
                                 else
