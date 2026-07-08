@@ -11,10 +11,14 @@
         <h1 class="text-2xl font-bold text-secondary-900">@Model.PageTitle</h1>
     </div>
     <div class="flex gap-3 mt-4 md:mt-0">
-        <a href="/roles/@Model.RoleType/@Model.Uid?handler=Download" data-turbo="false" class="btn btn-primary">
-            <i class="bi bi-download"></i>
-            <span>Download HTTP request</span>
-        </a>
+        @if (!string.IsNullOrEmpty(Model.HttpRequestText))
+        {
+            <button type="button" data-action="copy-http-request" class="btn btn-primary">
+                <i class="bi bi-clipboard"></i>
+                <span>Copy HTTP request</span>
+            </button>
+            <textarea id="http-request-content" class="hidden" aria-hidden="true" tabindex="-1">@Model.HttpRequestText</textarea>
+        }
     </div>
 </div>
 
@@ -112,3 +116,31 @@ else
         </div>
     </div>
 }
+
+@* Copy the raw .http request text to the clipboard. Bound once at document level so it
+   survives Turbo navigations that replace the page content without a full reload. *@
+<script>
+    if (!window.__copyHttpRequestBound) {
+        window.__copyHttpRequestBound = true;
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action="copy-http-request"]');
+            if (!btn) return;
+
+            const source = document.getElementById('http-request-content');
+            if (!source) return;
+
+            const icon = btn.querySelector('i');
+
+            navigator.clipboard.writeText(source.value).then(function () {
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-clipboard-check');
+                    setTimeout(function () {
+                        icon.classList.remove('bi-clipboard-check');
+                        icon.classList.add('bi-clipboard');
+                    }, 1500);
+                }
+            });
+        });
+    }
+</script>

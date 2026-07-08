@@ -22,6 +22,10 @@ public class DetailModel : AuthenticatedPageModel
     public string? ErrorMessage { get; private set; }
     public bool CanWrite { get; private set; }
 
+    // Raw .http request text for POST /api/role/{RoleType}/persist, copied to the
+    // clipboard from the detail page. Empty when the role couldn't be loaded.
+    public string HttpRequestText { get; private set; } = string.Empty;
+
     public DetailModel(IBacklotApiClient api, ILogger<DetailModel> logger)
     {
         _api = api;
@@ -45,6 +49,9 @@ public class DetailModel : AuthenticatedPageModel
 
             var perms = GetPermissions(RoleData);
             CanWrite = perms.CanWrite;
+
+            if (RoleData.ValueKind == JsonValueKind.Object)
+                HttpRequestText = BuildHttpRequest(RoleData);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -55,53 +62,20 @@ public class DetailModel : AuthenticatedPageModel
         return Page();
     }
 
-    // Downloads a ready-to-edit .http request template (VS Code REST Client / Rider format)
-    // for POST /api/role/{RoleType}/persist, pre-filled with the role's current fields.
-    // Reachable via ?handler=Download on the existing /roles/{roletype}/{uid} route.
-    // Re-fetches the role because handler invocations do not share the GET-populated RoleData.
-    public async Task<IActionResult> OnGetDownloadAsync()
-    {
-        SetUserContext();
-
-        if (string.IsNullOrWhiteSpace(Uid))
-            return NotFound();
-
-        try
-        {
-            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
-            if (redirect != null) return redirect;
-            var rd = env?.Body.Unwrap("Role");
-
-            if (rd is null || rd.Value.ValueKind != JsonValueKind.Object)
-                return NotFound();
-
-            var content = BuildHttpRequest(rd.Value);
-            var fileName = BuildFileName();
-            return File(System.Text.Encoding.UTF8.GetBytes(content), "text/plain", fileName);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            _logger.LogWarning(ex, "Failed to build .http download for uid={Uid}", Uid);
-            return NotFound();
-        }
-    }
-
-    // Builds the raw .http request text. The Authorization line carries only a static
-    // placeholder — session credentials are never read or embedded (T-lg9-01: credentials
-    // never reach the browser per the project security boundary).
+    // Builds the raw .http request text for POST /api/role/{RoleType}/persist with the
+    // role's current fields. The Authorization line carries the same base64 credential
+    // the app uses for its own API requests, read from session ("BasicAuthHeader", stored
+    // without the "Basic " prefix by Login.cshtml.cs). Missing session value → empty.
     private string BuildHttpRequest(JsonElement roleData)
     {
         var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
+        var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
         var body = BuildBody(roleData);
 
         var sb = new System.Text.StringBuilder();
-        sb.Append("@baseUrl = ").Append(baseUrl).Append('\n');
-        sb.Append('\n');
-        sb.Append("POST {{baseUrl}}/api/role/").Append(RoleType).Append("/persist").Append('\n');
+        sb.Append("POST ").Append(baseUrl).Append("/api/role/").Append(RoleType).Append("/persist").Append('\n');
         sb.Append("Content-Type: application/json").Append('\n');
-        sb.Append("# Replace the placeholder below with the base64 of your own \"username:password\".").Append('\n');
-        sb.Append("# Backlot.Studio never embeds credentials in this file.").Append('\n');
-        sb.Append("Authorization: Basic <base64 of username:password>").Append('\n');
+        sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
         sb.Append('\n');
         sb.Append(body).Append('\n');
         return sb.ToString();
