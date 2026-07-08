@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Backlot.Studio.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,6 @@ public class DetailModel : AuthenticatedPageModel
     
     [BindProperty(SupportsGet = true)]
     public string RoleType { get; set; } = "Persist";
-
-    // Drives the "Role saved." success banner. Set via the ?saved=1 query flag on the
-    // 303 redirect target from the edit save path (D-08: query-flag mechanism, no server
-    // state carried across the redirect). Binds on GET.
-    [BindProperty(SupportsGet = true)]
-    public bool Saved { get; set; }
 
     public JsonElement RoleData { get; private set; }
     public string? ErrorMessage { get; private set; }
@@ -58,6 +53,82 @@ public class DetailModel : AuthenticatedPageModel
         }
 
         return Page();
+    }
+
+    // Downloads a ready-to-edit .http request template (VS Code REST Client / Rider format)
+    // for POST /api/role/{RoleType}/persist, pre-filled with the role's current fields.
+    // Reachable via ?handler=Download on the existing /roles/{roletype}/{uid} route.
+    // Re-fetches the role because handler invocations do not share the GET-populated RoleData.
+    public async Task<IActionResult> OnGetDownloadAsync()
+    {
+        SetUserContext();
+
+        if (string.IsNullOrWhiteSpace(Uid))
+            return NotFound();
+
+        try
+        {
+            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
+            if (redirect != null) return redirect;
+            var rd = env?.Body.Unwrap("Role");
+
+            if (rd is null || rd.Value.ValueKind != JsonValueKind.Object)
+                return NotFound();
+
+            var content = BuildHttpRequest(rd.Value);
+            var fileName = BuildFileName();
+            return File(System.Text.Encoding.UTF8.GetBytes(content), "text/plain", fileName);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogWarning(ex, "Failed to build .http download for uid={Uid}", Uid);
+            return NotFound();
+        }
+    }
+
+    // Builds the raw .http request text. The Authorization line carries only a static
+    // placeholder — session credentials are never read or embedded (T-lg9-01: credentials
+    // never reach the browser per the project security boundary).
+    private string BuildHttpRequest(JsonElement roleData)
+    {
+        var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
+        var body = BuildBody(roleData);
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append("@baseUrl = ").Append(baseUrl).Append('\n');
+        sb.Append('\n');
+        sb.Append("POST {{baseUrl}}/api/role/").Append(RoleType).Append("/persist").Append('\n');
+        sb.Append("Content-Type: application/json").Append('\n');
+        sb.Append("# Replace the placeholder below with the base64 of your own \"username:password\".").Append('\n');
+        sb.Append("# Backlot.Studio never embeds credentials in this file.").Append('\n');
+        sb.Append("Authorization: Basic <base64 of username:password>").Append('\n');
+        sb.Append('\n');
+        sb.Append(body).Append('\n');
+        return sb.ToString();
+    }
+
+    // Serializes the role's non-system fields (Uid first) into a pretty-printed JSON object.
+    // JsonObject preserves insertion order; values are emitted as strings, which is acceptable
+    // for a hand-editable template. Never throws on malformed data (T-lg9-02).
+    private static string BuildBody(JsonElement roleData)
+    {
+        var obj = new JsonObject();
+        foreach (var (key, value) in GetNonSystemFields(roleData))
+        {
+            obj[key] = value;
+        }
+        return obj.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    // Produces a safe download file name: {RoleType}-{Uid}.http with invalid path chars replaced.
+    private string BuildFileName()
+    {
+        var raw = $"{RoleType}-{Uid}.http";
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            raw = raw.Replace(c, '_');
+        }
+        return raw;
     }
 
     // Computed properties for the view
