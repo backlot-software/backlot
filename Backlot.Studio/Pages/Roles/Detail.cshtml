@@ -15,7 +15,7 @@
         {
             <button type="button" data-action="copy-http-request" class="btn btn-primary">
                 <i class="bi bi-clipboard"></i>
-                <span>Copy HTTP request</span>
+                <span>Change me</span>
             </button>
             <textarea id="http-request-content" class="hidden" aria-hidden="true" tabindex="-1">@Model.HttpRequestText</textarea>
         }
@@ -52,7 +52,7 @@ else
                                 <td class="bg-secondary-50 p-3">
                                     <code class="font-medium text-secondary-700">@item.Key</code>
                                 </td>
-                                <td class="p-3">@item.Value</td>
+                                <td class="p-3"><pre>@item.Value</pre></td>
                             </tr>
                         }
     
