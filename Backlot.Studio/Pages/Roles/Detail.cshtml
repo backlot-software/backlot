@@ -50,16 +50,35 @@ else
                         {
                             <tr class="border-b border-secondary-100">
                                 <td class="bg-secondary-50 p-3">
-                                    <code class="font-medium text-secondary-700">@item.Key</code>
+                                    
+                                    <span class="font-medium text-secondary-700">@item.Key</span>
                                 </td>
-                                <td class="p-3"><pre>@item.Value</pre></td>
+                                <td class="p-3">
+                                    @if (item.IsJson)
+                                    {
+                                        <div class="json-viewer @(item.JsonType)" data-key="@item.Key">
+                                            <pre>@item.Value</pre>
+                                            <button type="button"
+                                                    class="json-toggle btn btn-sm btn-secondary mt-1"
+                                                    data-action="toggle-json"
+                                                    data-target="@item.Key">
+                                                <span class="toggle-text">Show Raw</span>
+                                                <i class="bi bi-chevron-down toggle-icon"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @item.Value
+                                    }
+                                </td>
                             </tr>
                         }
     
                         @* __Permission row *@
                         <tr class="border-b border-secondary-100">
                             <td class="bg-secondary-50 p-3">
-                                <code class="font-medium text-secondary-700">Permission</code>
+                                <span class="font-medium text-secondary-700">Permission</span>
                             </td>
                             <td class="p-3">
                                 <span class="@(perms.CanRead ? "badge badge-success" : "badge badge-secondary")">CanRead</span>
@@ -70,7 +89,7 @@ else
                         @* __Skills row *@
                         <tr class="border-b border-secondary-100">
                             <td class="bg-secondary-50 p-3">
-                                <code class="font-medium text-secondary-700">Skills</code>
+                                <span class="font-medium text-secondary-700">Skills</span>
                             </td>
                             <td class="p-3">
                                 @if (Model.Skills.Any())
@@ -116,31 +135,3 @@ else
         </div>
     </div>
 }
-
-@* Copy the raw .http request text to the clipboard. Bound once at document level so it
-   survives Turbo navigations that replace the page content without a full reload. *@
-<script>
-    if (!window.__copyHttpRequestBound) {
-        window.__copyHttpRequestBound = true;
-        document.addEventListener('click', function (e) {
-            const btn = e.target.closest('[data-action="copy-http-request"]');
-            if (!btn) return;
-
-            const source = document.getElementById('http-request-content');
-            if (!source) return;
-
-            const icon = btn.querySelector('i');
-
-            navigator.clipboard.writeText(source.value).then(function () {
-                if (icon) {
-                    icon.classList.remove('bi-clipboard');
-                    icon.classList.add('bi-clipboard-check');
-                    setTimeout(function () {
-                        icon.classList.remove('bi-clipboard-check');
-                        icon.classList.add('bi-clipboard');
-                    }, 1500);
-                }
-            });
-        });
-    }
-</script>

@@ -22,6 +22,14 @@ public class DetailModel : AuthenticatedPageModel
     public string? ErrorMessage { get; private set; }
     public bool CanWrite { get; private set; }
 
+    public class FieldViewModel
+    {
+        public string Key { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public bool IsJson { get; set; }
+        public string? JsonType { get; set; }
+    }
+
     // Raw .http request text for POST /api/role/{RoleType}/persist, copied to the
     // clipboard from the detail page. Empty when the role couldn't be loaded.
     public string HttpRequestText { get; private set; } = string.Empty;
@@ -128,7 +136,7 @@ public class DetailModel : AuthenticatedPageModel
     public (bool CanCreate, bool CanRead, bool CanWrite) Permissions => GetPermissions(RoleData);
     public IEnumerable<string> Skills => GetSkills(RoleData);
     public string? LastModifiedDate => GetStringField(RoleData, "LastModified");
-    public IEnumerable<(string Key, string Value)> Fields => GetNonSystemFields(RoleData);
+    public IEnumerable<FieldViewModel> Fields => GetNonSystemFields(RoleData);
 
     // Helper methods
 
@@ -166,7 +174,7 @@ public class DetailModel : AuthenticatedPageModel
         return (canCreate, canRead, canWrite);
     }
 
-    public static IEnumerable<(string Key, string Value)> GetNonSystemFields(JsonElement data)
+    public static IEnumerable<FieldViewModel> GetNonSystemFields(JsonElement data)
     {
         if (data.ValueKind != JsonValueKind.Object) yield break;
         var props = data.EnumerateObject()
@@ -187,10 +195,47 @@ public class DetailModel : AuthenticatedPageModel
         
         foreach (var prop in result)
         {
-            var val = prop.Value.ValueKind == JsonValueKind.String
-                ? prop.Value.GetString() ?? ""
-                : prop.Value.ToString();
-            yield return (prop.Name, val);
+            string value;
+            bool isJson = false;
+            string? jsonType = null;
+
+            switch (prop.Value.ValueKind)
+            {
+                case JsonValueKind.String:
+                    value = prop.Value.GetString() ?? "";
+                    break;
+
+                case JsonValueKind.Object:
+                case JsonValueKind.Array:
+                    value = FormatJsonValue(prop.Value);
+                    isJson = true;
+                    jsonType = prop.Value.ValueKind.ToString().ToLower();
+                    break;
+
+                default:
+                    value = prop.Value.ToString();
+                    break;
+            }
+
+            yield return new FieldViewModel
+            {
+                Key = prop.Name,
+                Value = value,
+                IsJson = isJson,
+                JsonType = jsonType
+            };
         }
+    }
+
+    private static string FormatJsonValue(JsonElement element)
+    {
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        var node = JsonSerializer.SerializeToNode(element, options);
+        return node?.ToJsonString(options) ?? element.ToString();
     }
 }
