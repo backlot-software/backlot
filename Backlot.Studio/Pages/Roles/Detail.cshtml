@@ -57,19 +57,13 @@ else
                                     @if (item.IsJson)
                                     {
                                         <div class="json-viewer @(item.JsonType)" data-key="@item.Key">
-                                            <pre>@item.Value</pre>
-                                            <button type="button"
-                                                    class="json-toggle btn btn-sm btn-secondary mt-1"
-                                                    data-action="toggle-json"
-                                                    data-target="@item.Key">
-                                                <span class="toggle-text">Show Raw</span>
-                                                <i class="bi bi-chevron-down toggle-icon"></i>
-                                            </button>
+                                            <pre class="json-preview">@item.OneLinePreview</pre>
+                                            <pre class="json-full hidden">@item.Value</pre>
                                         </div>
                                     }
                                     else
                                     {
-                                        @item.Value
+                                        <pre>@item.Value</pre>
                                     }
                                 </td>
                             </tr>
@@ -135,3 +129,4 @@ else
         </div>
     </div>
 }
+

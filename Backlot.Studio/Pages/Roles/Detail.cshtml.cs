@@ -28,6 +28,7 @@ public class DetailModel : AuthenticatedPageModel
         public string Value { get; set; } = string.Empty;
         public bool IsJson { get; set; }
         public string? JsonType { get; set; }
+        public string? OneLinePreview { get; set; }
     }
 
     // Raw .http request text for POST /api/role/{RoleType}/persist, copied to the
@@ -222,7 +223,8 @@ public class DetailModel : AuthenticatedPageModel
                 Key = prop.Name,
                 Value = value,
                 IsJson = isJson,
-                JsonType = jsonType
+                JsonType = jsonType,
+                OneLinePreview = isJson ? OneLineJsonView(prop.Value) : null
             };
         }
     }
@@ -237,5 +239,56 @@ public class DetailModel : AuthenticatedPageModel
 
         var node = JsonSerializer.SerializeToNode(element, options);
         return node?.ToJsonString(options) ?? element.ToString();
+    }
+
+    private static string OneLineJsonView(JsonElement element)
+    {
+        var values = new List<string>();
+        CollectJsonValues(element, values);
+        return string.Join(", ", values);
+    }
+
+    private static void CollectJsonValues(JsonElement element, List<string> values)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var prop in element.EnumerateObject())
+                {
+                    CollectJsonValues(prop.Value, values);
+                }
+                break;
+
+            case JsonValueKind.Array:
+                foreach (var item in element.EnumerateArray())
+                {
+                    CollectJsonValues(item, values);
+                }
+                break;
+
+            case JsonValueKind.String:
+                values.Add(element.GetString() ?? "");
+                break;
+
+            case JsonValueKind.Number:
+                values.Add(element.ToString());
+                break;
+
+            case JsonValueKind.True:
+                values.Add("true");
+                break;
+
+            case JsonValueKind.False:
+                values.Add("false");
+                break;
+
+            case JsonValueKind.Null:
+                values.Add("null");
+                break;
+
+            default:
+                values.Add(element.ToString());
+                break;
+        }
     }
 }

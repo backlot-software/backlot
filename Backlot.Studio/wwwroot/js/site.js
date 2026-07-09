@@ -28,30 +28,13 @@ if (!window.__copyHttpRequestBound) {
 }
 
 // JSON viewer toggle functionality
-if (!window.__jsonToggleBound) {
-    window.__jsonToggleBound = true;
+// JSON viewer click-to-expand functionality
+if (!window.__jsonExpandBound) {
+    window.__jsonExpandBound = true;
     document.addEventListener('click', function (e) {
-        const toggleBtn = e.target.closest('[data-action="toggle-json"]');
-        if (!toggleBtn) return;
+        const viewer = e.target.closest('.json-viewer');
+        if (!viewer) return;
 
-        const targetKey = toggleBtn.getAttribute('data-target');
-        const container = document.querySelector('.json-viewer[data-key="' + targetKey + '"]');
-        if (!container) return;
-
-        const pre = container.querySelector('pre');
-        const icon = toggleBtn.querySelector('.toggle-icon');
-        const text = toggleBtn.querySelector('.toggle-text');
-
-        if (container.classList.contains('raw')) {
-            container.classList.remove('raw');
-            text.textContent = 'Show Raw';
-            icon.classList.remove('bi-chevron-up');
-            icon.classList.add('bi-chevron-down');
-        } else {
-            container.classList.add('raw');
-            text.textContent = 'Show Formatted';
-            icon.classList.remove('bi-chevron-down');
-            icon.classList.add('bi-chevron-up');
-        }
+        viewer.classList.toggle('expanded');
     });
 }
