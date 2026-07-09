@@ -86,11 +86,29 @@ public class DetailModel : AuthenticatedPageModel
     // for a hand-editable template. Never throws on malformed data (T-lg9-02).
     private static string BuildBody(JsonElement roleData)
     {
+        if (roleData.ValueKind != JsonValueKind.Object)
+            return "{}";
+
         var obj = new JsonObject();
-        foreach (var (key, value) in GetNonSystemFields(roleData))
+
+        // Uid first
+        if (roleData.TryGetProperty("Uid", out var uid))
         {
-            obj[key] = value;
+            obj["Uid"] = JsonSerializer.SerializeToNode(uid);
         }
+
+        // Other non-system fields in order
+        var otherProps = roleData.EnumerateObject()
+            .Where(p => !p.Name.StartsWith("__", StringComparison.Ordinal)
+                        && p.Name != "Uid"
+                        && p.Name != "LastModified")
+            .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var prop in otherProps)
+        {
+            obj[prop.Name] = JsonSerializer.SerializeToNode(prop.Value);
+        }
+
         return obj.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
 
@@ -159,7 +177,6 @@ public class DetailModel : AuthenticatedPageModel
             .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
         
         var uid = props.FirstOrDefault(p => p.Name == "Uid");
-        var lastModified = props.FirstOrDefault(p => p.Name == "LastModified");
         
         var result = new List<JsonProperty>();
         
@@ -167,8 +184,6 @@ public class DetailModel : AuthenticatedPageModel
             result.Add(uid);
         
         result.AddRange(ordered);
-        
-        if (lastModified.Value.ValueKind != JsonValueKind.Undefined) result.Add(lastModified);
         
         foreach (var prop in result)
         {
