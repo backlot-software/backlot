@@ -103,8 +103,8 @@ Most frequently asked questions are answered in our [LICENSE-FAQ](LICENSE-FAQ.md
 ## Commercial license
 
 Commercial licenses are available via our partner network:
-[Growcreate Netherlands for Worldwide and European customers](https://growcreate.nl/contact/)
-[Growcreate UK for UK customers](https://growcreate.co.uk/contact/)
+- Please contact [Growcreate Netherlands](https://growcreate.nl/contact/).
+- UK customers can also contact [Growcreate UK](https://growcreate.co.uk/contact/) directly.
 
 ## Contributions
 
