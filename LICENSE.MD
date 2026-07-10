@@ -1,9 +1,11 @@
 Backlot Framework - An opinionated framework on top of .NET Core for building API-centric web and back-end systems.
 Copyright (C) 2026  Jeroen Wijdeven Holding B.V.
+
 ---
 
 This program is offered under a commercial license and under the AGPL-3.0 license.
 For commercial licensing, contact one of our [resellers](https://github.com/backlot-software/backlot#commercial-license). For AGPL licensing, see below.
+
 ---
 
 Backlot Framework - An opinionated framework on top of .NET Core for building API-centric web and back-end systems.
