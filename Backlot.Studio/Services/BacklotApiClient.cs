@@ -136,21 +136,12 @@ public class BacklotApiClient : IBacklotApiClient
     // carry one.
     public async Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct = default)
     {
-        var httpMethod = new HttpMethod((method ?? "GET").Trim().ToUpperInvariant());
-        using var request = new HttpRequestMessage(httpMethod, path.Trim());
-
-        var carriesBody = httpMethod == HttpMethod.Post
-                          || httpMethod == HttpMethod.Put
-                          || httpMethod == HttpMethod.Patch
-                          || httpMethod == HttpMethod.Delete;
+        var httpMethod = new HttpMethod(method.Trim().ToUpperInvariant());
         
-        if (carriesBody && !string.IsNullOrWhiteSpace(body))
-        {
-            request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
-        }
-
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var response = await _httpClient.SendAsync(request, ct);
+        var response = httpMethod == HttpMethod.Post
+            ? await _httpClient.PostAsync(path, new StringContent(body ?? string.Empty, System.Text.Encoding.UTF8, "application/json"), ct)
+            : await _httpClient.GetAsync(path, ct);
         stopwatch.Stop();
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);
