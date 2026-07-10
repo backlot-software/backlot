@@ -88,3 +88,24 @@ Contributing to Backlot requires signing a Contributor License Agreement (CLA). 
 
 Official documentation, including tutorials and API guides, can be found at:
 https://docs.backlot.software
+
+# Licensing
+
+The Backlot Framework is available under **two licenses**:
+- **AGPL-3.0** (open-source).
+- **Commercial License** (proprietary).
+
+## Open source
+
+The AGPL-3.0 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPL-3.0 terms a **commercial license** is necessary.
+Most frequently asked questions are answered in our [LICENSE-FAQ](LICENSE-FAQ.md).
+
+## Commercial license
+
+Commercial licenses are available via our partner network:
+[Growcreate Netherlands for Worldwide and European customers](https://growcreate.nl/contact/)
+[Growcreate UK for UK customers](https://growcreate.co.uk/contact/)
+
+## Contributions
+
+We can only accept contributions after our [CLA](CLA.MD) is signed.
