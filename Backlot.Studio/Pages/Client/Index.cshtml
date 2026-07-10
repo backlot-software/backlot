@@ -1,0 +1,243 @@
+@page
+@model Backlot.Studio.Pages.Client.IndexModel
+@{
+    ViewData["Title"] = "Client";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Client</h1>
+        <p class="text-secondary-500 text-sm">Send a request to any scenario endpoint and inspect the response.</p>
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-0">
+        <a href="@Model.ApiBaseUrl/scalar/v1" target="_blank" class="btn btn-outline">
+            <i class="bi bi-book"></i>
+            <span>API Documentation</span>
+        </a>
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/client" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form id="client-form" data-turbo="false">
+            @Html.AntiForgeryToken()
+
+            <!-- Request line: method + scenario picker + execute -->
+            <div class="flex flex-col lg:flex-row lg:items-end gap-4 mb-4">
+                <!-- Method -->
+                <div class="lg:w-32">
+                    <label for="method-select" class="form-label">Method</label>
+                    <select id="method-select" name="Input.Method" class="form-input">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                    </select>
+                </div>
+
+                <!-- Searchable scenario dropdown -->
+                <div class="flex-1">
+                    <label for="scenario-search" class="form-label">Scenario</label>
+                    <div class="relative" id="scenario-combo">
+                        <input type="text"
+                               id="scenario-search"
+                               class="form-input"
+                               placeholder="Search scenarios…"
+                               autocomplete="off"
+                               role="combobox"
+                               aria-expanded="false"
+                               aria-controls="scenario-list" />
+                        <ul id="scenario-list"
+                            class="hidden absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-secondary-200 rounded-md shadow-dropdown"
+                            role="listbox">
+                            @foreach (var s in Model.Scenarios)
+                            {
+                                <li class="scenario-option px-3 py-2 cursor-pointer hover:bg-secondary-100"
+                                    role="option"
+                                    data-name="@s.Scenario"
+                                    data-endpoint="@s.Endpoints.First()">
+                                    <div class="text-sm font-medium text-secondary-900">@s.Scenario</div>
+                                    <div class="text-xs text-secondary-500 font-mono truncate">@s.Endpoints.First()</div>
+                                </li>
+                            }
+                            <li id="scenario-empty" class="hidden px-3 py-2 text-sm text-secondary-500">No scenarios match.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Execute -->
+                <div>
+                    <button type="submit" id="execute-btn" class="btn btn-primary w-full lg:w-auto">
+                        <i class="bi bi-play-fill"></i>
+                        <span>Execute</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Endpoint (loaded from the selected scenario, editable) -->
+            <div class="mb-4">
+                <label for="endpoint-input" class="form-label">Endpoint</label>
+                <input type="text"
+                       id="endpoint-input"
+                       name="Input.Endpoint"
+                       class="form-input font-mono text-sm"
+                       placeholder="Select a scenario to load its endpoint, or type a path…" />
+            </div>
+
+            <!-- Body -->
+            <div class="mb-2">
+                <label for="body-input" class="form-label">Body</label>
+                <textarea id="body-input"
+                          name="Input.Body"
+                          rows="8"
+                          class="form-input font-mono text-sm"
+                          placeholder="Request body (JSON). Ignored for GET requests."></textarea>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Result -->
+<div id="result-panel" class="card mt-6 hidden">
+    <div class="card-header flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-secondary-900">Response</h2>
+        <div class="flex items-center gap-3">
+            <span id="result-time" class="text-xs text-secondary-500"></span>
+            <span id="result-status" class="badge"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <pre id="result-body" class="code-block overflow-x-auto text-sm whitespace-pre-wrap break-words"><code></code></pre>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById('client-form');
+            if (!form) return;
+
+            const search = document.getElementById('scenario-search');
+            const list = document.getElementById('scenario-list');
+            const options = Array.from(list.querySelectorAll('.scenario-option'));
+            const emptyRow = document.getElementById('scenario-empty');
+            const endpointInput = document.getElementById('endpoint-input');
+            const methodSelect = document.getElementById('method-select');
+            const executeBtn = document.getElementById('execute-btn');
+            const resultPanel = document.getElementById('result-panel');
+            const resultStatus = document.getElementById('result-status');
+            const resultTime = document.getElementById('result-time');
+            const resultBody = document.getElementById('result-body').querySelector('code');
+
+            // --- Searchable dropdown -------------------------------------------------
+            function openList() {
+                list.classList.remove('hidden');
+                search.setAttribute('aria-expanded', 'true');
+            }
+            function closeList() {
+                list.classList.add('hidden');
+                search.setAttribute('aria-expanded', 'false');
+            }
+            function filterList() {
+                const q = search.value.trim().toLowerCase();
+                let visible = 0;
+                options.forEach(function (opt) {
+                    const hay = (opt.dataset.name + ' ' + opt.dataset.endpoint).toLowerCase();
+                    const match = hay.indexOf(q) !== -1;
+                    opt.classList.toggle('hidden', !match);
+                    if (match) visible++;
+                });
+                emptyRow.classList.toggle('hidden', visible !== 0);
+            }
+
+            search.addEventListener('focus', function () { filterList(); openList(); });
+            search.addEventListener('input', function () { filterList(); openList(); });
+
+            options.forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    search.value = opt.dataset.name;
+                    endpointInput.value = opt.dataset.endpoint;
+                    closeList();
+                });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!document.getElementById('scenario-combo').contains(e.target)) closeList();
+            });
+
+            // --- Execute -------------------------------------------------------------
+            function setStatusBadge(code, ok) {
+                resultStatus.textContent = code;
+                resultStatus.className = 'badge ' + (ok ? 'badge-success' : 'badge-danger');
+            }
+
+            function prettyBody(text) {
+                if (!text) return '(empty response body)';
+                try {
+                    return JSON.stringify(JSON.parse(text), null, 2);
+                } catch (_) {
+                    return text;
+                }
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                if (!endpointInput.value.trim()) {
+                    endpointInput.focus();
+                    return;
+                }
+
+                executeBtn.disabled = true;
+                const original = executeBtn.innerHTML;
+                executeBtn.innerHTML = '<span class="spinner"></span><span>Executing…</span>';
+
+                try {
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                    const data = new FormData(form);
+                    const res = await fetch('?handler=Execute', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                        body: data
+                    });
+                    const payload = await res.json();
+
+                    resultPanel.classList.remove('hidden');
+
+                    if (payload.unauthorized) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    if (typeof payload.statusCode === 'number') {
+                        setStatusBadge(payload.statusCode + ' ' + payload.reasonPhrase, payload.isSuccess);
+                        resultTime.textContent = payload.elapsedMs + ' ms';
+                        resultBody.textContent = prettyBody(payload.body);
+                    } else {
+                        // Handler-level error (validation / gateway) — payload.error carries the message.
+                        setStatusBadge(res.status + ' Error', false);
+                        resultTime.textContent = '';
+                        resultBody.textContent = payload.error || 'Request failed.';
+                    }
+                } catch (err) {
+                    resultPanel.classList.remove('hidden');
+                    setStatusBadge('Network error', false);
+                    resultTime.textContent = '';
+                    resultBody.textContent = String(err);
+                } finally {
+                    executeBtn.disabled = false;
+                    executeBtn.innerHTML = original;
+                }
+            });
+        })();
+    </script>
+}

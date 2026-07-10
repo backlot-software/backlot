@@ -18,6 +18,9 @@ public interface IBacklotApiClient
     Task<ApiEnvelope<T>?> PlayAsync<T>(string roleName, string scenario, string? uid = null, CancellationToken ct = default);
     Task<ApiEnvelope<T>?> PlayAsync<T>(string roleName, string scenario, object body, CancellationToken ct = default);
     Task<ApiEnvelope<T>?> PlayAllowingClientErrorAsync<T>(string roleName, string scenario, object body, CancellationToken ct = default);
-    
-    
+
+    // SendRawAsync — used by the Client tester page to send an arbitrary (method + path + body)
+    // request through the authenticated pipeline and capture the raw response (status/body/timing)
+    // without throwing on non-success statuses, so any outcome can be inspected.
+    Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct = default);
 }

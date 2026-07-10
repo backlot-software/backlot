@@ -120,10 +120,47 @@ public class BacklotApiClient : IBacklotApiClient
     
     public async Task<ApiEnvelope<StatusBody>?> StatusAsync()
     {
-        
+
         var path = $"api/status";
         var response = await _httpClient.GetAsync(path);
         await EnsureSuccessAsync(response, CancellationToken.None);
         return await response.Content.ReadFromJsonAsync<ApiEnvelope<StatusBody>>(JsonOptions, CancellationToken.None);
+    }
+
+    // SendRawAsync — send an arbitrary (method + path + body) request through the authenticated
+    // pipeline for the Client tester page. Deliberately does NOT call EnsureSuccessAsync: the raw
+    // status, reason and body are returned for every non-401 outcome so the operator can inspect
+    // the response regardless of success. (401 still throws BacklotApiUnauthorizedException from
+    // BasicAuthHandler, which the caller translates into a re-login.) The path is used relative to
+    // BaseAddress; a leading slash is tolerated. A JSON body is attached only for methods that
+    // carry one.
+    public async Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct = default)
+    {
+        var httpMethod = new HttpMethod((method ?? "GET").Trim().ToUpperInvariant());
+        using var request = new HttpRequestMessage(httpMethod, path.Trim());
+
+        var carriesBody = httpMethod == HttpMethod.Post
+                          || httpMethod == HttpMethod.Put
+                          || httpMethod == HttpMethod.Patch
+                          || httpMethod == HttpMethod.Delete;
+        
+        if (carriesBody && !string.IsNullOrWhiteSpace(body))
+        {
+            request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        }
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var response = await _httpClient.SendAsync(request, ct);
+        stopwatch.Stop();
+
+        var responseBody = await response.Content.ReadAsStringAsync(ct);
+        return new RawApiResponse
+        {
+            StatusCode = (int)response.StatusCode,
+            ReasonPhrase = response.ReasonPhrase ?? response.StatusCode.ToString(),
+            Body = responseBody,
+            ElapsedMs = stopwatch.ElapsedMilliseconds,
+            IsSuccess = response.IsSuccessStatusCode
+        };
     }
 }
