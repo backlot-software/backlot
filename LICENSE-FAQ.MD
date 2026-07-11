@@ -1,10 +1,10 @@
 # Backlot License FAQ
 
 Our **core library** is available under **two licenses**:
-- **AGPL-3.0** (open-source).
+- **AGPLv3** (open-source).
 - **Commercial License** (proprietary).
 
-**End users** who distribute our core (e.g., in their applications) **must accept either AGPL-3.0 or the commercial license**.
+**End users** who distribute our core (e.g., in their applications) **must accept either AGPLv3 or the commercial license**.
 
 ---
 
@@ -42,4 +42,4 @@ Our **core library** is available under **two licenses**:
 
 ---
 
-> _This FAQ is intended as practical guidance only and does not replace the terms of AGPL-3.0 or any commercial license agreement. If there is any inconsistency, the applicable license terms prevail._ _For specific use cases, please contact us._
+> _This FAQ is intended as practical guidance only and does not replace the terms of AGPLv3 or any commercial license agreement. If there is any inconsistency, the applicable license terms prevail._ _For specific use cases, please contact us._

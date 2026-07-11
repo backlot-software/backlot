@@ -82,30 +82,27 @@ Both the azure and web demos require a usersandgroups.json file. By default this
 
 ### Contributions
 
-Contributing to Backlot requires signing a Contributor License Agreement (CLA). This ensures that the project remains open and protected for the entire community. We look forward to your pull requests.
+Contributing to Backlot requires signing a Contributor License Agreement ([CLA](CLA.MD)). This ensures that the project remains open and protected for the entire community. We look forward to your pull requests.
 
 ### Documentation
 
 Official documentation, including tutorials and API guides, can be found at:
 https://docs.backlot.software
 
-# Licensing
+### Licensing
 
 The Backlot Framework is available under **two licenses**:
-- **AGPL-3.0** (open-source).
+- **AGPLv3** (open-source).
 - **Commercial License** (proprietary).
 
-## Open source
+#### Open source
 
-The AGPL-3.0 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPL-3.0 terms a **commercial license** is necessary.
+The AGPLv3 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPLv3 terms a **commercial license** is necessary.
 Most frequently asked questions are answered in our [LICENSE-FAQ](LICENSE-FAQ.md).
 
-## Commercial license
+#### Commercial license
 
-Commercial licenses are available via our partner network:
-- Please contact [Growcreate Netherlands](https://growcreate.nl/contact/).
-- UK customers can also contact [Growcreate UK](https://growcreate.co.uk/contact/) directly.
+Commercial licenses are available via
 
-## Contributions
-
-We can only accept contributions after our [CLA](CLA.MD) is signed.
+- Worldwide: [Growcreate Netherlands](https://growcreate.nl/contact/).
+- United Kingdom: [Growcreate UK](https://growcreate.co.uk/contact/).
