@@ -30,18 +30,16 @@
 
 <div class="card">
     <div class="card-body">
-        <form id="client-form" data-turbo="false">
+        <form id="client-form" data-turbo="false" data-default-endpoint="@Model.DefaultEndpoint">
             @Html.AntiForgeryToken()
 
             <!-- Request line: method + scenario picker + execute -->
             <div class="flex flex-col lg:flex-row lg:items-end gap-4 mb-4">
-                <!-- Method -->
+                <!-- Method (derived from the endpoint; not user-editable) -->
                 <div class="lg:w-32">
-                    <label for="method-select" class="form-label">Method</label>
-                    <select id="method-select" name="Input.Method" class="form-input">
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
-                    </select>
+                    <label for="method-display" class="form-label">Method</label>
+                    <div id="method-display" class="form-input bg-secondary-50 text-secondary-700">GET</div>
+                    <input type="hidden" id="method-input" name="Input.Method" value="GET" />
                 </div>
 
                 <!-- Searchable scenario dropdown -->
@@ -59,14 +57,14 @@
                         <ul id="scenario-list"
                             class="hidden absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-secondary-200 rounded-md shadow-dropdown"
                             role="listbox">
-                            @foreach (var s in Model.Scenarios)
+                            @foreach (var o in Model.Options)
                             {
                                 <li class="scenario-option px-3 py-2 cursor-pointer hover:bg-secondary-100"
                                     role="option"
-                                    data-name="@s.Scenario"
-                                    data-endpoint="@s.Endpoints.First()">
-                                    <div class="text-sm font-medium text-secondary-900">@s.Scenario</div>
-                                    <div class="text-xs text-secondary-500 font-mono truncate">@s.Endpoints.First()</div>
+                                    data-name="@o.Name"
+                                    data-endpoint="@o.Endpoint">
+                                    <div class="text-sm font-medium text-secondary-900">@o.Name</div>
+                                    <div class="text-xs text-secondary-500 font-mono truncate">@o.Endpoint</div>
                                 </li>
                             }
                             <li id="scenario-empty" class="hidden px-3 py-2 text-sm text-secondary-500">No scenarios match.</li>
@@ -89,8 +87,9 @@
                 <input type="text"
                        id="endpoint-input"
                        name="Input.Endpoint"
-                       class="form-input font-mono text-sm"
-                       placeholder="Select a scenario to load its endpoint, or type a path…" />
+                       class="form-input font-mono text-sm bg-secondary-50"
+                       readonly
+                       placeholder="Select a scenario to load its endpoint…" />
             </div>
 
             <!-- Body -->
@@ -100,7 +99,7 @@
                           name="Input.Body"
                           rows="8"
                           class="form-input font-mono text-sm"
-                          placeholder="Request body (JSON). Ignored for GET requests."></textarea>
+                          placeholder="Request body (JSON). Ignored for GET requests.">@Model.PrefilledBody</textarea>
             </div>
         </form>
     </div>
@@ -131,12 +130,23 @@
             const options = Array.from(list.querySelectorAll('.scenario-option'));
             const emptyRow = document.getElementById('scenario-empty');
             const endpointInput = document.getElementById('endpoint-input');
-            const methodSelect = document.getElementById('method-select');
+            const methodDisplay = document.getElementById('method-display');
+            const methodInput = document.getElementById('method-input');
             const executeBtn = document.getElementById('execute-btn');
             const resultPanel = document.getElementById('result-panel');
             const resultStatus = document.getElementById('result-status');
             const resultTime = document.getElementById('result-time');
             const resultBody = document.getElementById('result-body').querySelector('code');
+
+            // Derive the HTTP method from the endpoint's role segment: api/role/{role}/{scenario}.
+            // The director role is read-only (GET); everything else is a POST.
+            function applyMethod(endpoint) {
+                const parts = (endpoint || '').replace(/^\/+|\/+$/g, '').split('/');
+                const role = (parts[0] === 'api' && parts[1] === 'role') ? parts[2] : null;
+                const method = (role && role.toLowerCase() === 'director') ? 'GET' : 'POST';
+                methodDisplay.textContent = method;
+                methodInput.value = method;
+            }
 
             // --- Searchable dropdown -------------------------------------------------
             function openList() {
@@ -162,13 +172,25 @@
             search.addEventListener('focus', function () { filterList(); openList(); });
             search.addEventListener('input', function () { filterList(); openList(); });
 
+            function selectOption(opt) {
+                search.value = opt.dataset.name;
+                endpointInput.value = opt.dataset.endpoint;
+                applyMethod(opt.dataset.endpoint);
+            }
+
             options.forEach(function (opt) {
                 opt.addEventListener('click', function () {
-                    search.value = opt.dataset.name;
-                    endpointInput.value = opt.dataset.endpoint;
+                    selectOption(opt);
                     closeList();
                 });
             });
+
+            // On load, auto-select the default endpoint (persist/persist when arriving via Play).
+            const defaultEndpoint = form.dataset.defaultEndpoint;
+            if (defaultEndpoint) {
+                const match = options.find(function (o) { return o.dataset.endpoint === defaultEndpoint; });
+                if (match) selectOption(match);
+            }
 
             document.addEventListener('click', function (e) {
                 if (!document.getElementById('scenario-combo').contains(e.target)) closeList();

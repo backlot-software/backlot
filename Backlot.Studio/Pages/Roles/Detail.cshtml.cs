@@ -71,6 +71,36 @@ public class DetailModel : AuthenticatedPageModel
         return Page();
     }
 
+    // Play — reloads the role, stashes its persist body and skills in session-backed TempData
+    // (consume-once), and redirects to the Client page, which reads them to pre-fill the body,
+    // filter the scenario list to the role's skills, and default to persist/persist. On load
+    // failure, redirects to the Client without TempData so it opens in normal mode.
+    public async Task<IActionResult> OnGetPlayAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Uid))
+            return RedirectToPage("/Roles/Persist");
+
+        try
+        {
+            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
+            if (redirect != null) return redirect;
+
+            var roleData = env?.Body.Unwrap("Role") ?? new JsonElement();
+            if (roleData.ValueKind != JsonValueKind.Object)
+                return RedirectToPage("/Client/Index");
+
+            TempData["PlayBody"] = BuildBody(roleData);
+            TempData["PlaySkills"] = JsonSerializer.Serialize(GetSkills(roleData).ToArray());
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogWarning(ex, "Failed to load role for Play, uid={Uid}", Uid);
+            return RedirectToPage("/Client/Index");
+        }
+
+        return RedirectToPage("/Client/Index");
+    }
+
     // Builds the raw .http request text for POST /api/role/{RoleType}/persist with the
     // role's current fields. The Authorization line carries the same base64 credential
     // the app uses for its own API requests, read from session ("BasicAuthHeader", stored

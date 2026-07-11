@@ -41,7 +41,8 @@ builder.Services.AddAuthorizationBuilder()
         .Build());
 
 builder.Services.AddRazorPages()
-    .AddRazorRuntimeCompilation();
+    .AddRazorRuntimeCompilation()
+    .AddSessionStateTempDataProvider();
 
 var app = builder.Build();
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Backlot.Studio.Models.Api;
 using Backlot.Studio.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,34 @@ public class IndexModel : AuthenticatedPageModel
     public List<ScenarioItem> Scenarios { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
 
+    // A single selectable dropdown entry: a scenario name paired with one endpoint.
+    public record ScenarioOption(string Name, string Endpoint);
+
+    // The dropdown entries. In normal mode there is one per scenario (its first endpoint). In
+    // "from Detail" mode (arrived via Play) the list is filtered to endpoints whose role segment
+    // is one of the role's skills, so a scenario may contribute several entries.
+    public List<ScenarioOption> Options { get; private set; } = [];
+
+    // Pre-filled request body (the role's persist JSON) when arriving via Play; empty otherwise.
+    public string PrefilledBody { get; private set; } = string.Empty;
+
+    // True when the page was opened via the role Detail Play button.
+    public bool FromDetail { get; private set; }
+
+    // Endpoint the page should auto-select on load (the persist/persist option), or null.
+    public string? DefaultEndpoint { get; private set; }
+
+    // Extracts the role segment from an endpoint of the form api/role/{role}/{scenario}.
+    // Returns null when the endpoint does not match that shape.
+    public static string? RoleSegment(string endpoint)
+    {
+        var parts = endpoint.Trim('/').Split('/');
+        // ["api", "role", "{role}", "{scenario}", ...]
+        if (parts.Length >= 4 && parts[0] == "api" && parts[1] == "role")
+            return parts[2];
+        return null;
+    }
+
     public IndexModel(IBacklotApiClient api, ILogger<IndexModel> logger)
     {
         _api = api;
@@ -41,6 +70,38 @@ public class IndexModel : AuthenticatedPageModel
                 .Where(s => s.Endpoints.Length > 0)
                 .OrderBy(s => s.Scenario, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+
+            // Consume Play data (session-backed TempData, read once). Present → "from Detail" mode.
+            var playBody = TempData["PlayBody"] as string;
+            var playSkillsJson = TempData["PlaySkills"] as string;
+
+            if (playBody != null && playSkillsJson != null)
+            {
+                FromDetail = true;
+                PrefilledBody = playBody;
+
+                var skills = new HashSet<string>(
+                    JsonSerializer.Deserialize<string[]>(playSkillsJson) ?? [],
+                    StringComparer.OrdinalIgnoreCase);
+
+                // One option per (scenario, endpoint) whose role segment is one of the role's skills.
+                Options = Scenarios
+                    .SelectMany(s => s.Endpoints
+                        .Where(e => RoleSegment(e) is string role && skills.Contains(role))
+                        .Select(e => new ScenarioOption(s.Scenario, e)))
+                    .ToList();
+
+                DefaultEndpoint = Options
+                    .FirstOrDefault(o => o.Endpoint.TrimEnd('/').EndsWith("/persist/persist", StringComparison.OrdinalIgnoreCase))
+                    ?.Endpoint;
+            }
+            else
+            {
+                // Normal mode: one option per scenario (its first endpoint).
+                Options = Scenarios
+                    .Select(s => new ScenarioOption(s.Scenario, s.Endpoints.First()))
+                    .ToList();
+            }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
