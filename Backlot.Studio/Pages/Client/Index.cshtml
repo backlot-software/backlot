@@ -72,6 +72,14 @@
                     </div>
                 </div>
 
+                <!-- Copy the ready-to-send .http request -->
+                <div>
+                    <button type="button" id="copy-btn" class="btn btn-outline w-full lg:w-auto">
+                        <i class="bi bi-clipboard"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+
                 <!-- Execute -->
                 <div>
                     <button type="submit" id="execute-btn" class="btn btn-primary w-full lg:w-auto">
@@ -133,6 +141,7 @@
             const methodDisplay = document.getElementById('method-display');
             const methodInput = document.getElementById('method-input');
             const executeBtn = document.getElementById('execute-btn');
+            const copyBtn = document.getElementById('copy-btn');
             const resultPanel = document.getElementById('result-panel');
             const resultStatus = document.getElementById('result-status');
             const resultTime = document.getElementById('result-time');
@@ -260,6 +269,44 @@
                     executeBtn.innerHTML = original;
                 }
             });
+
+            // --- Copy the ready-to-send .http request --------------------------------
+            // Ask the server to format the current method/endpoint/body (the Authorization line
+            // is filled in server-side from the session credential) and copy the result.
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async function () {
+                    if (!endpointInput.value.trim()) {
+                        endpointInput.focus();
+                        return;
+                    }
+
+                    const icon = copyBtn.querySelector('i');
+                    try {
+                        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                        const data = new FormData(form);
+                        const res = await fetch('?handler=Copy', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                            body: data
+                        });
+                        const payload = await res.json();
+                        if (!payload.text) return;
+
+                        await navigator.clipboard.writeText(payload.text);
+
+                        if (icon) {
+                            icon.classList.remove('bi-clipboard');
+                            icon.classList.add('bi-clipboard-check');
+                            setTimeout(function () {
+                                icon.classList.remove('bi-clipboard-check');
+                                icon.classList.add('bi-clipboard');
+                            }, 1500);
+                        }
+                    } catch (_) {
+                        /* clipboard/network failure — nothing to surface for a copy action */
+                    }
+                });
+            }
         })();
     </script>
 }

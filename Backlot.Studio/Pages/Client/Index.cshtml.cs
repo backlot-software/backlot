@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Backlot.Studio.Models.Api;
 using Backlot.Studio.Services;
@@ -164,5 +165,47 @@ public class IndexModel : AuthenticatedPageModel
                 StatusCode = StatusCodes.Status502BadGateway
             };
         }
+    }
+
+    // OnPostCopy — builds a ready-to-send raw .http request for the request the operator has
+    // composed (the selected method/endpoint plus the current body) and returns it as text for the
+    // page to copy to the clipboard. Living here rather than on the role Detail page means the copy
+    // works for every scenario endpoint, not just persist.
+    public IActionResult OnPostCopy()
+    {
+        if (string.IsNullOrWhiteSpace(Input.Endpoint))
+        {
+            return new JsonResult(new { error = "An endpoint is required. Select a scenario or type a path." })
+            {
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
+        return new JsonResult(new { text = BuildHttpRequest(Input.Method, Input.Endpoint, Input.Body) });
+    }
+
+    // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body. The
+    // Authorization line carries the same base64 credential the app uses for its own API requests,
+    // read from session ("BasicAuthHeader", stored without the "Basic " prefix by Login.cshtml.cs);
+    // missing session value → empty. The body block is omitted for GET requests (and empty bodies).
+    private string BuildHttpRequest(string method, string endpoint, string? body)
+    {
+        var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
+        var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
+        var path = endpoint.Trim().TrimStart('/');
+        var verb = string.IsNullOrWhiteSpace(method) ? "GET" : method.Trim().ToUpperInvariant();
+
+        var sb = new StringBuilder();
+        sb.Append(verb).Append(' ').Append(baseUrl).Append('/').Append(path).Append('\n');
+        sb.Append("Content-Type: application/json").Append('\n');
+        sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
+
+        if (verb != "GET" && !string.IsNullOrWhiteSpace(body))
+        {
+            sb.Append('\n');
+            sb.Append(body).Append('\n');
+        }
+
+        return sb.ToString();
     }
 }

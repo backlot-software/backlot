@@ -16,15 +16,6 @@
             <a href="/roles/@Model.RoleType/@Model.Uid?handler=Play" class="btn btn-primary">
                 <i class="bi bi-play-fill"></i><span>Play</span>
             </a>
-        
-            @if (!string.IsNullOrEmpty(Model.HttpRequestText))
-            {
-                <button type="button" data-action="copy-http-request" class="btn btn-primary">
-                    <i class="bi bi-clipboard"></i>
-                    <span>Change me</span>
-                </button>
-                <textarea id="http-request-content" class="hidden" aria-hidden="true" tabindex="-1">@Model.HttpRequestText</textarea>
-            }
         }
     </div>
 </div>

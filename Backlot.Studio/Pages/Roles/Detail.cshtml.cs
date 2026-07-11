@@ -31,10 +31,6 @@ public class DetailModel : AuthenticatedPageModel
         public string? OneLinePreview { get; set; }
     }
 
-    // Raw .http request text for POST /api/role/{RoleType}/persist, copied to the
-    // clipboard from the detail page. Empty when the role couldn't be loaded.
-    public string HttpRequestText { get; private set; } = string.Empty;
-
     public DetailModel(IBacklotApiClient api, ILogger<DetailModel> logger)
     {
         _api = api;
@@ -58,9 +54,6 @@ public class DetailModel : AuthenticatedPageModel
 
             var perms = GetPermissions(RoleData);
             CanWrite = perms.CanWrite;
-
-            if (RoleData.ValueKind == JsonValueKind.Object)
-                HttpRequestText = BuildHttpRequest(RoleData);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -99,25 +92,6 @@ public class DetailModel : AuthenticatedPageModel
         }
 
         return RedirectToPage("/Client/Index");
-    }
-
-    // Builds the raw .http request text for POST /api/role/{RoleType}/persist with the
-    // role's current fields. The Authorization line carries the same base64 credential
-    // the app uses for its own API requests, read from session ("BasicAuthHeader", stored
-    // without the "Basic " prefix by Login.cshtml.cs). Missing session value → empty.
-    private string BuildHttpRequest(JsonElement roleData)
-    {
-        var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
-        var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
-        var body = BuildBody(roleData);
-
-        var sb = new System.Text.StringBuilder();
-        sb.Append("POST ").Append(baseUrl).Append("/api/role/").Append(RoleType).Append("/persist").Append('\n');
-        sb.Append("Content-Type: application/json").Append('\n');
-        sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
-        sb.Append('\n');
-        sb.Append(body).Append('\n');
-        return sb.ToString();
     }
 
     // Serializes the role's non-system fields (Uid first) into a pretty-printed JSON object.
