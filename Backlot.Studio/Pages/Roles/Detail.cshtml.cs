@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Backlot.Studio.Models.Api;
 using Backlot.Studio.Services;
+using Backlot.Studio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +23,15 @@ public class DetailModel : AuthenticatedPageModel
     public JsonElement RoleData { get; private set; }
     public string? ErrorMessage { get; private set; }
     public bool CanWrite { get; private set; }
+
+    // The scenarios this role can be played through: those whose endpoint role segment is one of
+    // the role's skills. Populates the search box next to Play. Empty when none apply or the
+    // scenario list couldn't be loaded (the box is then omitted).
+    public List<ScenarioSearchOption> ScenarioOptions { get; private set; } = [];
+
+    // Endpoint the search box pre-selects on load (persist/persist when available, else the first
+    // playable scenario), so Play has a scenario predefined without any interaction. Null when none.
+    public string? DefaultScenarioEndpoint { get; private set; }
 
     public class FieldViewModel
     {
@@ -61,14 +72,49 @@ public class DetailModel : AuthenticatedPageModel
             ErrorMessage = "Could not load role details. The role may not exist or the API may be unavailable.";
         }
 
+        // Secondary: the playable-scenario search box. A failure here degrades to an omitted box
+        // rather than hiding the role, so it loads separately after the role has rendered.
+        if (ErrorMessage == null && RoleData.ValueKind == JsonValueKind.Object)
+        {
+            var redirect = await LoadScenarioOptionsAsync();
+            if (redirect != null) return redirect;
+        }
+
         return Page();
     }
 
-    // Play — reloads the role, stashes its persist body and skills in session-backed TempData
-    // (consume-once), and redirects to the Client page, which reads them to pre-fill the body,
-    // filter the scenario list to the role's skills, and default to persist/persist. On load
-    // failure, redirects to the Client without TempData so it opens in normal mode.
-    public async Task<IActionResult> OnGetPlayAsync()
+    // Loads the scenario list, keeps only the endpoints playable with this role's skills, and picks
+    // a default (persist/persist, else the first playable scenario). Returns a redirect on 401, else
+    // null; network failures are swallowed so the role detail still renders with an empty search box.
+    private async Task<IActionResult?> LoadScenarioOptionsAsync()
+    {
+        try
+        {
+            var (env, redirect) = await SafeApiCall(async () =>
+                await _api.PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios"));
+            if (redirect != null) return redirect;
+
+            var scenarios = (env?.Body ?? []).Where(s => s.Endpoints.Length > 0);
+            var skills = new HashSet<string>(GetSkills(RoleData), StringComparer.OrdinalIgnoreCase);
+
+            ScenarioOptions = ScenarioEndpoint.OptionsForSkills(scenarios, skills);
+            DefaultScenarioEndpoint =
+                ScenarioOptions.FirstOrDefault(o => o.Endpoint.TrimEnd('/').EndsWith("/persist/persist", StringComparison.OrdinalIgnoreCase))?.Endpoint
+                ?? ScenarioOptions.FirstOrDefault()?.Endpoint;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogWarning(ex, "Failed to load scenarios for role Detail search box, uid={Uid}", Uid);
+        }
+        return null;
+    }
+
+    // Play — reloads the role, stashes its persist body, skills, and the scenario endpoint the
+    // operator chose in the search box in session-backed TempData (consume-once), and redirects to
+    // the Client page, which reads them to pre-fill the body, filter the scenario list to the role's
+    // skills, and default to the chosen scenario (falling back to persist/persist). On load failure,
+    // redirects to the Client without TempData so it opens in normal mode.
+    public async Task<IActionResult> OnGetPlayAsync(string? endpoint)
     {
         if (string.IsNullOrWhiteSpace(Uid))
             return RedirectToPage("/Roles/Persist");
@@ -84,6 +130,8 @@ public class DetailModel : AuthenticatedPageModel
 
             TempData["PlayBody"] = BuildBody(roleData);
             TempData["PlaySkills"] = JsonSerializer.Serialize(GetSkills(roleData).ToArray());
+            if (!string.IsNullOrWhiteSpace(endpoint))
+                TempData["PlayEndpoint"] = endpoint;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

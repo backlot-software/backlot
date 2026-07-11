@@ -42,34 +42,17 @@
                     <input type="hidden" id="method-input" name="Input.Method" value="GET" />
                 </div>
 
-                <!-- Searchable scenario dropdown -->
+                <!-- Searchable scenario dropdown (shared with the role Detail page) -->
                 <div class="flex-1">
                     <label for="scenario-search" class="form-label">Scenario</label>
-                    <div class="relative" id="scenario-combo">
-                        <input type="text"
-                               id="scenario-search"
-                               class="form-input"
-                               placeholder="Search scenarios…"
-                               autocomplete="off"
-                               role="combobox"
-                               aria-expanded="false"
-                               aria-controls="scenario-list" />
-                        <ul id="scenario-list"
-                            class="hidden absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-secondary-200 rounded-md shadow-dropdown"
-                            role="listbox">
-                            @foreach (var o in Model.Options)
-                            {
-                                <li class="scenario-option px-3 py-2 cursor-pointer hover:bg-secondary-100"
-                                    role="option"
-                                    data-name="@o.Name"
-                                    data-endpoint="@o.Endpoint">
-                                    <div class="text-sm font-medium text-secondary-900">@o.Name</div>
-                                    <div class="text-xs text-secondary-500 font-mono truncate">@o.Endpoint</div>
-                                </li>
-                            }
-                            <li id="scenario-empty" class="hidden px-3 py-2 text-sm text-secondary-500">No scenarios match.</li>
-                        </ul>
-                    </div>
+                    @{
+                        var scenarioSearchModel = new Backlot.Studio.ViewModels.ScenarioSearchViewModel
+                        {
+                            Id = "scenario",
+                            Options = Model.Options
+                        };
+                    }
+                    <partial name="_ScenarioSearchBox" model="scenarioSearchModel" />
                 </div>
 
                 <!-- Copy the ready-to-send .http request -->
@@ -133,10 +116,6 @@
             const form = document.getElementById('client-form');
             if (!form) return;
 
-            const search = document.getElementById('scenario-search');
-            const list = document.getElementById('scenario-list');
-            const options = Array.from(list.querySelectorAll('.scenario-option'));
-            const emptyRow = document.getElementById('scenario-empty');
             const endpointInput = document.getElementById('endpoint-input');
             const methodDisplay = document.getElementById('method-display');
             const methodInput = document.getElementById('method-input');
@@ -157,53 +136,21 @@
                 methodInput.value = method;
             }
 
-            // --- Searchable dropdown -------------------------------------------------
-            function openList() {
-                list.classList.remove('hidden');
-                search.setAttribute('aria-expanded', 'true');
-            }
-            function closeList() {
-                list.classList.add('hidden');
-                search.setAttribute('aria-expanded', 'false');
-            }
-            function filterList() {
-                const q = search.value.trim().toLowerCase();
-                let visible = 0;
-                options.forEach(function (opt) {
-                    const hay = (opt.dataset.name + ' ' + opt.dataset.endpoint).toLowerCase();
-                    const match = hay.indexOf(q) !== -1;
-                    opt.classList.toggle('hidden', !match);
-                    if (match) visible++;
-                });
-                emptyRow.classList.toggle('hidden', visible !== 0);
-            }
-
-            search.addEventListener('focus', function () { filterList(); openList(); });
-            search.addEventListener('input', function () { filterList(); openList(); });
-
-            function selectOption(opt) {
-                search.value = opt.dataset.name;
-                endpointInput.value = opt.dataset.endpoint;
-                applyMethod(opt.dataset.endpoint);
-            }
-
-            options.forEach(function (opt) {
-                opt.addEventListener('click', function () {
-                    selectOption(opt);
-                    closeList();
-                });
+            // --- Shared searchable scenario dropdown ---------------------------------
+            const scenarioSearch = window.initScenarioSearch({
+                id: 'scenario',
+                onSelect: function (name, endpoint) {
+                    endpointInput.value = endpoint;
+                    applyMethod(endpoint);
+                }
             });
 
-            // On load, auto-select the default endpoint (persist/persist when arriving via Play).
+            // On load, auto-select the default endpoint (the scenario chosen on Detail, or
+            // persist/persist, when arriving via Play).
             const defaultEndpoint = form.dataset.defaultEndpoint;
-            if (defaultEndpoint) {
-                const match = options.find(function (o) { return o.dataset.endpoint === defaultEndpoint; });
-                if (match) selectOption(match);
+            if (defaultEndpoint && scenarioSearch) {
+                scenarioSearch.selectByEndpoint(defaultEndpoint);
             }
-
-            document.addEventListener('click', function (e) {
-                if (!document.getElementById('scenario-combo').contains(e.target)) closeList();
-            });
 
             // --- Execute -------------------------------------------------------------
             function setStatusBadge(code, ok) {

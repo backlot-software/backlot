@@ -10,10 +10,21 @@
     <div>
         <h1 class="text-2xl font-bold text-secondary-900">@Model.PageTitle</h1>
     </div>
-    <div class="flex gap-3 mt-4 md:mt-0">
+    <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 sm:items-center">
+        @if (Model.ErrorMessage == null && Model.ScenarioOptions.Any())
+        {
+            var detailSearchModel = new Backlot.Studio.ViewModels.ScenarioSearchViewModel
+            {
+                Id = "detail-scenario",
+                Options = Model.ScenarioOptions
+            };
+            <div class="w-full sm:w-72">
+                <partial name="_ScenarioSearchBox" model="detailSearchModel" />
+            </div>
+        }
         @if (Model.ErrorMessage == null)
         {
-            <a href="/roles/@Model.RoleType/@Model.Uid?handler=Play" class="btn btn-primary">
+            <a id="play-link" href="/roles/@Model.RoleType/@Model.Uid?handler=Play" class="btn btn-primary">
                 <i class="bi bi-play-fill"></i><span>Play</span>
             </a>
         }
@@ -126,5 +137,30 @@ else
             </turbo-frame>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const playLink = document.getElementById('play-link');
+            if (!playLink) return;
+
+            // The Play link carries the chosen scenario to the Client via ?...&endpoint=. Selecting
+            // an option (only skill-playable scenarios are listed) rewrites the endpoint each time.
+            const baseHref = playLink.getAttribute('href');
+            const search = window.initScenarioSearch({
+                id: 'detail-scenario',
+                onSelect: function (name, endpoint) {
+                    playLink.setAttribute('href', baseHref + '&endpoint=' + encodeURIComponent(endpoint));
+                }
+            });
+
+            // Pre-select the default so Play has a scenario predefined without any interaction.
+            const defaultEndpoint = @Json.Serialize(Model.DefaultScenarioEndpoint);
+            if (defaultEndpoint && search) {
+                search.selectByEndpoint(defaultEndpoint);
+            }
+        })();
+    </script>
 }
 
