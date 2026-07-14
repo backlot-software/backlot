@@ -82,9 +82,27 @@ Both the azure and web demos require a usersandgroups.json file. By default this
 
 ### Contributions
 
-Contributing to Backlot requires signing a Contributor License Agreement (CLA). This ensures that the project remains open and protected for the entire community. We look forward to your pull requests.
+Contributing to Backlot requires signing a Contributor License Agreement ([CLA](CLA.MD)). This ensures that the project remains open and protected for the entire community. We look forward to your pull requests.
 
 ### Documentation
 
 Official documentation, including tutorials and API guides, can be found at:
 https://docs.backlot.software
+
+### Licensing
+
+The Backlot Framework is available under **two licenses**:
+- **AGPLv3** (open-source).
+- **Commercial License** (proprietary).
+
+#### Open source
+
+The AGPLv3 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPLv3 terms a **commercial license** is necessary.
+Most frequently asked questions are answered in our [LICENSE-FAQ](LICENSE-FAQ.md).
+
+#### Commercial license
+
+Commercial licenses are available via
+
+- Worldwide: [Growcreate Netherlands B.V.](https://growcreate.nl/contact/)
+- United Kingdom: [Growcreate Ltd.](https://growcreate.co.uk/contact/)

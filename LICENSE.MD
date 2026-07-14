@@ -1,12 +1,15 @@
-# Copyright Notice
+Backlot Framework - An opinionated framework on top of .NET Core for building API-centric web and back-end systems.
+Copyright (C) 2026  Jeroen Wijdeven Holding B.V.
 
-Copyright (c) 2026 Jeroen Wijdeven Holding B.V. All rights reserved.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 
-This software and associated documentation files are the exclusive property of 
-Jeroen Wijdeven Holding B.V. No license is granted herein. All rights are reserved under 
-applicable copyright law.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
 
-No part of this software may be reproduced, distributed, or transmitted in any 
-form or by any means without the prior written permission of the copyright holder.
-
-THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+You should have received a [copy](LICENSE-AGPL.MD) of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
