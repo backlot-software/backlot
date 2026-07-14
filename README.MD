@@ -97,8 +97,7 @@ The Backlot Framework is available under **two licenses**:
 
 #### Open source
 
-The AGPLv3 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPLv3 terms a **commercial license** is necessary.
-Most frequently asked questions are answered in our [LICENSE-FAQ](LICENSE-FAQ.md).
+The AGPLv3 is a copyleft license, which means that any derivative work must also be licensed under the same terms. If you cannot comply with the AGPLv3 terms a **commercial license** is necessary. Most frequently asked questions are answered in our [FAQ](FAQ-LICENSE.MD).
 
 #### Commercial license
 
