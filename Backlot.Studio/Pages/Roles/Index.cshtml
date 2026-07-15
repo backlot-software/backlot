@@ -186,10 +186,17 @@
                                         }
                                     </td>
                                     <td class="p-3 text-right" data-col="Actions">
+                                        @* Plain (non-Turbo) navigation. This link lives inside the
+                                           #role-list <turbo-frame>, so breaking out to the detail page
+                                           depended on data-turbo-frame="_top"; combined with Turbo 8's
+                                           default hover-prefetch, that framed _top link intermittently
+                                           resolved against a cached frame-scoped response and bounced
+                                           back to the previous page (the dashboard) instead of the
+                                           detail page. data-turbo="false" makes the browser navigate
+                                           directly and reliably to the detail page every time. *@
                                         <a href="/roles/@Model.RoleType/@uid"
                                            class="btn btn-secondary"
-                                           data-turbo-frame="_top"
-                                           data-turbo-action="advance">
+                                           data-turbo="false">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
