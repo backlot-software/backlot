@@ -1,0 +1,456 @@
+@page
+@model Backlot.Studio.Pages.Configuration.IndexModel
+@{
+    ViewData["Title"] = "Configuration";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Configuration</h1>
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-0">
+        <a href="@Model.ApiBaseUrl/scalar/v1" target="_blank" class="btn btn-outline">
+            <i class="bi bi-book"></i>
+            <span>API Documentation</span>
+        </a>
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/configuration" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+@if (!Model.Classes.Any())
+{
+    @if (Model.ErrorMessage == null)
+    {
+        <div class="empty-state">
+            <i class="bi bi-gear"></i>
+            <h3>No configuration entries</h3>
+            <p>The Backlot API returned an empty configuration list.</p>
+            <a href="/configuration" class="btn btn-primary mt-4">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Refresh</span>
+            </a>
+        </div>
+    }
+}
+else
+{
+    <div id="config-root" class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+        @Html.AntiForgeryToken()
+
+        <!-- Navigation tree -->
+        <aside class="card self-start">
+            <div class="card-header">
+                <div class="search-input">
+                    <i class="bi bi-search"></i>
+                    <input id="config-tree-filter" type="text" class="form-input" placeholder="Filter settings…" autocomplete="off" />
+                </div>
+            </div>
+            <div class="card-body max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <ul id="config-tree" class="space-y-0.5">
+                    @foreach (var node in Model.Root.Children.Values)
+                    {
+                        <partial name="_ConfigTreeNode" model="node" />
+                    }
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Editor panels -->
+        <section>
+            <div id="config-empty-hint" class="empty-state hidden">
+                <i class="bi bi-arrow-left-circle"></i>
+                <h3>Select a setting group</h3>
+                <p>Choose a class from the navigation tree to view and edit its configuration.</p>
+            </div>
+
+            @foreach (var cls in Model.Classes)
+            {
+                <div class="config-panel card hidden" data-config-class="@cls.FullPath">
+                    <div class="card-header">
+                        <h2 class="text-lg font-semibold text-secondary-900 flex items-center gap-2">
+                            <i class="bi bi-sliders text-primary-500"></i>
+                            <span>@cls.Segment</span>
+                        </h2>
+                        <p class="text-xs text-secondary-500 font-mono mt-1">@cls.FullPath</p>
+                    </div>
+                    <div class="card-body divide-y divide-secondary-200">
+                        @foreach (var prop in cls.Properties)
+                        {
+                            <div class="config-property py-4 first:pt-0 last:pb-0"
+                                 data-class="@prop.ClassPath"
+                                 data-property="@prop.PropertyName">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div>
+                                        <label class="form-label mb-0">@prop.PropertyName</label>
+                                        <div class="text-xs text-secondary-400 font-mono">@prop.Name</div>
+                                    </div>
+                                    <span class="badge badge-secondary">@(prop.IsBoolean ? "Boolean" : "String")</span>
+                                </div>
+
+                                <!-- Default value editor -->
+                                <div class="config-value-row flex items-center gap-3"
+                                     data-name="@prop.Name"
+                                     data-bool="@prop.IsBoolean.ToString().ToLowerInvariant()">
+                                    @{
+                                        var boolChecked = prop.Value is not null &&
+                                            (prop.Value.Equals("true", StringComparison.OrdinalIgnoreCase) || prop.Value == "1");
+                                    }
+                                    @if (prop.IsBoolean)
+                                    {
+                                        <label class="switch">
+                                            <input type="checkbox" class="config-toggle" @(boolChecked ? "checked" : "") @(prop.ReadOnly ? "disabled" : "") />
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="config-input form-input flex-1 font-mono text-sm"
+                                               value="@prop.Value" @(prop.ReadOnly ? "readonly" : "") />
+                                    }
+
+                                    @if (prop.ReadOnly)
+                                    {
+                                        <span class="badge badge-warning">Read-only</span>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="config-save btn btn-primary">
+                                            <i class="bi bi-check-lg"></i><span>Save</span>
+                                        </button>
+                                    }
+                                    <span class="config-status text-sm"></span>
+                                </div>
+
+                                <!-- Named alternatives -->
+                                <div class="mt-4 pl-4 border-l-2 border-secondary-100">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-semibold text-secondary-400 uppercase tracking-wider">Named configurations</span>
+                                    </div>
+                                    <div class="named-list space-y-2">
+                                        @foreach (var named in prop.Named)
+                                        {
+                                            <div class="named-row flex items-center gap-2"
+                                                 data-name="@named.Name"
+                                                 data-bool="@prop.IsBoolean.ToString().ToLowerInvariant()"
+                                                 data-persisted="true">
+                                                <span class="chip font-mono">@named.ConfigName</span>
+                                                @{
+                                                    var namedChecked = named.Value is not null &&
+                                                        (named.Value.Equals("true", StringComparison.OrdinalIgnoreCase) || named.Value == "1");
+                                                }
+                                                @if (prop.IsBoolean)
+                                                {
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="config-toggle" @(namedChecked ? "checked" : "") />
+                                                        <span class="switch-slider"></span>
+                                                    </label>
+                                                }
+                                                else
+                                                {
+                                                    <input type="text" class="config-input form-input flex-1 font-mono text-sm" value="@named.Value" />
+                                                }
+                                                <button type="button" class="config-save btn btn-primary">
+                                                    <i class="bi bi-check-lg"></i><span>Save</span>
+                                                </button>
+                                                <button type="button" class="named-remove btn btn-outline" title="Remove named configuration">
+                                                    <i class="bi bi-dash-lg"></i>
+                                                </button>
+                                                <span class="config-status text-sm"></span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <button type="button" class="add-named btn btn-outline mt-2"
+                                            data-class="@prop.ClassPath"
+                                            data-property="@prop.PropertyName"
+                                            data-bool="@prop.IsBoolean.ToString().ToLowerInvariant()">
+                                        <i class="bi bi-plus-lg"></i><span>Add named configuration</span>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+
+    <!-- Template for a new (unsaved) named configuration row -->
+    <template id="named-row-template">
+        <div class="named-row flex items-center gap-2" data-persisted="false">
+            <input type="text" class="named-name-input form-input font-mono text-sm" style="max-width:9rem" placeholder="name" />
+            <span class="named-value-slot flex-1"></span>
+            <button type="button" class="config-save btn btn-primary">
+                <i class="bi bi-check-lg"></i><span>Save</span>
+            </button>
+            <button type="button" class="named-remove btn btn-outline" title="Remove named configuration">
+                <i class="bi bi-dash-lg"></i>
+            </button>
+            <span class="config-status text-sm"></span>
+        </div>
+    </template>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const root = document.getElementById('config-root');
+            if (!root) return;
+
+            const antiforgery = root.querySelector('input[name="__RequestVerificationToken"]');
+            const token = antiforgery ? antiforgery.value : '';
+            const panels = Array.from(root.querySelectorAll('.config-panel'));
+            const emptyHint = document.getElementById('config-empty-hint');
+
+            // --- Navigation tree: expand/collapse, selection, filter ---------------------------
+            function showPanel(fullPath) {
+                let shown = false;
+                panels.forEach(function (p) {
+                    const match = p.dataset.configClass === fullPath;
+                    p.classList.toggle('hidden', !match);
+                    if (match) shown = true;
+                });
+                if (emptyHint) emptyHint.classList.toggle('hidden', shown);
+                root.querySelectorAll('.config-tree-class').forEach(function (b) {
+                    b.classList.toggle('bg-primary-50', b.dataset.configClass === fullPath);
+                    b.classList.toggle('text-primary-700', b.dataset.configClass === fullPath);
+                });
+            }
+
+            root.addEventListener('click', function (e) {
+                const toggle = e.target.closest('.config-tree-toggle');
+                if (toggle) {
+                    const li = toggle.closest('li');
+                    const children = li ? li.querySelector(':scope > .config-tree-children') : null;
+                    if (children) {
+                        const collapsed = children.classList.toggle('hidden');
+                        toggle.setAttribute('aria-expanded', String(!collapsed));
+                        const icon = toggle.querySelector('i');
+                        if (icon) {
+                            icon.classList.toggle('bi-chevron-down', !collapsed);
+                            icon.classList.toggle('bi-chevron-right', collapsed);
+                        }
+                    }
+                    return;
+                }
+
+                const branch = e.target.closest('.config-tree-branch');
+                if (branch) {
+                    const li = branch.closest('li');
+                    const t = li ? li.querySelector(':scope > div .config-tree-toggle') : null;
+                    if (t) t.click();
+                    return;
+                }
+
+                const classBtn = e.target.closest('.config-tree-class');
+                if (classBtn) {
+                    showPanel(classBtn.dataset.configClass);
+                    return;
+                }
+            });
+
+            // Select the first class on load.
+            const firstClass = root.querySelector('.config-tree-class');
+            if (firstClass) {
+                showPanel(firstClass.dataset.configClass);
+            } else if (emptyHint) {
+                emptyHint.classList.remove('hidden');
+            }
+
+            // Tree filter: hide leaf class buttons that don't match; keep ancestors of matches visible.
+            const filter = document.getElementById('config-tree-filter');
+            if (filter) {
+                filter.addEventListener('input', function () {
+                    const q = filter.value.trim().toLowerCase();
+                    const items = root.querySelectorAll('#config-tree li');
+                    items.forEach(function (li) {
+                        const cls = li.querySelector(':scope > div .config-tree-class');
+                        if (cls) {
+                            const hay = cls.dataset.configClass.toLowerCase();
+                            li.dataset.match = (q === '' || hay.indexOf(q) !== -1) ? '1' : '0';
+                        }
+                    });
+                    // A branch li is visible if any descendant class li matches.
+                    items.forEach(function (li) {
+                        const hasClass = li.querySelector(':scope > div .config-tree-class');
+                        if (hasClass) {
+                            li.classList.toggle('hidden', li.dataset.match === '0');
+                        } else {
+                            const anyVisible = li.querySelector('.config-tree-class') &&
+                                Array.from(li.querySelectorAll('.config-tree-class')).some(function (c) {
+                                    const h = c.dataset.configClass.toLowerCase();
+                                    return q === '' || h.indexOf(q) !== -1;
+                                });
+                            li.classList.toggle('hidden', !anyVisible);
+                        }
+                    });
+                });
+            }
+
+            // --- Value helpers -----------------------------------------------------------------
+            function readValue(row) {
+                const toggle = row.querySelector('.config-toggle');
+                if (toggle) return toggle.checked ? 'true' : 'false';
+                const input = row.querySelector('.config-input');
+                return input ? input.value : '';
+            }
+
+            function resolveName(row) {
+                if (row.dataset.name) return row.dataset.name;
+                // Unsaved named row: compose {class}.{name}.{property}.
+                const cls = row.dataset.class;
+                const prop = row.dataset.property;
+                const nameInput = row.querySelector('.named-name-input');
+                const name = nameInput ? nameInput.value.trim() : '';
+                if (!cls || !prop || !name) return null;
+                return cls + '.' + name + '.' + prop;
+            }
+
+            function setStatus(el, message, ok) {
+                if (!el) return;
+                el.textContent = message;
+                el.className = 'config-status text-sm ' + (ok ? 'text-success-600' : 'text-danger-600');
+                if (ok) {
+                    setTimeout(function () { el.textContent = ''; }, 2500);
+                }
+            }
+
+            async function save(row, btn) {
+                const name = resolveName(row);
+                const statusEl = row.querySelector('.config-status');
+                if (!name) {
+                    setStatus(statusEl, 'A name is required.', false);
+                    return;
+                }
+                const isBool = row.dataset.bool === 'true';
+                const value = readValue(row);
+
+                const original = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span>';
+
+                try {
+                    const data = new FormData();
+                    data.append('Input.Name', name);
+                    data.append('Input.Value', value);
+                    data.append('Input.IsBoolean', isBool ? 'true' : 'false');
+
+                    const res = await fetch('?handler=Update', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                        body: data
+                    });
+                    const payload = await res.json();
+
+                    if (payload.unauthorized) { window.location.href = '/login'; return; }
+
+                    if (payload.ok) {
+                        // Persist the resolved name so a subsequent Save/Remove targets the same entry.
+                        row.dataset.name = name;
+                        row.dataset.persisted = 'true';
+                        const nameInput = row.querySelector('.named-name-input');
+                        if (nameInput) {
+                            const chip = document.createElement('span');
+                            chip.className = 'chip font-mono';
+                            chip.textContent = nameInput.value.trim();
+                            nameInput.replaceWith(chip);
+                        }
+                        setStatus(statusEl, 'Saved', true);
+                    } else {
+                        setStatus(statusEl, payload.error || 'Save failed.', false);
+                    }
+                } catch (err) {
+                    setStatus(statusEl, 'Network error.', false);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                }
+            }
+
+            // --- Add / remove named configurations ---------------------------------------------
+            function buildValueControl(isBool) {
+                if (isBool) {
+                    const label = document.createElement('label');
+                    label.className = 'switch';
+                    label.innerHTML = '<input type="checkbox" class="config-toggle" /><span class="switch-slider"></span>';
+                    return label;
+                }
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'config-input form-input flex-1 font-mono text-sm';
+                return input;
+            }
+
+            root.addEventListener('click', function (e) {
+                const addBtn = e.target.closest('.add-named');
+                if (addBtn) {
+                    const tpl = document.getElementById('named-row-template');
+                    const isBool = addBtn.dataset.bool === 'true';
+                    const frag = tpl.content.cloneNode(true);
+                    const row = frag.querySelector('.named-row');
+                    row.dataset.class = addBtn.dataset.class;
+                    row.dataset.property = addBtn.dataset.property;
+                    row.dataset.bool = addBtn.dataset.bool;
+                    row.querySelector('.named-value-slot').replaceWith(buildValueControl(isBool));
+                    const list = addBtn.closest('.config-property').querySelector('.named-list');
+                    list.appendChild(row);
+                    const nameInput = row.querySelector('.named-name-input');
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
+                const removeBtn = e.target.closest('.named-remove');
+                if (removeBtn) {
+                    const row = removeBtn.closest('.named-row');
+                    if (row.dataset.persisted === 'true') {
+                        removeNamed(row, removeBtn);
+                    } else {
+                        row.remove();
+                    }
+                    return;
+                }
+
+                const saveBtn = e.target.closest('.config-save');
+                if (saveBtn) {
+                    const row = saveBtn.closest('.config-value-row, .named-row');
+                    if (row) save(row, saveBtn);
+                }
+            });
+
+            async function removeNamed(row, btn) {
+                const statusEl = row.querySelector('.config-status');
+                const name = row.dataset.name;
+                const original = btn.innerHTML;
+                btn.disabled = true;
+                try {
+                    const data = new FormData();
+                    data.append('Input.Name', name);
+                    const res = await fetch('?handler=Remove', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                        body: data
+                    });
+                    if (res.ok) {
+                        row.remove();
+                    } else {
+                        setStatus(statusEl, 'Remove is not available yet.', false);
+                    }
+                } catch (err) {
+                    setStatus(statusEl, 'Remove is not available yet.', false);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                }
+            }
+        })();
+    </script>
+}
