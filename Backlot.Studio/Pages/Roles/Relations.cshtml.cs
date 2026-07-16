@@ -12,7 +12,7 @@ public class RelationsModel : AuthenticatedPageModel
     private readonly ILogger<RelationsModel> _logger;
 
     [BindProperty(SupportsGet = true)]
-    public string Uid { get; set; } = string.Empty;
+    public string Uid { get; set; }
 
     public IEnumerable<RelationItem> Relations { get; private set; } = [];
     public string? ErrorMessage { get; private set; }

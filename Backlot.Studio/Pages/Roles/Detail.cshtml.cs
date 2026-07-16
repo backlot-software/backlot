@@ -18,7 +18,7 @@ public class DetailModel : AuthenticatedPageModel
     public string Uid { get; set; } = string.Empty;
     
     [BindProperty(SupportsGet = true)]
-    public string RoleType { get; set; } = "Persist";
+    public string RoleType { get; set; }
 
     public JsonElement RoleData { get; private set; }
     public string? ErrorMessage { get; private set; }
@@ -53,7 +53,7 @@ public class DetailModel : AuthenticatedPageModel
         SetUserContext();
 
         if (string.IsNullOrWhiteSpace(Uid))
-            return RedirectToPage("/Roles/Persist");
+            return RedirectToPage("/Roles");
 
         try
         {
@@ -117,7 +117,7 @@ public class DetailModel : AuthenticatedPageModel
     public async Task<IActionResult> OnGetPlayAsync(string? endpoint)
     {
         if (string.IsNullOrWhiteSpace(Uid))
-            return RedirectToPage("/Roles/Persist");
+            return RedirectToPage("/Roles");
 
         try
         {
