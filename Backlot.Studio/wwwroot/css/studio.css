@@ -72,16 +72,16 @@
 
 /* Primary button */
 .btn-primary {
-    background-color: #4f46e5;
+    background-color: #f90093;
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #4338ca;
+    background-color: #dd0082;
 }
 
 .btn-primary:active {
-    background-color: #3730a3;
+    background-color: #e60088;
 }
 
 /* Secondary button */
@@ -173,7 +173,7 @@
 
 .form-input:focus {
     outline: none;
-    border-color: #4f46e5;
+    border-color: #79fe0c;
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -204,7 +204,7 @@
 
 .badge-primary {
     background-color: #e0e7ff;
-    color: #4f46e5;
+    color: #64748b;
 }
 
 .badge-success {
@@ -332,7 +332,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid #e2e8f0;
-    border-top-color: #4f46e5;
+    border-top-color: #f90093;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -411,7 +411,7 @@
     }
     
     .dark-mode .form-input:focus {
-        border-color: #6366f1;
+        border-color: #79fe0c;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 }
@@ -459,7 +459,7 @@
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    background: linear-gradient(90deg, #f90093, #79fe0c);
     border-radius: 9999px;
     transition: width 0.3s ease;
 }
@@ -544,7 +544,7 @@
 }
 
 .code-block code {
-    color: #4f46e5;
+    color: #0f172a;
 }
 
 /* Responsive grid */
@@ -578,7 +578,7 @@
     top: 0.5rem;
     right: 0.5rem;
     padding: 0.25rem 0.5rem;
-    background-color: #4f46e5;
+    background-color: #f90093;
     color: white;
     font-size: 0.75rem;
     border-radius: 0.25rem;
@@ -666,7 +666,7 @@
 }
 
 .search-input:focus-within i {
-    color: #4f46e5;
+    color: #f90093;
 }
 
 /* Filter pill */
@@ -688,7 +688,7 @@
 }
 
 .filter-pill.active {
-    background-color: #4f46e5;
+    background-color: #f90093;
     color: white;
 }
 
@@ -778,8 +778,8 @@
 }
 
 .tab.active {
-    color: #4f46e5;
-    border-bottom-color: #4f46e5;
+    color: #f90093;
+    border-bottom-color: #dd0082;
 }
 
 /* Switch toggle */
@@ -821,7 +821,7 @@
 }
 
 .switch input:checked + .switch-slider {
-    background-color: #4f46e5;
+    background-color: #f90093;
 }
 
 .switch input:checked + .switch-slider:before {
@@ -844,7 +844,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #4f46e5;
+    background: #f90093;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -858,7 +858,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #4f46e5;
+    background: #f90093;
     cursor: pointer;
     border: none;
 }
@@ -874,12 +874,12 @@
 }
 
 .upload-area:hover {
-    border-color: #4f46e5;
+    border-color: #f90093;
     background-color: #f8fafc;
 }
 
 .upload-area.active {
-    border-color: #4f46e5;
+    border-color: #f90093;
     background-color: #eff6ff;
 }
 
@@ -929,9 +929,9 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #4f46e5;
+    background-color: #f90093;
     border: 2px solid white;
-    box-shadow: 0 0 0 2px #4f46e5;
+    box-shadow: 0 0 0 2px #f90093;
 }
 
 .timeline-time {
@@ -1094,7 +1094,7 @@
 
 /* Gradient backgrounds */
 .gradient-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #f90093 0%, #7c3aed 100%);
 }
 
 .gradient-secondary {
@@ -1115,7 +1115,7 @@
 
 /* Text gradients */
 .text-gradient-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #f90093 0%, #7c3aed 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1139,7 +1139,7 @@
     right: -1px;
     bottom: -1px;
     background: linear-gradient(45deg, 
-        #4f46e5, 
+        #f90093, 
         #7c3aed, 
         #ec4899, 
         #f59e0b);
@@ -1211,7 +1211,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #f90093 0%, #7c3aed 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -1306,19 +1306,17 @@
 
 /* Active scrollbar (for mouse wheel scrolling) */
 .custom-scrollbar:active::-webkit-scrollbar-thumb {
-    background: #4f46e5;
+    background: #f90093;
 }
 
 /* Selection styling */
 ::selection {
     background-color: rgba(79, 70, 229, 0.2);
-    color: #4f46e5;
 }
 
 /* Mark styling */
 mark {
     background-color: rgba(79, 70, 229, 0.1);
-    color: #4f46e5;
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
 }
@@ -1496,9 +1494,9 @@ pre code > span::before {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #4f46e5;
+    background-color: #f90093;
     border: 2px solid white;
-    box-shadow: 0 0 0 2px #4f46e5;
+    box-shadow: 0 0 0 2px #f90093;
 }
 
 .branch-label {
@@ -1515,7 +1513,7 @@ pre code > span::before {
     left: 50%;
     width: 40px;
     height: 40px;
-    border: 2px solid #4f46e5;
+    border: 2px solid #f90093;
     border-radius: 50%;
     background: white;
     transform: translateX(-50%);
@@ -1525,7 +1523,7 @@ pre code > span::before {
 .branch-merge::after {
     content: '';
     position: absolute;
-    background: #4f46e5;
+    background: #f90093;
     height: 2px;
     width: 50%;
     top: 50%;
@@ -1568,11 +1566,11 @@ pre code > span::before {
 
 .calendar-day.today {
     font-weight: 600;
-    color: #4f46e5;
+    color: #f90093;
 }
 
 .calendar-day.selected {
-    background-color: #4f46e5;
+    background-color: #f90093;
     color: white;
     font-weight: 600;
 }
@@ -1654,7 +1652,7 @@ pre code > span::before {
     left: 50%;
     width: 8px;
     height: 8px;
-    background-color: #4f46e5;
+    background-color: #f90093;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
@@ -1666,7 +1664,7 @@ pre code > span::before {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #f90093 0%, #7c3aed 100%);
     border-radius: 0.75rem;
     color: white;
 }
@@ -1753,7 +1751,7 @@ pre code > span::before {
     font-size: 1rem;
 }
 
-.widget-icon.primary { background-color: rgba(79, 70, 229, 0.1); color: #4f46e5; }
+.widget-icon.primary { background-color: rgba(79, 70, 229, 0.1); color: #f90093; }
 .widget-icon.success { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
 .widget-icon.warning { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 .widget-icon.danger { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
@@ -1761,7 +1759,7 @@ pre code > span::before {
 /* Sparkline charts */
 .sparkline {
     height: 40px;
-    stroke: #4f46e5;
+    stroke: #f90093;
     stroke-width: 2;
     fill: none;
     stroke-linecap: round;
@@ -1803,7 +1801,7 @@ pre code > span::before {
 }
 
 .radial-progress-bar {
-    stroke: #4f46e5;
+    stroke: #f90093;
     stroke-width: 8;
     transition: stroke-dashoffset 0.5s ease;
 }
@@ -1930,7 +1928,7 @@ pre code > span::before {
     width: 16px;
     height: 16px;
     border: 2px solid #e2e8f0;
-    border-top-color: #4f46e5;
+    border-top-color: #f90093;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -1958,12 +1956,12 @@ pre code > span::before {
 }
 
 .pull-to-refresh.ready .pull-to-refresh-icon {
-    color: #4f46e5;
+    color: #f90093;
     transform: rotate(180deg);
 }
 
 .pull-to-refresh.loading .pull-to-refresh-icon {
-    color: #4f46e5;
+    color: #f90093;
     animation: spin 0.8s linear infinite;
 }
 
@@ -2005,7 +2003,7 @@ pre code > span::before {
 }
 
 .reorder-handle:hover {
-    color: #4f46e5;
+    color: #f90093;
 }
 
 /* Drag and drop */
@@ -2019,12 +2017,12 @@ pre code > span::before {
 }
 
 .drag-and-drop:hover {
-    border-color: #4f46e5;
+    border-color: #f90093;
     background-color: #f8fafc;
 }
 
 .drag-and-drop.active {
-    border-color: #4f46e5;
+    border-color: #f90093;
     background-color: #eff6ff;
 }
 
@@ -2070,7 +2068,7 @@ pre code > span::before {
 
 .file-preview-icon {
     font-size: 2rem;
-    color: #4f46e5;
+    color: #f90093;
     margin-bottom: 0.5rem;
 }
 
@@ -2230,7 +2228,7 @@ pre code > span::before {
 }
 
 .multi-select-clear:hover {
-    color: #4f46e5;
+    color: #f90093;
 }
 
 .multi-select-dropdown {
@@ -2265,7 +2263,7 @@ pre code > span::before {
 
 .multi-select-option.selected {
     background-color: #eff6ff;
-    color: #4f46e5;
+    color: #f90093;
 }
 
 .multi-select-option-checkbox {
@@ -2279,8 +2277,8 @@ pre code > span::before {
 }
 
 .multi-select-option.selected .multi-select-option-checkbox {
-    background-color: #4f46e5;
-    border-color: #4f46e5;
+    background-color: #f90093;
+    border-color: #f90093;
 }
 
 .multi-select-option.selected .multi-select-option-checkbox::after {
@@ -2311,7 +2309,7 @@ pre code > span::before {
 
 .multi-select-search input:focus {
     outline: none;
-    border-color: #4f46e5;
+    border-color: #f90093;
 }
 
 /* Select with search */
@@ -2361,13 +2359,13 @@ pre code > span::before {
 
 .select-search-option.selected {
     background-color: #eff6ff;
-    color: #4f46e5;
+    color: #f90093;
 }
 
 .select-search-option.selected::after {
     content: '\\2713';
     float: right;
-    color: #4f46e5;
+    color: #f90093;
 }
 
 .select-search-empty {
@@ -2398,7 +2396,7 @@ pre code > span::before {
 
 .select-search-search input:focus {
     outline: none;
-    border-color: #4f46e5;
+    border-color: #f90093;
 }
 
 /* Checkbox list */
@@ -2439,8 +2437,8 @@ pre code > span::before {
 }
 
 .checkbox-list-input:checked {
-    background-color: #4f46e5;
-    border-color: #4f46e5;
+    background-color: #f90093;
+    border-color: #f90093;
 }
 
 .checkbox-list-input:checked::after {
@@ -2498,8 +2496,8 @@ pre code > span::before {
 }
 
 .radio-list-input:checked {
-    background-color: #4f46e5;
-    border-color: #4f46e5;
+    background-color: #f90093;
+    border-color: #f90093;
 }
 
 .radio-list-input:checked::after {
@@ -2545,7 +2543,7 @@ pre code > span::before {
 
 .segmented-control-option.active {
     background-color: white;
-    color: #4f46e5;
+    color: #f90093;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -2575,7 +2573,7 @@ pre code > span::before {
 
 .toggle-group-button.active {
     background-color: white;
-    color: #4f46e5;
+    color: #f90093;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
 }
 
@@ -2612,8 +2610,8 @@ pre code > span::before {
 
 .step.active .step-number,
 .step.completed .step-number {
-    background-color: #4f46e5;
-    border-color: #4f46e5;
+    background-color: #f90093;
+    border-color: #f90093;
     color: white;
 }
 
@@ -2629,7 +2627,7 @@ pre code > span::before {
 }
 
 .step.active .step-label {
-    color: #4f46e5;
+    color: #f90093;
     font-weight: 500;
 }
 
@@ -2649,7 +2647,7 @@ pre code > span::before {
 
 .step.active .step-connector,
 .step.completed .step-connector {
-    background-color: #4f46e5;
+    background-color: #f90093;
 }
 
 .step.completed .step-connector {
@@ -2730,8 +2728,8 @@ pre code > span::before {
 
 .form-step.active .form-step-number,
 .form-step.completed .form-step-number {
-    background-color: #4f46e5;
-    border-color: #4f46e5;
+    background-color: #f90093;
+    border-color: #f90093;
     color: white;
 }
 
@@ -2749,7 +2747,7 @@ pre code > span::before {
 
 .form-step.active .form-step-line,
 .form-step.completed .form-step-line {
-    background-color: #4f46e5;
+    background-color: #f90093;
 }
 
 .form-step.completed .form-step-line {
@@ -2764,7 +2762,7 @@ pre code > span::before {
 }
 
 .form-step.active .form-step-label {
-    color: #4f46e5;
+    color: #f90093;
     font-weight: 500;
 }
 
@@ -2982,7 +2980,7 @@ pre code > span::before {
     top: 0.25rem;
     left: 0.75rem;
     font-size: 0.75rem;
-    color: #4f46e5;
+    color: #f90093;
     background-color: white;
     padding: 0 0.25rem;
 }
@@ -3065,9 +3063,9 @@ pre code > span::before {
     gap: 0.5rem;
     padding: 0.75rem;
     background-color: #eff6ff;
-    border: 1px dashed #4f46e5;
+    border: 1px dashed #f90093;
     border-radius: 0.5rem;
-    color: #4f46e5;
+    color: #f90093;
     cursor: pointer;
     font-size: 0.875rem;
     transition: all 0.2s;
@@ -3225,7 +3223,7 @@ pre code > span::before {
     background-color: #f8fafc;
     border: 1px dashed #e2e8f0;
     border-radius: 0.5rem;
-    color: #4f46e5;
+    color: #f90093;
     cursor: pointer;
     font-size: 0.875rem;
     transition: all 0.2s;
@@ -3233,7 +3231,7 @@ pre code > span::before {
 
 .expandable-toggle:hover {
     background-color: #eff6ff;
-    border-color: #4f46e5;
+    border-color: #f90093;
 }
 
 .expandable:not(.expanded) .expandable-toggle .bi-chevron-up {
@@ -3289,7 +3287,7 @@ pre code > span::before {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #4f46e5;
+    color: #f90093;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
@@ -3329,7 +3327,7 @@ html {
     position: absolute;
     top: -40px;
     left: 0;
-    background: #4f46e5;
+    background: #f90093;
     color: white;
     padding: 0.5rem 1rem;
     z-index: 100;
@@ -3394,7 +3392,7 @@ screen-reader-only {
 
 /* Accessibility focus indicator */
 .focus-indicator:focus {
-    outline: 3px solid #4f46e5;
+    outline: 3px solid #f90093;
     outline-offset: 2px;
 }
 
@@ -3513,7 +3511,7 @@ screen-reader-only {
 }
 
 .dark .form-input:focus {
-    border-color: #4f46e5;
+    border-color: #79fe0c;
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 

@@ -9,12 +9,12 @@
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Configuration</h1>
     </div>
-    <div class="flex gap-3 mt-4 md:mt-0">
-        <a href="@Model.ApiBaseUrl/scalar/v1" target="_blank" class="btn btn-outline">
+    @*<div class="flex gap-3 mt-4 md:mt-0">
+        <a href="# target="_blank" class="btn btn-outline">
             <i class="bi bi-book"></i>
-            <span>API Documentation</span>
+            <span>Unused button</span>
         </a>
-    </div>
+    </div>*@
 </div>
 
 <!-- Error message -->
@@ -78,7 +78,7 @@ else
                 <div class="config-panel card hidden" data-config-class="@cls.FullPath">
                     <div class="card-header">
                         <h2 class="text-lg font-semibold text-secondary-900 flex items-center gap-2">
-                            <i class="bi bi-sliders text-primary-500"></i>
+                            <i class="bi bi-list text-primary-500"></i>
                             <span>@cls.Segment</span>
                         </h2>
                         <p class="text-xs text-secondary-500 font-mono mt-1">@cls.FullPath</p>
@@ -89,50 +89,57 @@ else
                             <div class="config-property py-4 first:pt-0 last:pb-0"
                                  data-class="@prop.ClassPath"
                                  data-property="@prop.PropertyName">
-                                <div class="flex items-start justify-between gap-3 mb-3">
-                                    <div>
-                                        <label class="form-label mb-0">@prop.PropertyName</label>
-                                        <div class="text-xs text-secondary-400 font-mono">@prop.Name</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-center">
+                                    <!-- Column 1: property name (click to toggle named configurations) -->
+                                    <button type="button" class="config-property-toggle flex items-start gap-2 text-left rounded-lg px-2 py-1 -mx-2 hover:bg-secondary-50">
+                                        <i class="bi bi-chevron-right config-property-caret text-secondary-400 mt-1 text-xs"></i>
+                                        <span class="min-w-0">
+                                            <span class="form-label mb-0 block truncate">@prop.PropertyName</span>
+                                            <span class="text-xs text-secondary-400 font-mono break-all">@prop.Name</span>
+                                        </span>
+                                        @if (prop.Named.Count > 0)
+                                        {
+                                            <span class="badge badge-primary ml-auto self-center">@prop.Named.Count</span>
+                                        }
+                                    </button>
+
+                                    <!-- Column 2: value editor + save -->
+                                    <div class="config-value-row flex items-center gap-3"
+                                         data-name="@prop.Name"
+                                         data-bool="@prop.IsBoolean.ToString().ToLowerInvariant()">
+                                        @{
+                                            var boolChecked = prop.Value is not null &&
+                                                (prop.Value.Equals("true", StringComparison.OrdinalIgnoreCase) || prop.Value == "1");
+                                        }
+                                        @if (prop.IsBoolean)
+                                        {
+                                            <label class="switch">
+                                                <input type="checkbox" class="config-toggle" @(boolChecked ? "checked" : "") @(prop.ReadOnly ? "disabled" : "") />
+                                                <span class="switch-slider"></span>
+                                            </label>
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="config-input form-input flex-1 font-mono text-sm"
+                                                   value="@prop.Value" @(prop.ReadOnly ? "readonly" : "") />
+                                        }
+
+                                        @if (prop.ReadOnly)
+                                        {
+                                            <span class="badge badge-warning">Read-only</span>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="config-save btn btn-primary">
+                                                <i class="bi bi-check-lg"></i><span>Save</span>
+                                            </button>
+                                        }
+                                        <span class="config-status text-sm"></span>
                                     </div>
-                                    <span class="badge badge-secondary">@(prop.IsBoolean ? "Boolean" : "String")</span>
                                 </div>
 
-                                <!-- Default value editor -->
-                                <div class="config-value-row flex items-center gap-3"
-                                     data-name="@prop.Name"
-                                     data-bool="@prop.IsBoolean.ToString().ToLowerInvariant()">
-                                    @{
-                                        var boolChecked = prop.Value is not null &&
-                                            (prop.Value.Equals("true", StringComparison.OrdinalIgnoreCase) || prop.Value == "1");
-                                    }
-                                    @if (prop.IsBoolean)
-                                    {
-                                        <label class="switch">
-                                            <input type="checkbox" class="config-toggle" @(boolChecked ? "checked" : "") @(prop.ReadOnly ? "disabled" : "") />
-                                            <span class="switch-slider"></span>
-                                        </label>
-                                    }
-                                    else
-                                    {
-                                        <input type="text" class="config-input form-input flex-1 font-mono text-sm"
-                                               value="@prop.Value" @(prop.ReadOnly ? "readonly" : "") />
-                                    }
-
-                                    @if (prop.ReadOnly)
-                                    {
-                                        <span class="badge badge-warning">Read-only</span>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" class="config-save btn btn-primary">
-                                            <i class="bi bi-check-lg"></i><span>Save</span>
-                                        </button>
-                                    }
-                                    <span class="config-status text-sm"></span>
-                                </div>
-
-                                <!-- Named alternatives -->
-                                <div class="mt-4 pl-4 border-l-2 border-secondary-100">
+                                <!-- Named alternatives (collapsed; revealed by clicking the property name) -->
+                                <div class="config-named hidden mt-4 pl-4 border-l-2 border-secondary-100">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-xs font-semibold text-secondary-400 uppercase tracking-wider">Named configurations</span>
                                     </div>
@@ -159,12 +166,13 @@ else
                                                 {
                                                     <input type="text" class="config-input form-input flex-1 font-mono text-sm" value="@named.Value" />
                                                 }
-                                                <button type="button" class="config-save btn btn-primary">
-                                                    <i class="bi bi-check-lg"></i><span>Save</span>
-                                                </button>
                                                 <button type="button" class="named-remove btn btn-outline" title="Remove named configuration">
                                                     <i class="bi bi-dash-lg"></i>
                                                 </button>
+                                                <button type="button" class="config-save btn btn-primary">
+                                                    <i class="bi bi-check-lg"></i><span>Save</span>
+                                                </button>
+
                                                 <span class="config-status text-sm"></span>
                                             </div>
                                         }
@@ -391,6 +399,21 @@ else
             }
 
             root.addEventListener('click', function (e) {
+                const propToggle = e.target.closest('.config-property-toggle');
+                if (propToggle) {
+                    const property = propToggle.closest('.config-property');
+                    const named = property ? property.querySelector('.config-named') : null;
+                    if (named) {
+                        const open = !named.classList.toggle('hidden');
+                        const caret = propToggle.querySelector('.config-property-caret');
+                        if (caret) {
+                            caret.classList.toggle('bi-chevron-down', open);
+                            caret.classList.toggle('bi-chevron-right', !open);
+                        }
+                    }
+                    return;
+                }
+
                 const addBtn = e.target.closest('.add-named');
                 if (addBtn) {
                     const tpl = document.getElementById('named-row-template');
