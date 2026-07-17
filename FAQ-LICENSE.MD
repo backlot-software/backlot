@@ -22,7 +22,8 @@ Our **core library** is available under **two licenses**:
 ### Do Not:
 
 - **Redistribute our core** (e.g., bundling our DLLs or our source code in your repo).
-- **Modify our core** without accepting our CLA. We only accept contributions to our core via our contribution policies (todo: link to policies explaining CLA and forking and pull requesting )
+- **Modify our core** without accepting our CLA. We only accept contributions to our core via our contribution policies.
+
 
 ---
 
