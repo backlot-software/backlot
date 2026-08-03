@@ -45,7 +45,7 @@ public class LoginModel : PageModel
         bool isValid;
         try
         {
-            isValid = await _apiClient.IsAuthenticatedAsync();
+            isValid = await _apiClient.IsAuthenticated();
         }
         catch
         {

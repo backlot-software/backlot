@@ -52,7 +52,7 @@ public class IndexModel : AuthenticatedPageModel
         try
         {
             var (result, redirect) = await SafeApiCall(async () =>
-                await _api.PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios"));
+                await _api.Play<IEnumerable<ScenarioItem>>("director", "scenarios"));
             if (redirect != null) return redirect;
 
             Scenarios = (result?.Body ?? [])

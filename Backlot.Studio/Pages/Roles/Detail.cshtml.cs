@@ -57,7 +57,7 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
+            var (env, redirect) = await SafeApiCall(async () => await _api.Play<JsonElement>("seekbase", "detail", Uid));
             if (redirect != null) return redirect;
             var rd = env?.Body.Unwrap("Role");
 
@@ -91,7 +91,7 @@ public class DetailModel : AuthenticatedPageModel
         try
         {
             var (env, redirect) = await SafeApiCall(async () =>
-                await _api.PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios"));
+                await _api.Play<IEnumerable<ScenarioItem>>("director", "scenarios"));
             if (redirect != null) return redirect;
 
             var scenarios = (env?.Body ?? []).Where(s => s.Endpoints.Length > 0);
@@ -121,7 +121,7 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (env, redirect) = await SafeApiCall(async () => await _api.PlayAsync<JsonElement>("seekbase", "detail", new { For = Uid }));
+            var (env, redirect) = await SafeApiCall(async () => await _api.Play<JsonElement>("seekbase", "detail", Uid));
             if (redirect != null) return redirect;
 
             var roleData = env?.Body.Unwrap("Role") ?? new JsonElement();

@@ -27,7 +27,7 @@ public class IndexModel : AuthenticatedPageModel
         SetUserContext();
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.PlayAsync<IEnumerable<ScenarioItem>>("director", "scenarios"));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Play<IEnumerable<ScenarioItem>>("director", "scenarios"));
             if (redirect != null) return redirect;
             Groups = (result?.Body ?? [])
                 .GroupBy(s => s.Tags.Length > 0 ? s.Tags[0] : "Uncategorized")

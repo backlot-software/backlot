@@ -19,10 +19,10 @@ public class IndexModel : AuthenticatedPageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var (_, redirect) = await SafeApiCall(async () => await _api.WhoAmIAsync());
+        var (_, redirect) = await SafeApiCall(async () => await _api.WhoAmI());
         if (redirect != null) return redirect; // first check authentication.
         
-        var (status, statusRedirect) = await SafeApiCall(async () => await _api.StatusAsync());
+        var (status, statusRedirect) = await SafeApiCall(async () => await _api.Status());
         if (statusRedirect != null) return statusRedirect;
         
         Status = status?.Body;
