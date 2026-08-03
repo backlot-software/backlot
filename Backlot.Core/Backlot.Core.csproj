@@ -8,7 +8,7 @@
     <Title>Backlot.Core</Title>
     <Authors>Jeroen Wijdeven Holding B.V.</Authors>
     <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
-    <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+    <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <PackageIcon>bl.png</PackageIcon>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
