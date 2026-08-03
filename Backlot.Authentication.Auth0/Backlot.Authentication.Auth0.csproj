@@ -9,7 +9,7 @@
         <Title>Backlot.Authentication.Auth0</Title>
         <Authors>Jeroen Wijdeven Holding B.V.</Authors>
         <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
-        <PackageProjectUrl>http://www.backlot.software/</PackageProjectUrl>
+        <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
         <PackageIcon>bl.png</PackageIcon>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

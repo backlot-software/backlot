@@ -7,7 +7,12 @@ public class UserCtx : IUserContext
     private static string UserNameStatic => "John@doe.com";
 
     public string AuthScheme => "Bearer";
-    public string Token { get; set; } = null!;
+
+
+    public Task Intialize(string token)
+    {
+        return Task.CompletedTask;
+    }
 
     public string UserName => UserNameStatic;
 
