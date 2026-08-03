@@ -4,14 +4,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <VersionPrefix>0.0.1.1</VersionPrefix>
+    <VersionPrefix>0.0.1</VersionPrefix>
     <VersionSuffix>
     </VersionSuffix>
     <Title>Backlot.Services.Filesystem.BlobStorage</Title>
     <Authors>Jeroen Wijdeven Holding B.V.</Authors>
     <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
-    <PackageProjectUrl>http://www.backlot.software</PackageProjectUrl>
-    <PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+    <PackageProjectUrl>http://backlot.ws/</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <PackageIcon>bl.png</PackageIcon>
     <Configurations>Debug;Release;Development</Configurations>
   </PropertyGroup>
