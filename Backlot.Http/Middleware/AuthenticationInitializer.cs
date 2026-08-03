@@ -14,7 +14,7 @@ public sealed class AuthenticationInitializer : IMiddleware
 
         if (TryGetSchemeToken(request.Request.Message.Headers, userContext.AuthScheme, out var token))
         {
-            userContext.Token = token;
+            await userContext.Intialize(token!);
         }
 
         await next();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Backlot.Core.Security;
 
@@ -18,9 +19,10 @@ public interface IUserContext
     public string AuthScheme { get; }
     
     /// <summary>
-    /// At token set the initialization of the whole context starts.
+    /// While setting the token the initialization of the whole context starts.
     /// </summary>
-    public string Token { set; }
+    public Task Intialize(string token);
+    
     public string UserName { get; }
     public IDictionary<string, string> Claims { get; }
     public string[] Groups { get; }

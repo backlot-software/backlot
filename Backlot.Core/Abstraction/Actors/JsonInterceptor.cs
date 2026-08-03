@@ -177,12 +177,12 @@ internal sealed class JsonInterceptor : BaseInterceptor<JContainer>
     {
         if (source == null) return null;
 
-        if (returnType.IsAssignableFrom(typeof(ScenarioReference)))
+        if (typeof(ScenarioReference).IsAssignableFrom(returnType))
         {
             return source.ToObject<ScenarioReference>(Strategy.DeSerializeSenarioReferenceOnly);
         }
         
-        if (returnType.IsAssignableFrom(typeof(RoleReference)))
+        if (typeof(RoleReference).IsAssignableFrom(returnType))
         {
             return source.ToObject<RoleReference>(Strategy.DeSerializeRoleReferenceOnly);
         }

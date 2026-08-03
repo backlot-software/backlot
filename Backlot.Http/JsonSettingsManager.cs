@@ -150,6 +150,7 @@ public class JsonSettingsManager : BaseSettingsManager
 
     public override async Task Update(IConfigurationInfo configuration)
     {
+        // check SCENARIOREF CHAT.
         var path = configuration.Name;
 
         //todo: if (GetAllSettings().FirstOrDefault(s => s.Name.Equals(path)) == null || when path.split -1 is not a setting)
@@ -162,14 +163,16 @@ public class JsonSettingsManager : BaseSettingsManager
         {
             var value = configuration.Value.ToString() ?? string.Empty;
             jobject[parts.Last()] = value;
-            await _fileSystem.UpdateFileAsync(SourceFileName, Content.ToString());
-            //update data from file 
-            _content = GetContentFromFile();
         }
-
-
-        //in all other cases create the item.
-        UpdateJson(configuration.Name, configuration.Value.ToString() ?? string.Empty);
+        else
+        {
+            //in all other cases create the item.
+            UpdateJson(configuration.Name, configuration.Value.ToString() ?? string.Empty);
+        }
+        
+        await _fileSystem.UpdateFileAsync(SourceFileName, Content.ToString());
+        //update data from file 
+        _content = GetContentFromFile();
     }
 
     private void UpdateJson(string toAdd, string valueToAdd)

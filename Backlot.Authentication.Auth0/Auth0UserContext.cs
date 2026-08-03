@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Security;
 using Backlot.Core.Services;
@@ -27,10 +28,11 @@ public class Auth0UserContext : IUserContext
 
     #region Initialization
     
-    public void Intialize(string token)
+    public Task Intialize(string token)
     {
         Groups = ["Users"]; //todo: make this dynamic based on claims or a group repository.
         TokenAndPrincipal = GetTokenAndPrincipals(token);
+        return Task.CompletedTask;
     }
 
     public string AuthScheme => "Bearer";

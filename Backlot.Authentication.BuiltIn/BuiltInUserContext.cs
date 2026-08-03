@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Backlot.Authentication.BuiltIn.Services;
 using Backlot.Core.Security;
 
@@ -8,13 +9,14 @@ namespace Backlot.Authentication.BuiltIn;
 /// <summary>
 /// The Implementation of the IUserContext when using a tokenservice.
 /// </summary>
-public class BuiltInUserContext : TokenHandlerBase, IUserContext
+public class BuiltInUserContext(JwtTokenService tokenService) : TokenHandlerBase(tokenService, null), IUserContext
 {
-    public BuiltInUserContext(JwtTokenService tokenService) : base(tokenService, null)
-    {
-    }
-
     public string AuthScheme => "Bearer";
+    public Task Intialize(string token)
+    {
+        TokenAndPrincipal = TokenService.GetTokenAndPrincipals(token);
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     /// Needs to be set by the authentication middleware
