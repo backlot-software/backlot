@@ -19,13 +19,9 @@ namespace Backlot.Authentication.Basic;
 public class BasicUserContext(IUserRepository userRepository, IEncryptionService encryptionService) : IUserContext
 {
     public string AuthScheme => "Basic";
-    
-    public string Token
-    {
-        set => Intialize(value).ConfigureAwait(false);
-    }
 
-    private async Task Intialize(string token)
+
+    public async Task Intialize(string token)
     {
         try
         {
@@ -63,7 +59,7 @@ public class BasicUserContext(IUserRepository userRepository, IEncryptionService
             IsAuthenticated = false;
         }
     }
-    
+
     public string UserName { private set; get; } = "Anonymous";
     public IDictionary<string, string> Claims => new Dictionary<string, string>() { {"sub", UserName}, { "groups", string.Join(",", Groups) } };
     public string[] Groups { private set; get; } = [];

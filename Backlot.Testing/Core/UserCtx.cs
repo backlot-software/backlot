@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Backlot.Core.Security;
 
 namespace Backlot.Testing.Core;
@@ -8,7 +9,11 @@ public class UserCtx : IUserContext
     public static string UserNameStatic => "UnitTestUser";
 
     public string AuthScheme => "Bearer";
-    public string Token { get; set; } = null!;
+
+    public Task Intialize(string token)
+    {
+        return Task.CompletedTask;
+    }
 
     public string UserName => UserNameStatic;
 
