@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.0.1.1</VersionPrefix>
     <VersionSuffix>
     </VersionSuffix>
     <Title>Backlot.Services.Filesystem.BlobStorage</Title>
