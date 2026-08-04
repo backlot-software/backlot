@@ -42,12 +42,13 @@ This package includes the opinionated defaults to get you up and running quickly
 
 We use a 4 digit version number.
 
-0.0.0.0 - <dotnet>.<breaking-and-new-features>.<patch-fixes>.<revision>
+0.0.0.0 - dotnet.breaking-and-new-features.patch-fixes.revision
 
-0 = .net10
-1 = .net11
-2 = .net12
-etc.
+for the first digit:
+- 0 = .net10
+- 1 = .net11
+- 2 = .net12
+- etc.
 
 The first 3 digits are always required. The revision is optional for development and only used for alpha and beta versions.
 
