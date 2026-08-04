@@ -20,13 +20,12 @@
     </PropertyGroup>
     
     <PropertyGroup>
-        <!-- This tells NuGet which file to use as the landing page README -->
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- This includes the file in the actual .nupkg package -->
-        <Content Include="README.md">
+        <Content Include="README.MD">
             <Pack>true</Pack>
             <PackagePath>\</PackagePath>
         </Content>
