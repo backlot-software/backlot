@@ -10,8 +10,7 @@ mkdir -p nupkgs
 find . -name "*.csproj" -not -path "*Backlot.Demo.*" | while read -r project; do
   dotnet pack "$project" \
     --configuration "Debug" \
-    --output nupkgs \
-    /p:IncludeBuildOutput=true
+    --output nupkgs
 done
 
 # List generated .nupkg files

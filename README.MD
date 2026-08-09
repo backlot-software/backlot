@@ -33,10 +33,12 @@ Backlot comes with default blocks included but follows SOLID principles so you c
 To install Backlot in your project via NuGet, use the following dotnet CLI command:
 
 ```bash
-dotnet add package Backlot.Defaults
+dotnet new install Backlot.Start
+dotnet new backlot-start
 ```
 
-This package includes the opinionated defaults to get you up and running quickly. For further instructions, visit https://docs.backlot.software.
+This package includes the opinionated defaults to get you up and running quickly. 
+For further instructions, visit https://docs.backlot.software.
 
 ### Versioning
 

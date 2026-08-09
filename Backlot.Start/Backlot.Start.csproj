@@ -13,10 +13,15 @@
         <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
         <PackageIcon>bl.png</PackageIcon>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <IsPackable>true</IsPackable>
+        <!--
+          This is the runnable starter app AND the source of the dotnet-new
+          template. It is NOT itself a NuGet library: packing is handled by the
+          sibling Backlot.Start.Template project, which packs this folder as a
+          template package. Keeping it packable here would emit a bogus library
+          package and collide with the template's Backlot.Start package id.
+        -->
+        <IsPackable>false</IsPackable>
         <Configurations>Debug;Release;Development</Configurations>
-        <IsTemplate>true</IsTemplate>
     </PropertyGroup>
     
     <PropertyGroup>
