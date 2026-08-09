@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>0.0.2</VersionPrefix>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -37,16 +37,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Backlot framework project references (local source) -->
-        <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
-        <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
-        <ProjectReference Include="..\Backlot.Authentication.Basic\Backlot.Authentication.Basic.csproj" />
-        <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
-        <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
-        <ProjectReference Include="..\Backlot.Http.DependencyInjection.Autofac\Backlot.Http.DependencyInjection.Autofac.csproj" />
-        <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
-        <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
-        <ProjectReference Include="..\Backlot.WebApp\Backlot.WebApp.csproj" />
+        <!-- Backlot framework packages (Backlot GitHub NuGet feed) -->
+        <PackageReference Include="Backlot.Core" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Defaults" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Authentication.Basic" Version="0.0.1"  />
+        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Http" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Services.LiteDB" Version="0.0.1"  />
+        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="0.0.1"  />
+        <PackageReference Include="Backlot.WebApp" Version="0.0.1"  />
     </ItemGroup>
 
     <ItemGroup>
