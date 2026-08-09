@@ -97,7 +97,7 @@ jobs:
           git push
 
       - name: Tag commit
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           TAG_NAME="v${{ steps.config.outputs.full_version }}"
           git tag "$TAG_NAME"
