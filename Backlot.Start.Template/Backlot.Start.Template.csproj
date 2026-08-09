@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      This project does NOT compile any code. Its only job is to pack the
+      Backlot.Start folder into a `dotnet new` template package.
+
+      Packaging must live in a SEPARATE project because the template's own
+      Backlot.Start.csproj ends up inside content/ and becomes the generated
+      project's csproj — so any template-packaging properties placed there
+      would leak into every project created from the template.
+    -->
+
+    <PropertyGroup>
+        <!-- Makes NuGet treat this as a template package instead of a library. -->
+        <PackageType>Template</PackageType>
+        <PackageId>Backlot.Start</PackageId>
+        <Title>Backlot Starter Template</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
+        <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
+
+        <VersionPrefix>0.0.1</VersionPrefix>
+
+        <!-- Needed by the SDK, but nothing is actually compiled. -->
+        <TargetFramework>net10.0</TargetFramework>
+
+        <!-- A template ships source files, not build output or dependencies. -->
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+        <!-- Without this, NuGet strips dot-prefixed paths like .template.config. -->
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+
+        <!-- Don't try to compile anything from the referenced source folder. -->
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+        <IsPackable>true</IsPackable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <!-- NU5128: content-only package with no lib/dependencies (expected for a template). -->
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+          Pack the entire starter project as template content, preserving the
+          folder tree, under content\Backlot.Start\. The template engine needs
+          .template.config in its own named subfolder (content\<name>\), not at
+          the content root, or path resolution during `dotnet new` breaks.
+        -->
+        <Content Include="..\Backlot.Start\**\*"
+                 Exclude="..\Backlot.Start\**\bin\**;..\Backlot.Start\**\obj\**;..\Backlot.Start\**\*.user;..\Backlot.Start\**\.vs\**;..\Backlot.Start\**\.idea\**;..\Backlot.Start\**\.claude\**;..\Backlot.Start\**\.git\**"
+                 Pack="true"
+                 PackagePath="content\Backlot.Start" />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Package-root metadata files referenced above. -->
+        <None Include="..\bl.png" Pack="true" PackagePath="" />
+        <None Include="..\Backlot.Start\README.MD" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+</Project>

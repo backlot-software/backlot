@@ -1,0 +1,14 @@
+{
+  "Container": {
+    "defaultAssembly": "Backlot.Start"
+  },
+  "Backlot": {
+    "Services": {
+      "LiteDB":{
+        "Settings" : {
+          "ConnectionString": "mydata.db"
+        }
+      }
+    }
+  }
+}

@@ -66,7 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formatters", "Formatters", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F2252495-15BE-4D3C-B059-83DC094560B3}"
 	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
+		Backlot.Start\.template.config\template.json = Backlot.Start\.template.config\template.json
+		pack.sh = pack.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Demo.Web", "Backlot.Demo.Web\Backlot.Demo.Web.csproj", "{DE0E3B94-50F3-4ED5-8D3B-ECBB0882B804}"
@@ -80,6 +81,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.WebApp", "Backlot.WebApp\Backlot.WebApp.csproj", "{31B3B2CF-8463-4086-83EB-709D4A2C5EC5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Http.DependencyInjection.Autofac", "Backlot.Http.DependencyInjection.Autofac\Backlot.Http.DependencyInjection.Autofac.csproj", "{9BB1C8AD-A088-4F9D-B86A-E2BA48393909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Start", "Backlot.Start\Backlot.Start.csproj", "{F5896F88-CF21-4D2D-99B3-B19088A26343}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -226,6 +229,12 @@ Global
 		{9BB1C8AD-A088-4F9D-B86A-E2BA48393909}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9BB1C8AD-A088-4F9D-B86A-E2BA48393909}.Development|Any CPU.ActiveCfg = Development|Any CPU
 		{9BB1C8AD-A088-4F9D-B86A-E2BA48393909}.Development|Any CPU.Build.0 = Development|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Development|Any CPU.ActiveCfg = Development|Any CPU
+		{F5896F88-CF21-4D2D-99B3-B19088A26343}.Development|Any CPU.Build.0 = Development|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -261,6 +270,7 @@ Global
 		{31B3B2CF-8463-4086-83EB-709D4A2C5EC5} = {C79CA675-3373-4010-B232-F6B3A2631DFE}
 		{9BB1C8AD-A088-4F9D-B86A-E2BA48393909} = {C79CA675-3373-4010-B232-F6B3A2631DFE}
 		{DE0E3B94-50F3-4ED5-8D3B-ECBB0882B804} = {FE6A6561-0B1F-43D6-A565-E9D80E5B90B3}
+		{F5896F88-CF21-4D2D-99B3-B19088A26343} = {EEC7F482-4D96-4447-B7AC-D582B091CF73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D4409B46-7B19-425E-8AE0-E2A130B8BB3B}

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Backlot.Software",
+  "classifications": [ "Web", "API", "Backlot" ],
+  "identity": "Backlot.Start",
+  "name": "Backlot Starter",
+  "description": "A starting point for a Backlot web application (LiteDB, LocalDiskStorage, Basic authentication, Autofac).",
+  "shortName": "backlot-start",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Backlot.Start",
+  "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/[Bb]in/**",
+            "**/[Oo]bj/**",
+            "**/.idea/**",
+            "**/.vs/**",
+            "**/*.user",
+            "**/*.db",
+            "**/*-log.db"
+          ]
+        }
+      ]
+    }
+  ]
+}
