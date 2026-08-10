@@ -107,6 +107,18 @@ jobs:
       # the Backlot.* packages this pipeline produces, so building it here is a
       # chicken-and-egg problem: it can only restore versions that are already
       # published. It ships as template content and is never packed as a library.
+      #
+      # The filter is generated from Backlot.sln on every run (and gitignored) so
+      # it can never drift out of sync with the solution.
+      - name: Generate CI solution filter
+        run: |
+          dotnet sln Backlot.sln list \
+            | grep '\.csproj$' \
+            | grep -v '^Backlot\.Start' \
+            | jq -Rs '{solution:{path:"Backlot.sln",projects:(split("\n")|map(select(length>0)))}}' \
+            > Backlot.CI.slnf
+          cat Backlot.CI.slnf
+
       - name: Build solution
         run: |
           dotnet build Backlot.CI.slnf \
