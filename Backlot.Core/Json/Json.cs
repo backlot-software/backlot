@@ -14,7 +14,7 @@ namespace Backlot.Core.Json
         {
             if (string.IsNullOrEmpty(json)) return false;
             // check if this string is a valid json object
-            return json.StartsWith("{") && json.EndsWith("}");
+            return json.TrimStart().StartsWith("{") && json.TrimEnd().EndsWith("}");
         }
 
         /// <summary>

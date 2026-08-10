@@ -1,0 +1,276 @@
+@page "/roles/{RoleType?}"
+@model Backlot.Studio.Pages.Roles.IndexModel
+@using System.Text.Json
+@using Backlot.Studio.Models
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles - @Model.RoleType</h1>
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a href="/roles" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+<turbo-frame id="role-list" data-turbo-action="advance">
+    <!-- Search and filter bar -->
+    <div class="card mb-6 animate-fade-in">
+        <div class="card-body">
+            <!-- Search form -->
+            <form method="get" action="/roles/@Model.RoleType" class="flex flex-col md:flex-row items-center gap-3">
+                <div class="relative flex-1">
+                    <input type="text"
+                           name="q"
+                           value="@Model.SearchQuery"
+                           class="form-input pe-10"
+                           placeholder="Search, f.e. Name=John Uid:00 shows all records where name equals John and Uid contains 00"
+                           aria-label="Search roles" />
+                    <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary" style="min-height:44px">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                    {
+                        <a href="/roles" class="btn btn-ghost" style="min-height:44px">
+                            <i class="bi bi-x-lg"></i>
+                            <span>Clear</span>
+                        </a>
+                    }
+                </div>
+            </form>
+            
+            <!-- Result count -->
+            @if (Model.RoleResult != null)
+            {
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-secondary-200">
+                    <small class="text-secondary-500">
+                        @if (Model.TotalCount == 0)
+                        {
+                            <text>No roles found.</text>
+                        }
+                        else
+                        {
+                            <text>Showing @Model.StartItem&ndash;@Model.EndItem of @Model.TotalCount roles</text>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                            {
+                                <text> matching &ldquo;@Model.SearchQuery&rdquo;</text>
+                            }
+                        }
+                    </small>
+                    @*<div class="text-secondary-500">
+                        <span>Sort by: </span>
+                        <select class="bg-transparent border-none text-secondary-600 text-sm" style="min-height:44px">
+                            <option>Newest first</option>
+                            <option>Oldest first</option>
+                            <option>Name (A-Z)</option>
+                            <option>Name (Z-A)</option>
+                        </select>
+                    </div>*@
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.RoleResult != null && Model.TotalCount == 0)
+    {
+        <!-- Empty state -->
+        <div class="empty-state">
+            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+            {
+                <i class="bi bi-search"></i>
+                <h3>No roles match your search</h3>
+                <p>Try a different search term or <a href="/roles" class="text-primary-600 hover:text-primary-700 font-medium underline">Clear search</a> to see all roles.</p>
+            }
+            else
+            {
+                <i class="bi bi-people"></i>
+                <h3>No roles registered</h3>
+                <p>The Backlot API returned no persisted roles. Roles appear here after scenarios that create them have been executed.</p>
+            }
+        </div>
+    }
+    else if (Model.RoleResult != null && Model.TotalCount > 0)
+    {
+        <!-- Role list table -->
+        <div class="card animate-fade-in">
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="w-full text-sm font-sans" id="roles-table">
+                        <thead>
+                            <tr class="bg-secondary-50">
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">UID</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Name">Name</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="LastModified">Last Modified</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Type">Type</th>
+                                <th class="text-right p-3 border-b" data-col="Actions"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.RoleResult.Results)
+                            {
+                                var uid = IndexModel.GetField(row, "Uid");
+                                var skills = new List<string>();
+                                if (row.TryGetProperty("__Skills", out var skillsEl) && skillsEl.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var s in skillsEl.EnumerateArray())
+                                    {
+                                        var sv = s.ValueKind == JsonValueKind.String ? s.GetString() : s.ToString();
+                                        if (!string.IsNullOrWhiteSpace(sv) && Meta.DefaultRoles.All(dr => dr != sv)) skills.Add(sv);
+                                    }
+                                }
+
+                                <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0">
+                                    <td class="p-3" data-col="Uid">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-ghost btn-icon"
+                                                    data-action="copy-detail-url"
+                                                    data-detail-url="/roles/@Model.RoleType/@uid"
+                                                    aria-label="Copy link to detail page">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <span class="text-secondary-700 text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3" data-col="Name">
+                                        @{var name = IndexModel.GetField(row, "Name");}
+                                        @if (string.IsNullOrWhiteSpace(name))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-medium text-secondary-900">@name</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="LastModified">
+                                        @{var lastMod = IndexModel.GetField(row, "LastModified");}
+                                        @if (string.IsNullOrWhiteSpace(lastMod))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-sm text-secondary-600">@lastMod</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="Type">
+                                        @if (skills.Count == 0)
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach (var skill in skills)
+                                                {
+                                                    <a href="/roles/@skill" class="badge badge-primary hover:badge-primary-focus">
+                                                        @skill
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="p-3 text-right" data-col="Actions">
+                                        @* Plain (non-Turbo) navigation. This link lives inside the
+                                           #role-list <turbo-frame>, so breaking out to the detail page
+                                           depended on data-turbo-frame="_top"; combined with Turbo 8's
+                                           default hover-prefetch, that framed _top link intermittently
+                                           resolved against a cached frame-scoped response and bounced
+                                           back to the previous page (the dashboard) instead of the
+                                           detail page. data-turbo="false" makes the browser navigate
+                                           directly and reliably to the detail page every time. *@
+                                        <a href="/roles/@Model.RoleType/@uid"
+                                           class="btn btn-secondary"
+                                           data-turbo="false">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Role list pages" class="mt-6">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="flex flex-wrap items-center justify-center gap-1">
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage <= 1 ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage <= 1 ? "#" : "/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage - 1)")" 
+                                   aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="ml-1">Previous</span>
+                                </a>
+                            </li>
+                            @for (int p = 1; p <= Model.TotalPages; p++)
+                            {
+                                <li>
+                                    <a class="px-3 py-1.5 rounded-lg border @(p == Model.CurrentPage ? "bg-primary-600 text-white border-primary-600" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                       href="/roles?q=@Model.SearchQuery&page=@p">@p</a>
+                                </li>
+                            }
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage >= Model.TotalPages ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage >= Model.TotalPages ? "#" : "/roles?q=@Model.SearchQuery&page=@(Model.CurrentPage + 1)")" 
+                                   aria-label="Next">
+                                    <span class="mr-1">Next</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        }
+    }
+</turbo-frame>
+
+@* Copy the absolute detail-page URL to the clipboard. Bound once at document level so it
+   survives Turbo Frame updates that replace the table without a full navigation. *@
+<script>
+    if (!window.__copyDetailUrlBound) {
+        window.__copyDetailUrlBound = true;
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action="copy-detail-url"]');
+            if (!btn) return;
+
+            const path = btn.dataset.detailUrl;
+            if (!path) return;
+
+            const url = new URL(path, window.location.origin).href;
+            const icon = btn.querySelector('i');
+
+            navigator.clipboard.writeText(url).then(function () {
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-clipboard-check');
+                    setTimeout(function () {
+                        icon.classList.remove('bi-clipboard-check');
+                        icon.classList.add('bi-clipboard');
+                    }, 1500);
+                }
+            });
+        });
+    }
+</script>

@@ -1,0 +1,94 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <VersionPrefix>0.1.0</VersionPrefix>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Platforms>AnyCPU</Platforms>
+        <Title>Backlot.Start</Title>
+        <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+        <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+        <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
+        <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+        <PackageIcon>bl.png</PackageIcon>
+        <!--
+          This is the runnable starter app AND the source of the dotnet-new
+          template. It is NOT itself a NuGet library: packing is handled by the
+          sibling Backlot.Start.Template project, which packs this folder as a
+          template package. Keeping it packable here would emit a bogus library
+          package and collide with the template's Backlot.Start package id.
+        -->
+        <IsPackable>false</IsPackable>
+        <Configurations>Debug;Release;Development</Configurations>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!--
+          Single source of truth for the Backlot framework packages below.
+          Floats to the newest published build, prereleases included, so a project
+          generated from the template tracks whatever the pipeline last shipped
+          (alpha from develop, beta from release/*, stable from main).
+          Pin it when you need a fixed baseline: -p:BacklotVersion=0.0.2
+        -->
+        <BacklotVersion>0.0.*-*</BacklotVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- This includes the file in the actual .nupkg package -->
+        <Content Include="README.MD">
+            <Pack>true</Pack>
+            <PackagePath>\</PackagePath>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Backlot framework packages (Backlot GitHub NuGet feed — see nuget.config) -->
+        <PackageReference Include="Backlot.Core" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Defaults" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Authentication.Basic" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Http" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Services.LiteDB" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.WebApp" Version="$(BacklotVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Third-party packages (latest stable) -->
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="local.jsonsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="usersandgroups.json" Condition="Exists('usersandgroups.json')">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+        <VersionSuffix>beta</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\bl.png">
+            <Pack>True</Pack>
+            <PackagePath>
+            </PackagePath>
+            <Link>bl.png</Link>
+        </None>
+    </ItemGroup>
+
+</Project>

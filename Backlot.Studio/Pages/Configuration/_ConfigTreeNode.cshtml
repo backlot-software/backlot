@@ -1,0 +1,47 @@
+@model Backlot.Studio.ViewModels.ConfigTreeNode
+@{
+    var hasChildren = Model.Children.Count > 0;
+}
+<li>
+    <div class="flex items-center gap-1">
+        @if (hasChildren)
+        {
+            <button type="button" class="config-tree-toggle btn-icon" style="width:24px;height:24px" aria-expanded="true">
+                <i class="bi bi-chevron-down text-xs text-secondary-400"></i>
+            </button>
+        }
+        else
+        {
+            <span class="inline-block" style="width:24px"></span>
+        }
+
+        @if (Model.IsClass)
+        {
+            <button type="button"
+                    class="config-tree-class flex items-center gap-2 flex-1 text-left px-2 py-1 rounded-lg text-sm text-secondary-700 hover:bg-secondary-100"
+                    data-config-class="@Model.FullPath">
+                <i class="bi bi-sliders text-secondary-400"></i>
+                <span class="font-medium">@Model.Segment</span>
+                <span class="badge badge-secondary ml-auto">@Model.Properties.Count</span>
+            </button>
+        }
+        else
+        {
+            <button type="button"
+                    class="config-tree-branch flex items-center gap-2 flex-1 text-left px-2 py-1 rounded-lg text-sm text-secondary-600 hover:bg-secondary-100">
+                <i class="bi bi-folder2 text-secondary-400"></i>
+                <span>@Model.Segment</span>
+            </button>
+        }
+    </div>
+
+    @if (hasChildren)
+    {
+        <ul class="config-tree-children ml-4 border-l border-secondary-200 pl-1 space-y-0.5">
+            @foreach (var child in Model.Children.Values)
+            {
+                <partial name="_ConfigTreeNode" model="child" />
+            }
+        </ul>
+    }
+</li>

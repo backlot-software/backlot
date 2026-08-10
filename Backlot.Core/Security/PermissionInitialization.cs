@@ -200,7 +200,7 @@ public static class PermissionInitialization
             if (dic != null) // using origin used to initialize the role (which is not equal to role.Actor) here. -- Actor has cleaned up data, like Calculated fields removed.
             {
                 var encryptedValue = dic[Meta.__Permission]?.ToString();
-                if (encryptedValue.TryDecryptEncryptedPermissionValue(out var permission, out var forUid))
+                if (encryptedValue != null && encryptedValue.TryDecryptEncryptedPermissionValue(out var permission, out var forUid))
                 {
                     if (forUid != role.Uid)
                         throw new PermissionControlException(

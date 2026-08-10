@@ -1,0 +1,29 @@
+@model Backlot.Studio.ViewModels.ScenarioSearchViewModel
+@{
+    var id = Model.Id;
+}
+<div class="relative" id="@(id)-combo">
+    <input type="text"
+           id="@(id)-search"
+           class="form-input"
+           placeholder="@Model.Placeholder"
+           autocomplete="off"
+           role="combobox"
+           aria-expanded="false"
+           aria-controls="@(id)-list" />
+    <ul id="@(id)-list"
+        class="hidden absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-secondary-200 rounded-md shadow-dropdown"
+        role="listbox">
+        @foreach (var o in Model.Options)
+        {
+            <li class="scenario-option px-3 py-2 cursor-pointer hover:bg-secondary-100"
+                role="option"
+                data-name="@o.Name"
+                data-endpoint="@o.Endpoint">
+                <div class="text-sm font-medium text-secondary-900">@o.Name</div>
+                <div class="text-xs text-secondary-500 font-mono truncate">@o.Endpoint</div>
+            </li>
+        }
+        <li id="@(id)-empty" class="hidden px-3 py-2 text-sm text-secondary-500">No scenarios match.</li>
+    </ul>
+</div>

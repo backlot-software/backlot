@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       Version:
-        description: 'Version number for the packages (e.g., 1.2.3.4)'
+        description: 'Base version number, without pre-release suffix (e.g., 0.0.2 or 1.2.3.4)'
         required: true
-        
+
 permissions: write-all
-  
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -22,64 +22,150 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-  
-      - name: Determine configuration
+
+      # Decides, from the branch the workflow was dispatched on:
+      #   main         -> stable   : 1.2.3            (Release)
+      #   develop      -> beta    : 1.2.3-beta.<run> (Development)
+      #   anything else-> alpha    : 1.2.3-alpha.<run> (Debug)
+      - name: Determine build context
         id: config
+        env:
+          VERSION: ${{ inputs.Version }}
         run: |
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-            echo "configuration=Release" >> $GITHUB_OUTPUT
-          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
-            echo "configuration=Development" >> $GITHUB_OUTPUT
-          else
-            echo "configuration=Debug" >> $GITHUB_OUTPUT
+          set -euo pipefail
+
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){1,3}$ ]]; then
+            echo "::error::Version '$VERSION' is not a valid numeric version (e.g. 0.0.2 or 1.2.3.4)."
+            exit 1
           fi
-  
+
+          BRANCH="${GITHUB_REF#refs/heads/}"
+
+          case "$BRANCH" in
+            main)
+              CHANNEL="stable"
+              CONFIGURATION="Release"
+              SUFFIX=""
+              ;;
+            develop)
+              CHANNEL="beta"
+              CONFIGURATION="Development"
+              SUFFIX="beta.${GITHUB_RUN_NUMBER}"
+              ;;
+            *)
+              CHANNEL="alpha"
+              CONFIGURATION="Debug"
+              SUFFIX="alpha.${GITHUB_RUN_NUMBER}"
+              ;;
+          esac
+
+          if [ -n "$SUFFIX" ]; then
+            FULL_VERSION="${VERSION}-${SUFFIX}"
+          else
+            FULL_VERSION="$VERSION"
+          fi
+
+          {
+            echo "branch=$BRANCH"
+            echo "channel=$CHANNEL"
+            echo "configuration=$CONFIGURATION"
+            echo "version_prefix=$VERSION"
+            echo "version_suffix=$SUFFIX"
+            echo "full_version=$FULL_VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Branch '$BRANCH' -> channel '$CHANNEL', configuration '$CONFIGURATION', version '$FULL_VERSION'." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Update version in .csproj files
+        env:
+          VERSION_PREFIX: ${{ steps.config.outputs.version_prefix }}
         run: |
-          find . -name "*.csproj" -exec sed -i "s/<VersionPrefix>.*<\/VersionPrefix>/<VersionPrefix>${{ inputs.Version }}<\/VersionPrefix>/g" {} \;
+          find . -name "*.csproj" -exec sed -i "s|<VersionPrefix>.*</VersionPrefix>|<VersionPrefix>${VERSION_PREFIX}</VersionPrefix>|g" {} \;
 
       - name: Commit version changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .
-          
+
           if git diff --cached --quiet; then
             echo "No version changes to commit."
             exit 0
           fi
-          
-          git commit -m "Update version to ${{ inputs.Version }}"
+
+          git commit -m "Update version to ${{ steps.config.outputs.full_version }}"
           git push
-  
+
       - name: Tag commit
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-            TAG_NAME="v${{ inputs.Version }}"
-          elif [ "$GITHUB_REF" = "refs/heads/develop" ]; then
-            TAG_NAME="v${{ inputs.Version }}-beta"
-          fi
+          TAG_NAME="v${{ steps.config.outputs.full_version }}"
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
-  
+
+      # Backlot.CI.slnf is Backlot.sln minus Backlot.Start. Backlot.Start consumes
+      # the Backlot.* packages this pipeline produces, so building it here is a
+      # chicken-and-egg problem: it can only restore versions that are already
+      # published. It ships as template content and is never packed as a library.
+      #
+      # The filter is generated from Backlot.sln on every run (and gitignored) so
+      # it can never drift out of sync with the solution.
+      - name: Generate CI solution filter
+        run: |
+          dotnet sln Backlot.sln list \
+            | grep '\.csproj$' \
+            | grep -v '^Backlot\.Start' \
+            | jq -Rs '{solution:{path:"Backlot.sln",projects:(split("\n")|map(select(length>0)))}}' \
+            > Backlot.CI.slnf
+          cat Backlot.CI.slnf
+
       - name: Build solution
-        run: dotnet build --configuration ${{ steps.config.outputs.configuration }}
+        run: |
+          dotnet build Backlot.CI.slnf \
+            --configuration ${{ steps.config.outputs.configuration }} \
+            -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
+            -p:VersionSuffix=${{ steps.config.outputs.version_suffix }}
 
       - name: Run unit tests
-        run: dotnet test Backlot.Testing/Backlot.Testing.csproj --no-build --configuration ${{ steps.config.outputs.configuration }} --verbosity normal
+        run: |
+          dotnet test Backlot.Testing/Backlot.Testing.csproj \
+            --no-build \
+            --configuration ${{ steps.config.outputs.configuration }} \
+            -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
+            -p:VersionSuffix=${{ steps.config.outputs.version_suffix }} \
+            --verbosity normal
 
-      - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
+      # Excludes Backlot.Start (not built above, and IsPackable=false) and
+      # Backlot.Start.Template (packed separately below — it is not in the solution,
+      # so it has no build output to reuse and cannot use --no-build).
+      - name: Pack library projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
           mkdir -p nupkgs
-          find . -name "*.csproj" -not -path "*Backlot.Demo.*" | while read -r project; do
+          find . -name "*.csproj" \
+            -not -path "*Backlot.Demo.*" \
+            -not -path "./Backlot.Start/*" \
+            -not -path "./Backlot.Start.Template/*" \
+            | while read -r project; do
             dotnet pack "$project" \
               --configuration "${{ steps.config.outputs.configuration }}" \
               --output nupkgs \
+              -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
+              -p:VersionSuffix=${{ steps.config.outputs.version_suffix }} \
               /p:IncludeBuildOutput=true \
               --no-build
           done
-  
+
+      # The template compiles nothing — it only copies the Backlot.Start folder into
+      # a content-only package — so restoring/building it costs nothing and never
+      # touches the Backlot.* package references inside that folder.
+      - name: Pack dotnet new template
+        run: |
+          dotnet pack Backlot.Start.Template/Backlot.Start.Template.csproj \
+            --configuration "${{ steps.config.outputs.configuration }}" \
+            --output nupkgs \
+            -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
+            -p:VersionSuffix=${{ steps.config.outputs.version_suffix }}
+
       - name: Find .nupkg files
         id: find-nupkgs
         run: |
@@ -89,10 +175,11 @@ jobs:
             echo "No .nupkg files found to publish."
             exit 1
           fi
-  
+          echo "Packages built (${{ steps.config.outputs.channel }}):" >> "$GITHUB_STEP_SUMMARY"
+          find nupkgs -name "*.nupkg" -printf '  - %f\n' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish to GitHub Packages
         run: |
           for nupkg in nupkgs/*.nupkg; do
             dotnet nuget push "$nupkg" --source https://nuget.pkg.github.com/backlot-software/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           done
-

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Backlot Studio</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@hotwired/turbo@8.0.23/dist/turbo.es2017-umd.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+   
+    <!-- Bootstrap Icons 1.13.1 - for icon usage only -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+          integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk"
+          crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/css/studio.css" />
+    <!-- Google Fonts - Inter for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="~/icon.png" sizes="32x32" />
+    <link rel="alternate icon" href="~/favicon.ico" />
+    
+    <!-- Custom Tailwind configuration - Modern Admin Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary brand colors - Modern slate/indigo palette
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                            DEFAULT: '#4f46e5',
+                            light: '#e0e7ff',
+                            dark: '#3730a3',
+                        },
+                        // Secondary colors - Slate gray
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            DEFAULT: '#64748b',
+                            light: '#f1f5f9',
+                            dark: '#1e293b',
+                        },
+                        // Success colors
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            DEFAULT: '#22c55e',
+                        },
+                        // Warning colors
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                            DEFAULT: '#f59e0b',
+                        },
+                        // Danger colors
+                        danger: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                            DEFAULT: '#ef4444',
+                        },
+                        // Info colors
+                        info: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            DEFAULT: '#3b82f6',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem',
+                        '128': '32rem',
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                        'card': '0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                        'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.2s ease-in-out',
+                        'slide-in': 'slideIn 0.2s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-secondary-50);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-secondary-300);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-secondary-400);
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 150ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Focus styles */
+        :focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-secondary-50 text-secondary-900">
+    <!-- Loading indicator -->
+    <div id="loading-overlay" class="fixed inset-0 bg-secondary-900/50 backdrop-blur-sm z-[2000] hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-4 shadow-xl">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+            <p class="text-sm text-secondary-600 mt-2 text-center">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Main container -->
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" data-turbo-permanent
+               class="w-64 flex-shrink-0 fixed top-0 left-0 h-screen overflow-y-auto transition-all duration-200 z-40 bg-white border-r border-secondary-200">
+            <partial name="_Sidebar" />
+        </aside>
+        
+        <!-- Main content -->
+        <main class="flex-1 flex flex-col min-h-screen ml-64">
+            <!-- Header -->
+            <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-secondary-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <!-- Mobile menu toggle -->
+                    <button id="mobile-menu-toggle" class="lg:hidden text-secondary-600 hover:text-primary-600 p-2 rounded-lg hover:bg-secondary-100" aria-label="Toggle menu">
+                        <i class="bi bi-list text-xl"></i>
+                    </button>
+                    
+                    <span class="flex text-secondary-500"></span>
+                    
+                    <!-- User actions -->
+                    <div class="flex items-center gap-3">
+                        <!-- Notifications -->
+                        <button class="relative text-secondary-600 hover:text-primary-600 p-2 rounded-lg hover:bg-secondary-100" aria-label="Notifications">
+                            <i class="bi bi-bell text-xl"></i>
+                            <span class="absolute top-1 right-1 h-3 w-3 bg-primary-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        
+                        <!-- User menu -->
+                        <div class="relative" id="user-menu">
+                            <button onclick="document.getElementById('user-menu-dropdown').classList.toggle('hidden')" class="flex items-center gap-2 text-secondary-600 hover:text-primary-600 p-2 rounded-lg hover:bg-secondary-100" aria-label="User menu">
+                                <span class="text-sm font-medium">@ViewData["Username"]</span>
+                                <i class="bi bi-chevron-down text-xs"></i>
+                            </button>
+                            <div id="user-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-dropdown border border-secondary-200 py-1 z-50">
+                                <a href="/" class="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100 hover:text-primary-600">Profile</a>
+                                <div class="border-t border-secondary-200 my-1"></div>
+                                <form method="post" action="/logout">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-danger-600 hover:bg-danger-50">Sign out</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page content -->
+            <div class="flex-1 p-6">
+                @RenderBody()
+            </div>
+            
+            <!-- Footer -->
+            <footer class="bg-white border-t border-secondary-200 px-6 py-4">
+                <div class="flex items-center justify-between text-sm text-secondary-500">
+                    <p>Copyright (C) 2022-@DateTime.Now.Year Backlot. All rights reserved. License: AGPL-3.0.</p>
+                    <div class="flex items-center gap-4">
+                        <a href="https://docs.backlot.software" class="hover:text-primary-600">Documentation</a>
+                        <a href="https://github.com/backlot-software" class="hover:text-primary-600">Git</a>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
