@@ -22,7 +22,7 @@
         <PackageIcon>bl.png</PackageIcon>
         <PackageReadmeFile>README.MD</PackageReadmeFile>
 
-        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionPrefix>0.0.3</VersionPrefix>
 
         <!-- Needed by the SDK, but nothing is actually compiled. -->
         <TargetFramework>net10.0</TargetFramework>
