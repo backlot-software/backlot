@@ -18,7 +18,16 @@ jobs:
     steps:
       - name: Delete NuGet packages matching the prefix
         env:
+          # The default GITHUB_TOKEN is enough, but only because this workflow
+          # avoids the org-wide REST listing endpoint (see below) — that one
+          # requires a classic PAT and 403s for this token.
+          #
+          # Deleting still requires the token to have ADMIN on each package. For
+          # nuget (unlike maven/rubygems) that is not inherited from publishing
+          # the package here: grant it per package under
+          #   Package settings -> Manage Actions access -> add this repo as Admin
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
           ORG: ${{ github.repository_owner }}
           PACKAGE_PREFIX: ${{ inputs.package-prefix }}
         run: |
@@ -28,28 +37,34 @@ jobs:
           echo "🎯 Filtering for packages with prefix: $PACKAGE_PREFIX"
           echo ""
 
-          # Fetch all NuGet packages for the organization (paginated)
-          ALL_PACKAGES=$(gh api \
-            --paginate \
-            -H "Accept: application/vnd.github+json" \
-            "/orgs/$ORG/packages?package_type=nuget" \
-            2>/dev/null || echo "[]")
+          # Discovery goes through the NuGet registry, not the REST API:
+          # GET /orgs/{org}/packages needs a classic PAT with read:packages and
+          # 403s for GITHUB_TOKEN, which is what made this step report a
+          # misleading "no packages found" (the error was swallowed and exit 0).
+          # The registry accepts GITHUB_TOKEN and returns the packages this
+          # repository can see — which is all of them, since it published them.
+          ALL_PACKAGES=$(curl -sSf -u "${GH_ACTOR}:${GH_TOKEN}" \
+            "https://nuget.pkg.github.com/${ORG}/query?q=${PACKAGE_PREFIX}&prerelease=true&take=200")
 
-          if [ "$ALL_PACKAGES" = "[]" ] || [ -z "$ALL_PACKAGES" ]; then
-            echo "ℹ️  No NuGet packages found for org '$ORG'."
+          TOTAL=$(echo "$ALL_PACKAGES" | jq -r '.data[].id' | wc -l)
+
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "ℹ️  No NuGet packages visible on the feed for org '$ORG'."
             exit 0
           fi
 
-          # Filter packages whose name starts with the specified prefix
+          # q= above is only a search hint, so this filter is what actually
+          # decides. Compared case-insensitively: package ids are "Backlot.*",
+          # so a lowercase prefix like "backlot" would otherwise match nothing.
           MATCHED=$(echo "$ALL_PACKAGES" | jq -r \
             --arg prefix "$PACKAGE_PREFIX" \
-            '.[] | select(.name | startswith($prefix)) | .name')
+            '.data[].id | select(ascii_downcase | startswith($prefix | ascii_downcase))' | sort -u)
 
           if [ -z "$MATCHED" ]; then
             echo "ℹ️  No NuGet packages found with prefix '$PACKAGE_PREFIX'."
             echo ""
-            echo "All NuGet packages in org '$ORG' (for debugging):"
-            echo "$ALL_PACKAGES" | jq -r '.[] | "  - \(.name)"' 2>/dev/null || true
+            echo "All NuGet packages visible in org '$ORG' (for debugging):"
+            echo "$ALL_PACKAGES" | jq -r '.data[] | "  - \(.id)"' 2>/dev/null || true
             exit 0
           fi
 
@@ -78,6 +93,11 @@ jobs:
               204)
                 echo "   ✅ Deleted successfully"
                 DELETED=$((DELETED + 1))
+                ;;
+              403)
+                echo "   ❌ Forbidden — this repository does not have Admin on '$pkg'."
+                echo "      Grant it under: Package settings -> Manage Actions access -> add this repo as Admin."
+                FAILED=$((FAILED + 1))
                 ;;
               404)
                 echo "   ⚠️  Package not found (may already be deleted)"
