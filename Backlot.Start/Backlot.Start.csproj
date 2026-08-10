@@ -28,6 +28,17 @@
         <PackageReadmeFile>README.MD</PackageReadmeFile>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <!--
+          Single source of truth for the Backlot framework packages below.
+          Floats to the newest published build, prereleases included, so a project
+          generated from the template tracks whatever the pipeline last shipped
+          (alpha from develop, beta from release/*, stable from main).
+          Pin it when you need a fixed baseline: -p:BacklotVersion=0.0.2
+        -->
+        <BacklotVersion>0.0.*-*</BacklotVersion>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- This includes the file in the actual .nupkg package -->
         <Content Include="README.MD">
@@ -37,16 +48,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Backlot framework packages (Backlot GitHub NuGet feed) -->
-        <PackageReference Include="Backlot.Core" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Defaults" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Authentication.Basic" Version="0.0.1"  />
-        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Http" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Services.LiteDB" Version="0.0.1"  />
-        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="0.0.1"  />
-        <PackageReference Include="Backlot.WebApp" Version="0.0.1"  />
+        <!-- Backlot framework packages (Backlot GitHub NuGet feed — see nuget.config) -->
+        <PackageReference Include="Backlot.Core" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Defaults" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Authentication.Basic" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Http" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Services.LiteDB" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.WebApp" Version="$(BacklotVersion)" />
     </ItemGroup>
 
     <ItemGroup>
