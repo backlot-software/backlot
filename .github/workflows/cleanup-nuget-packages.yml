@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       package-prefix:
-        description: 'Prefix for NuGet packages to clean up (e.g. "backlot-")'
+        description: 'Prefix for NuGet packages to clean up (e.g. "Backlot.")'
         required: true
         type: string
 
@@ -18,53 +18,65 @@ jobs:
     steps:
       - name: Delete NuGet packages matching the prefix
         env:
-          # The default GITHUB_TOKEN is enough, but only because this workflow
-          # avoids the org-wide REST listing endpoint (see below) — that one
-          # requires a classic PAT and 403s for this token.
+          # Needs a CLASSIC personal access token with read:packages (to list)
+          # and delete:packages (to delete) — see the discovery comment below for
+          # why GITHUB_TOKEN cannot do this job.
           #
-          # Deleting still requires the token to have ADMIN on each package. For
-          # nuget (unlike maven/rubygems) that is not inherited from publishing
-          # the package here: grant it per package under
-          #   Package settings -> Manage Actions access -> add this repo as Admin
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_ACTOR: ${{ github.actor }}
+          # An org owner's PAT also removes the per-package chore that
+          # GITHUB_TOKEN requires, where each package has to grant this repo
+          # Admin under: Package settings -> Manage Actions access.
+          GH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
           ORG: ${{ github.repository_owner }}
           PACKAGE_PREFIX: ${{ inputs.package-prefix }}
         run: |
           set -euo pipefail
 
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Secret PACKAGES_TOKEN is not set. Create a classic PAT with read:packages and delete:packages, then add it as a repository secret."
+            exit 1
+          fi
+
           echo "🔍 Fetching all NuGet packages for org: $ORG"
           echo "🎯 Filtering for packages with prefix: $PACKAGE_PREFIX"
           echo ""
 
-          # Discovery goes through the NuGet registry, not the REST API:
-          # GET /orgs/{org}/packages needs a classic PAT with read:packages and
-          # 403s for GITHUB_TOKEN, which is what made this step report a
-          # misleading "no packages found" (the error was swallowed and exit 0).
-          # The registry accepts GITHUB_TOKEN and returns the packages this
-          # repository can see — which is all of them, since it published them.
-          ALL_PACKAGES=$(curl -sSf -u "${GH_ACTOR}:${GH_TOKEN}" \
-            "https://nuget.pkg.github.com/${ORG}/query?q=${PACKAGE_PREFIX}&prerelease=true&take=200")
+          # Discovery uses the REST API, NOT the registry's /query endpoint.
+          #
+          # Do not "simplify" this back to
+          #   https://nuget.pkg.github.com/{org}/query?q=...
+          # That is GitHub Packages' SearchQueryService, and it is a known
+          # non-conformant implementation: it ignores `skip`, clamps totalHits to
+          # `take`, returns only recently-created packages when `q` is omitted,
+          # and answers 400 for query shapes nuget.org accepts. GitHub's own
+          # support guidance is to use /orgs/{org}/packages instead.
+          #
+          # Equally, do not swallow errors here (`2>/dev/null || echo "[]"`): that
+          # is what once turned an auth failure into a misleading
+          # "no packages found" plus exit 0. Under `set -e` a non-2xx makes gh
+          # exit non-zero and print the API error body, which is what we want.
+          #
+          # per_page maxes out at 100, hence --paginate.
+          ALL_NAMES=$(gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/$ORG/packages?package_type=nuget&per_page=100" \
+            --jq '.[].name')
 
-          TOTAL=$(echo "$ALL_PACKAGES" | jq -r '.data[].id' | wc -l)
-
-          if [ "$TOTAL" -eq 0 ]; then
-            echo "ℹ️  No NuGet packages visible on the feed for org '$ORG'."
+          if [ -z "$ALL_NAMES" ]; then
+            echo "ℹ️  No NuGet packages found for org '$ORG'."
             exit 0
           fi
 
-          # q= above is only a search hint, so this filter is what actually
-          # decides. Compared case-insensitively: package ids are "Backlot.*",
-          # so a lowercase prefix like "backlot" would otherwise match nothing.
-          MATCHED=$(echo "$ALL_PACKAGES" | jq -r \
-            --arg prefix "$PACKAGE_PREFIX" \
-            '.data[].id | select(ascii_downcase | startswith($prefix | ascii_downcase))' | sort -u)
+          # Compared case-insensitively: package ids are "Backlot.*", so a
+          # lowercase prefix like "backlot" would otherwise match nothing.
+          MATCHED=$(printf '%s\n' "$ALL_NAMES" \
+            | awk -v p="$PACKAGE_PREFIX" 'BEGIN{p=tolower(p)} tolower(substr($0,1,length(p)))==p' \
+            | sort -u)
 
           if [ -z "$MATCHED" ]; then
             echo "ℹ️  No NuGet packages found with prefix '$PACKAGE_PREFIX'."
             echo ""
-            echo "All NuGet packages visible in org '$ORG' (for debugging):"
-            echo "$ALL_PACKAGES" | jq -r '.data[] | "  - \(.id)"' 2>/dev/null || true
+            echo "All NuGet packages in org '$ORG' (for debugging):"
+            printf '%s\n' "$ALL_NAMES" | sed 's/^/  - /'
             exit 0
           fi
 
@@ -95,8 +107,10 @@ jobs:
                 DELETED=$((DELETED + 1))
                 ;;
               403)
-                echo "   ❌ Forbidden — this repository does not have Admin on '$pkg'."
-                echo "      Grant it under: Package settings -> Manage Actions access -> add this repo as Admin."
+                echo "   ❌ Forbidden on '$pkg'."
+                echo "      Most likely: PACKAGES_TOKEN is missing the delete:packages scope,"
+                echo "      is not owned by an org owner, or is not SSO-authorized for '$ORG'."
+                echo "      Otherwise: grant Admin under Package settings -> Manage Actions access."
                 FAILED=$((FAILED + 1))
                 ;;
               404)

@@ -1,9 +1,12 @@
 # Promotes an already-published release from GitHub Packages to nuget.org.
 #
-# The GitHub Packages feed is the single source of truth: this workflow asks it
-# which Backlot.* packages exist and which of them have the requested version.
-# It never builds, packs, or reads the repository — there is no checkout. A
-# version that is not on the feed simply cannot be promoted.
+# GitHub Packages is the single source of truth: this workflow asks it which
+# Backlot.* packages exist and which of them have the requested version. It
+# never builds, packs, or reads the repository — there is no checkout. A version
+# that is not on the feed simply cannot be promoted.
+#
+# Requires the PACKAGES_TOKEN secret (classic PAT, read:packages) to enumerate
+# the org's packages.
 #
 # Authentication to nuget.org uses Trusted Publishing (OIDC) — there is no
 # long-lived API key. nuget.org validates the OIDC token against a policy that
@@ -29,7 +32,11 @@ jobs:
       - name: Download Backlot packages from GitHub Packages
         env:
           GH_ACTOR: ${{ github.actor }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Listing the org's packages needs a classic PAT with read:packages;
+          # GITHUB_TOKEN gets a 403 there. Downloading a known nupkg from the
+          # registry does not, so the two use different tokens.
+          GH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           VERSION: ${{ inputs.Version }}
         run: |
@@ -44,30 +51,52 @@ jobs:
               ;;
           esac
 
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Secret PACKAGES_TOKEN is not set. Create a classic PAT with read:packages, then add it as a repository secret."
+            exit 1
+          fi
+
           FEED="https://nuget.pkg.github.com/${OWNER}"
           mkdir -p nupkgs
 
-          IDS=$(curl -sSf -u "${GH_ACTOR}:${GH_TOKEN}" \
-            "${FEED}/query?q=Backlot&prerelease=true&take=200" \
-            | jq -r '.data[].id | select(startswith("Backlot."))' | sort -u)
+          # Which packages exist comes from the REST API, not from the registry's
+          # /query endpoint. GitHub Packages' SearchQueryService is non-conformant
+          # (ignores `skip`, clamps totalHits to `take`, 400s on query shapes
+          # nuget.org accepts), and a discovery failure here silently shrinks a
+          # release. See the same comment in cleanup-nuget-packages.yml.
+          IDS=$(gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/$OWNER/packages?package_type=nuget&per_page=100" \
+            --jq '.[].name | select(startswith("Backlot."))' | sort -u)
 
           if [ -z "$IDS" ]; then
-            echo "::error::No Backlot.* packages found on the GitHub Packages feed for '${OWNER}'."
+            echo "::error::No Backlot.* packages found for org '${OWNER}'."
             exit 1
           fi
 
           # A package that has no build at this version is skipped, not an error:
-          # the set of packages changes between releases.
+          # the set of packages changes between releases. Only 404 means that,
+          # though — any other failure is a real problem and must not be read as
+          # "this package simply isn't part of the release".
           for id in $IDS; do
             lower=$(echo "$id" | tr '[:upper:]' '[:lower:]')
             out="nupkgs/${id}.${VERSION}.nupkg"
-            if curl -sSL -f -u "${GH_ACTOR}:${GH_TOKEN}" -o "$out" \
-                 "${FEED}/download/${lower}/${VERSION}/${lower}.${VERSION}.nupkg"; then
-              echo "✅ ${id} ${VERSION}"
-            else
-              rm -f "$out"
-              echo "➖ ${id} — no ${VERSION} on the feed, skipping"
-            fi
+            code=$(curl -sSL -u "${GH_ACTOR}:${REGISTRY_TOKEN}" -o "$out" -w '%{http_code}' \
+              "${FEED}/download/${lower}/${VERSION}/${lower}.${VERSION}.nupkg")
+            case "$code" in
+              200)
+                echo "✅ ${id} ${VERSION}"
+                ;;
+              404)
+                rm -f "$out"
+                echo "➖ ${id} — no ${VERSION} on the feed, skipping"
+                ;;
+              *)
+                rm -f "$out"
+                echo "::error::${id}: unexpected HTTP ${code} downloading ${VERSION} from the feed."
+                exit 1
+                ;;
+            esac
           done
 
           COUNT=$(find nupkgs -name '*.nupkg' | wc -l)
