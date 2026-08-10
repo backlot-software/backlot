@@ -103,9 +103,25 @@ jobs:
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
 
+      # Backlot.CI.slnf is Backlot.sln minus Backlot.Start. Backlot.Start consumes
+      # the Backlot.* packages this pipeline produces, so building it here is a
+      # chicken-and-egg problem: it can only restore versions that are already
+      # published. It ships as template content and is never packed as a library.
+      #
+      # The filter is generated from Backlot.sln on every run (and gitignored) so
+      # it can never drift out of sync with the solution.
+      - name: Generate CI solution filter
+        run: |
+          dotnet sln Backlot.sln list \
+            | grep '\.csproj$' \
+            | grep -v '^Backlot\.Start' \
+            | jq -Rs '{solution:{path:"Backlot.sln",projects:(split("\n")|map(select(length>0)))}}' \
+            > Backlot.CI.slnf
+          cat Backlot.CI.slnf
+
       - name: Build solution
         run: |
-          dotnet build \
+          dotnet build Backlot.CI.slnf \
             --configuration ${{ steps.config.outputs.configuration }} \
             -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
             -p:VersionSuffix=${{ steps.config.outputs.version_suffix }}
@@ -119,10 +135,17 @@ jobs:
             -p:VersionSuffix=${{ steps.config.outputs.version_suffix }} \
             --verbosity normal
 
-      - name: Pack projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
+      # Excludes Backlot.Start (not built above, and IsPackable=false) and
+      # Backlot.Start.Template (packed separately below — it is not in the solution,
+      # so it has no build output to reuse and cannot use --no-build).
+      - name: Pack library projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
           mkdir -p nupkgs
-          find . -name "*.csproj" -not -path "*Backlot.Demo.*" | while read -r project; do
+          find . -name "*.csproj" \
+            -not -path "*Backlot.Demo.*" \
+            -not -path "./Backlot.Start/*" \
+            -not -path "./Backlot.Start.Template/*" \
+            | while read -r project; do
             dotnet pack "$project" \
               --configuration "${{ steps.config.outputs.configuration }}" \
               --output nupkgs \
@@ -131,6 +154,17 @@ jobs:
               /p:IncludeBuildOutput=true \
               --no-build
           done
+
+      # The template compiles nothing — it only copies the Backlot.Start folder into
+      # a content-only package — so restoring/building it costs nothing and never
+      # touches the Backlot.* package references inside that folder.
+      - name: Pack dotnet new template
+        run: |
+          dotnet pack Backlot.Start.Template/Backlot.Start.Template.csproj \
+            --configuration "${{ steps.config.outputs.configuration }}" \
+            --output nupkgs \
+            -p:VersionPrefix=${{ steps.config.outputs.version_prefix }} \
+            -p:VersionSuffix=${{ steps.config.outputs.version_suffix }}
 
       - name: Find .nupkg files
         id: find-nupkgs

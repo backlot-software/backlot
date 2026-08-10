@@ -10,6 +10,26 @@
 Backlot.Start is a starter template for building web apis with Backlot.Web.
 If you like to use Backlot in other applications like a console application or your existing CMS installation. Start with using Backlot.Core and scaleup with the packages you need.
 
+## NuGet feed
+
+The `Backlot.*` packages are hosted on Backlot's GitHub Packages feed. Final versions will be hosted on nuget.org in the future. The included `nuget.config` already points at Gh package feed, but the feed is private,
+so restore needs credentials once per machine — a GitHub PAT with the `read:packages`
+scope:
+
+```bash
+dotnet nuget update source backlot-github \
+  --username <your-github-user> \
+  --password <PAT-with-read:packages> \
+  --store-password-in-clear-text
+```
+
+This writes to your user-profile NuGet config, not to the project — don't commit the
+PAT. In CI, supply it from your secret store instead.
+
+The framework references in `Backlot.Start.csproj` float via the `BacklotVersion`
+property (`0.0.*-*`), so a restore picks up the newest published build, prereleases
+included. Set `<BacklotVersion>` to an exact version to pin.
+
 ## WebDirector.cs
 
 The Director coordinates the entire application. This role involves envisioning, instructing, and unifying various parts to create a seamless performance.
