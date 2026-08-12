@@ -121,7 +121,7 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (env, redirect) = await SafeApiCall(async () => await _api.Get<JsonElement>("seekbase", "detail", Uid));
+            var (env, redirect) = await SafeApiCall(async () => await _api.Post<Seek, JsonElement>("seek", "detail", new Seek { For = Uid}));
             if (redirect != null) return redirect;
 
             var roleData = env?.Body.Unwrap("Role") ?? new JsonElement();
