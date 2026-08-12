@@ -43,51 +43,51 @@ public class BacklotApiClient : IBacklotApiClient
     // The uid is appended as the sole query param only when non-empty (mirroring the GET branch in
     // ApplicationBuilding.cs: director scenarios pass no uid; other roles require uid as the only
     // query param). uid is escaped via Uri.EscapeDataString to prevent query/path injection (T-ou7-01).
-    public async Task<ApiEnvelope<T>> Play<T>(string roleName, string scenario, CancellationToken ct = default)
+    public async Task<ApiEnvelope<TR>> Get<TR>(string roleName, string scenario, CancellationToken ct = default)
     {
         var path = $"api/role/{roleName}/{scenario}";
 
         var response = await _httpClient.GetAsync(path, ct);
         await EnsureSuccessAsync(response, ct);
         // todo: throw exception when ReadFromJson returns null.
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
-    public async Task<ApiEnvelope<T>> Play<T>(string roleName, string scenario, string uid, CancellationToken ct = default)
+    public async Task<ApiEnvelope<TR>> Get<TR>(string roleName, string scenario, string uid, CancellationToken ct = default)
     {
         var path = $"api/role/{roleName}/{scenario}";
         
-        if (!string.IsNullOrEmpty(uid)) throw new ArgumentException("Uid is required");
+        if (string.IsNullOrEmpty(uid)) throw new ArgumentException("Uid is required");
         
         path += $"?uid={Uri.EscapeDataString(uid)}";
 
 
         var response = await _httpClient.GetAsync(path, ct);
         await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
     // PlayAsync (POST) — generic primitive that posts the body as JSON to api/role/{rolename}/{scenario}.
-    public async Task<ApiEnvelope<T>?> Play<T>(string roleName, string scenario, IRequestBody body, CancellationToken ct = default)
+    public async Task<ApiEnvelope<TR>> Post<TB,TR>(string roleName, string scenario, TB body, CancellationToken ct = default) where TB: IRequestBody
     {
         var path = $"api/role/{roleName}/{scenario}";
         var response = await _httpClient.PostAsJsonAsync(path, body, JsonOptions, ct);
         await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct);
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
     // IsAuthenticatedAsync — called from Login.cshtml.cs to validate credentials
     public async Task<bool> IsAuthenticated()
     {
-        var envelope = await Play<bool>("director", "isauthenticated");
+        var envelope = await Get<bool>("director", "isauthenticated");
         return envelope?.Body ?? false;
     }
 
     // WhoAmIAsync — called server-side from authenticated PageModels
-    public async Task<object?> WhoAmI()
+    public async Task<object> WhoAmI()
     {
-        var envelope = await Play<object>("director", "whoami");
-        return envelope?.Body;
+        var envelope = await Get<object>("director", "whoami");
+        return envelope.Body;
     }
     
     public async Task<ApiEnvelope<StatusBody>?> Status()

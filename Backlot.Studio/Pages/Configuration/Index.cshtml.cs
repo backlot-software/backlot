@@ -38,7 +38,7 @@ public class IndexModel : AuthenticatedPageModel
         try
         {
             var (result, redirect) = await SafeApiCall(async () =>
-                await _api.Play<List<ConfigurationInfo>>("director", "configurationinfos"));
+                await _api.Get<List<ConfigurationInfo>>("director", "configurationinfos"));
             if (redirect != null) return redirect;
 
             BuildTree(result?.Body ?? []);

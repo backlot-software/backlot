@@ -17,18 +17,28 @@ public class BasicAuthHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var session = _httpContextAccessor.HttpContext?.Session;
-        if (session != null)
-        {
-            await session.LoadAsync(cancellationToken);
-        }
+        // Check if we're in an ASP.NET Core context before accessing session
+        var hasHttpContext = _httpContextAccessor.HttpContext != null;
+    
+        // if (hasHttpContext)
+        // {
+        //     var session = _httpContextAccessor.HttpContext.Session;
+        //     if (session != null)
+        //     {
+        //         await session.LoadAsync(cancellationToken);
+        //     }
+        // }
 
-        var basicAuthHeader = session?.GetString("BasicAuthHeader");
-
-        if (!string.IsNullOrEmpty(basicAuthHeader))
+        // Only try to get auth header if we have a valid context
+        if (hasHttpContext)
         {
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Basic", basicAuthHeader);
+            var basicAuthHeader = _httpContextAccessor.HttpContext?.Session.GetString("BasicAuthHeader");
+        
+            if (!string.IsNullOrEmpty(basicAuthHeader))
+            {
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Basic", basicAuthHeader);
+            }
         }
 
         var response = await base.SendAsync(request, cancellationToken);

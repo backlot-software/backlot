@@ -44,7 +44,7 @@ public class IndexModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Play<FindResult>("simplequery", "find", request));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Post<FindRequest,FindResult>("simplequery", "find", request));
             if (redirect != null) return redirect;
             RoleResult = result?.Body;
         }

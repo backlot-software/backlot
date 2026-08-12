@@ -32,7 +32,7 @@ public class RelationsModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Play<IEnumerable<RelationItem>>("persist", "relations", Uid));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Get<IEnumerable<RelationItem>>("persist", "relations", Uid));
             if (redirect != null) return redirect;
             Relations = result?.Body ?? [];
         }
