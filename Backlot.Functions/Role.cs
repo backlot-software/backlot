@@ -53,7 +53,12 @@ namespace Backlot.Functions
                 else
                 {
                     if (req.Query["uid"] == null || req.Query.Count > 1)
-                        throw new BadRequestException("The query string must contain only 'uid' when using roles other than director in GET requests.");
+                        throw new BadRequestException(
+                            "The query string must contain only 'uid' when using roles other than director in GET requests.");
+                    
+                    if(!typeof(IPersist).IsAssignableFrom(roleType))
+                        throw new BadRequestException(
+                            $"{roleType} is not a persistable roletype inheriting from IPersist. Make sure you use the correct roletype for your request.");
                     
                     if (!_roleRepository.TryGet(req.Query["uid"], roleType, out var roleOut))
                     {
