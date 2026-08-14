@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Backlot.Studio.Services;
 
@@ -17,23 +18,14 @@ public class BasicAuthHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Check if we're in an ASP.NET Core context before accessing session
-        var hasHttpContext = _httpContextAccessor.HttpContext != null;
-    
-        // if (hasHttpContext)
-        // {
-        //     var session = _httpContextAccessor.HttpContext.Session;
-        //     if (session != null)
-        //     {
-        //         await session.LoadAsync(cancellationToken);
-        //     }
-        // }
-
-        // Only try to get auth header if we have a valid context
-        if (hasHttpContext)
+        // Both guards matter when the Studio is embedded in a host app: there is no HttpContext on a
+        // background call, and HttpContext.Session throws outright unless the session middleware ran
+        // for this request (MapBacklotStudio only branches it onto the Studio's own path).
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext?.Features.Get<ISessionFeature>() is not null)
         {
-            var basicAuthHeader = _httpContextAccessor.HttpContext?.Session.GetString("BasicAuthHeader");
-        
+            var basicAuthHeader = httpContext.Session.GetString(BacklotStudioDefaults.BasicAuthSessionKey);
+
             if (!string.IsNullOrEmpty(basicAuthHeader))
             {
                 request.Headers.Authorization =

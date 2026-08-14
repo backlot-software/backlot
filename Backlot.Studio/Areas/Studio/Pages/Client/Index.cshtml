@@ -1,0 +1,258 @@
+@page "/client"
+@model Backlot.Studio.Pages.Client.IndexModel
+@{
+    ViewData["Title"] = "Client";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Client</h1>
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-0">
+        <a href="@(Model.ApiBaseUrl)scalar/v1" target="_blank" class="btn btn-outline">
+            <i class="bi bi-book"></i>
+            <span>API Documentation</span>
+        </a>
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a asp-area="Studio" asp-page="/Client/Index" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form id="client-form" data-turbo="false" data-default-endpoint="@Model.DefaultEndpoint">
+            @Html.AntiForgeryToken()
+
+            <!-- Request line: method + scenario picker + execute -->
+            <div class="flex flex-col lg:flex-row lg:items-end gap-4 mb-4">
+                <!-- Method (derived from the endpoint; not user-editable) -->
+                <div class="lg:w-32">
+                    <label for="method-display" class="form-label">Method</label>
+                    <div id="method-display" class="form-input bg-secondary-50 text-secondary-700">GET</div>
+                    <input type="hidden" id="method-input" name="Input.Method" value="GET" />
+                </div>
+
+                <!-- Searchable scenario dropdown (shared with the role Detail page) -->
+                <div class="flex-1">
+                    <label for="scenario-search" class="form-label">Scenario</label>
+                    @{
+                        var scenarioSearchModel = new ViewModels.ScenarioSearchViewModel
+                        {
+                            Id = "scenario",
+                            Options = Model.Options
+                        };
+                    }
+                    <partial name="_ScenarioSearchBox" model="scenarioSearchModel" />
+                </div>
+
+                <!-- Copy the ready-to-send .http request -->
+                <div>
+                    <button type="button" id="copy-btn" class="btn btn-outline w-full lg:w-auto">
+                        <i class="bi bi-clipboard"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+
+                <!-- Execute -->
+                <div>
+                    <button type="submit" id="execute-btn" class="btn btn-primary w-full lg:w-auto">
+                        <i class="bi bi-play-fill"></i>
+                        <span>Execute</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Endpoint (loaded from the selected scenario, editable) -->
+            <div class="mb-4">
+                <label for="endpoint-input" class="form-label">Endpoint</label>
+                <input type="text"
+                       id="endpoint-input"
+                       name="Input.Endpoint"
+                       class="form-input font-mono text-sm bg-secondary-50"
+                       readonly
+                       placeholder="Select a scenario to load its endpoint…" />
+            </div>
+
+            <!-- Body -->
+            <div class="mb-2">
+                <label for="body-input" class="form-label">Body</label>
+                <textarea id="body-input"
+                          name="Input.Body"
+                          rows="8"
+                          class="form-input font-mono text-sm"
+                          placeholder="Request body (JSON). Ignored for GET requests.">@Model.PrefilledBody</textarea>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Result -->
+<div id="result-panel" class="card mt-6 hidden">
+    <div class="card-header flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-secondary-900">Response</h2>
+        <div class="flex items-center gap-3">
+            <span id="result-time" class="text-xs text-secondary-500"></span>
+            <span id="result-status" class="badge"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <pre id="result-body" class="code-block overflow-x-auto text-sm whitespace-pre-wrap break-words"><code></code></pre>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById('client-form');
+            if (!form) return;
+
+            const endpointInput = document.getElementById('endpoint-input');
+            const methodDisplay = document.getElementById('method-display');
+            const methodInput = document.getElementById('method-input');
+            const executeBtn = document.getElementById('execute-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const resultPanel = document.getElementById('result-panel');
+            const resultStatus = document.getElementById('result-status');
+            const resultTime = document.getElementById('result-time');
+            const resultBody = document.getElementById('result-body').querySelector('code');
+
+            // Derive the HTTP method from the endpoint's role segment: api/role/{role}/{scenario}.
+            // The director role is read-only (GET); everything else is a POST.
+            function applyMethod(endpoint) {
+                const parts = (endpoint || '').replace(/^\/+|\/+$/g, '').split('/');
+                const role = (parts[0] === 'api' && parts[1] === 'role') ? parts[2] : null;
+                const method = (role && role.toLowerCase() === 'director') ? 'GET' : 'POST';
+                methodDisplay.textContent = method;
+                methodInput.value = method;
+            }
+
+            // --- Shared searchable scenario dropdown ---------------------------------
+            const scenarioSearch = window.initScenarioSearch({
+                id: 'scenario',
+                onSelect: function (name, endpoint) {
+                    endpointInput.value = endpoint;
+                    applyMethod(endpoint);
+                }
+            });
+
+            // On load, auto-select the default endpoint (the scenario chosen on Detail, or
+            // persist/persist, when arriving via Play).
+            const defaultEndpoint = form.dataset.defaultEndpoint;
+            if (defaultEndpoint && scenarioSearch) {
+                scenarioSearch.selectByEndpoint(defaultEndpoint);
+            }
+
+            // --- Execute -------------------------------------------------------------
+            function setStatusBadge(code, ok) {
+                resultStatus.textContent = code;
+                resultStatus.className = 'badge ' + (ok ? 'badge-success' : 'badge-danger');
+            }
+
+            function prettyBody(text) {
+                if (!text) return '(empty response body)';
+                try {
+                    return JSON.stringify(JSON.parse(text), null, 2);
+                } catch (_) {
+                    return text;
+                }
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                if (!endpointInput.value.trim()) {
+                    endpointInput.focus();
+                    return;
+                }
+
+                executeBtn.disabled = true;
+                const original = executeBtn.innerHTML;
+                executeBtn.innerHTML = '<span class="spinner"></span><span>Executing…</span>';
+
+                try {
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                    const data = new FormData(form);
+                    const res = await fetch('?handler=Execute', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                        body: data
+                    });
+                    const payload = await res.json();
+
+                    resultPanel.classList.remove('hidden');
+
+                    if (payload.unauthorized) {
+                        window.location.href = '@Url.Page("/Login")';
+                        return;
+                    }
+
+                    if (typeof payload.statusCode === 'number') {
+                        setStatusBadge(payload.statusCode + ' ' + payload.reasonPhrase, payload.isSuccess);
+                        resultTime.textContent = payload.elapsedMs + ' ms';
+                        resultBody.textContent = prettyBody(payload.body);
+                    } else {
+                        // Handler-level error (validation / gateway) — payload.error carries the message.
+                        setStatusBadge(res.status + ' Error', false);
+                        resultTime.textContent = '';
+                        resultBody.textContent = payload.error || 'Request failed.';
+                    }
+                } catch (err) {
+                    resultPanel.classList.remove('hidden');
+                    setStatusBadge('Network error', false);
+                    resultTime.textContent = '';
+                    resultBody.textContent = String(err);
+                } finally {
+                    executeBtn.disabled = false;
+                    executeBtn.innerHTML = original;
+                }
+            });
+
+            // --- Copy the ready-to-send .http request --------------------------------
+            // Ask the server to format the current method/endpoint/body (the Authorization line
+            // is filled in server-side from the session credential) and copy the result.
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async function () {
+                    if (!endpointInput.value.trim()) {
+                        endpointInput.focus();
+                        return;
+                    }
+
+                    const icon = copyBtn.querySelector('i');
+                    try {
+                        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                        const data = new FormData(form);
+                        const res = await fetch('?handler=Copy', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                            body: data
+                        });
+                        const payload = await res.json();
+                        if (!payload.text) return;
+
+                        await navigator.clipboard.writeText(payload.text);
+
+                        if (icon) {
+                            icon.classList.remove('bi-clipboard');
+                            icon.classList.add('bi-clipboard-check');
+                            setTimeout(function () {
+                                icon.classList.remove('bi-clipboard-check');
+                                icon.classList.add('bi-clipboard');
+                            }, 1500);
+                        }
+                    } catch (_) {
+                        /* clipboard/network failure — nothing to surface for a copy action */
+                    }
+                });
+            }
+        })();
+    </script>
+}

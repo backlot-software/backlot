@@ -1,0 +1,166 @@
+@page "/roles/{RoleType}/{Uid}"
+@model Backlot.Studio.Pages.Roles.DetailModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+    var perms = Model.Permissions;
+}
+
+<!-- Breadcrumb and back navigation -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900">@Model.PageTitle</h1>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 sm:items-center">
+        @if (Model.ErrorMessage == null && Model.ScenarioOptions.Any())
+        {
+            var detailSearchModel = new ViewModels.ScenarioSearchViewModel
+            {
+                Id = "detail-scenario",
+                Options = Model.ScenarioOptions
+            };
+            <div class="w-full sm:w-72">
+                <partial name="_ScenarioSearchBox" model="detailSearchModel" />
+            </div>
+        }
+        @if (Model.ErrorMessage == null)
+        {
+            <a id="play-link" href="@Url.Page("/Roles/Detail", "Play", new { RoleType = Model.RoleType, Uid = Model.Uid })" class="btn btn-primary">
+                <i class="bi bi-play-fill"></i><span>Play</span>
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+    </div>
+}
+else
+{
+    <!-- Fields table -->
+    <div class="card mb-6 animate-fade-in" style="animation-delay: 100ms">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-secondary-900">Fields</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container">
+                <table class="w-full text-sm">
+                    <colgroup>
+                        <col style="width: 30%">
+                        <col style="width: 70%">
+                    </colgroup>
+                    <tbody>
+                        @* Non-system fields *@
+                        @foreach (var item in Model.Fields)
+                        {
+                            <tr class="border-b border-secondary-100">
+                                <td class="bg-secondary-50 p-3">
+                                    
+                                    <span class="font-medium text-secondary-700">@item.Key</span>
+                                </td>
+                                <td class="p-3">
+                                    @if (item.IsJson)
+                                    {
+                                        <div class="json-viewer @(item.JsonType)" data-key="@item.Key">
+                                            <pre class="json-preview">@item.OneLinePreview</pre>
+                                            <pre class="json-full hidden">@item.Value</pre>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <pre>@item.Value</pre>
+                                    }
+                                </td>
+                            </tr>
+                        }
+    
+                        @* __Permission row *@
+                        <tr class="border-b border-secondary-100">
+                            <td class="bg-secondary-50 p-3">
+                                <span class="font-medium text-secondary-700">Permission</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="@(perms.CanRead ? "badge badge-success" : "badge badge-secondary")">CanRead</span>
+                                <span class="@(perms.CanWrite ? "badge badge-success" : "badge badge-secondary") ms-1">CanWrite</span>
+                            </td>
+                        </tr>
+                        
+                        @* __Skills row *@
+                        <tr class="border-b border-secondary-100">
+                            <td class="bg-secondary-50 p-3">
+                                <span class="font-medium text-secondary-700">Skills</span>
+                            </td>
+                            <td class="p-3">
+                                @if (Model.Skills.Any())
+                                {
+                                    foreach (var skill in Model.Skills)
+                                    {
+                                        @if (skill.Equals(Model.RoleType, StringComparison.CurrentCultureIgnoreCase))
+                                        {
+                                            <span class="badge badge-primary">@skill</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">@skill</span>    
+                                        }
+                                        
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-secondary-400 text-sm">None</span>
+                                }
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Roles -->
+    <div class="card animate-fade-in" style="animation-delay: 200ms">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-secondary-900">Related Roles</h3>
+        </div>
+        <div class="card-body">
+            <turbo-frame id="related-roles" src="@Url.Page("/Roles/Relations", new { Uid = Model.Uid })" loading="lazy">
+                <div class="text-center p-4">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                    <p class="text-secondary-500 text-sm">Loading related roles…</p>
+                </div>
+            </turbo-frame>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const playLink = document.getElementById('play-link');
+            if (!playLink) return;
+
+            // The Play link carries the chosen scenario to the Client via ?...&endpoint=. Selecting
+            // an option (only skill-playable scenarios are listed) rewrites the endpoint each time.
+            const baseHref = playLink.getAttribute('href');
+            const search = window.initScenarioSearch({
+                id: 'detail-scenario',
+                onSelect: function (name, endpoint) {
+                    playLink.setAttribute('href', baseHref + '&endpoint=' + encodeURIComponent(endpoint));
+                }
+            });
+
+            // Pre-select the default so Play has a scenario predefined without any interaction.
+            const defaultEndpoint = @Json.Serialize(Model.DefaultScenarioEndpoint);
+            if (defaultEndpoint && search) {
+                search.selectByEndpoint(defaultEndpoint);
+            }
+        })();
+    </script>
+}
+

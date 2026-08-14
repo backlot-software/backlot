@@ -2,14 +2,14 @@
 
 ## Project Backlot.Studio
 
-Backlot.Studio is a standalone .NET Razor Pages web application that serves as the management frontend for the Backlot API. It gives developers and operators a visual interface to browse all registered scenarios, manage persisted roles (search, view details, edit), and inspect role relations — all backed by the Backlot API running alongside it.
+Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management frontend for the Backlot API. It gives developers and operators a visual interface to browse all registered scenarios, manage persisted roles (search, view details, edit), and inspect role relations — all backed by the Backlot API. It is embedded into a host app (e.g. the Backlot API web host) via `builder.Services.AddBacklotStudio(...)` + `app.MapBacklotStudio("/studio")`; the pages live in the `Studio` MVC area (`Areas/Studio/Pages`) and `wwwroot` is embedded and served from `{prefix}/assets`. See `README.md` for the mounting contract and `BacklotStudioExtensions.cs` for the implementation.
 
 **Core Value:** A developer or operator can find any role in the system, inspect its state and relations, and edit it — without writing a single API call by hand.
 
 ### Constraints
 
 - **Tech Stack**: .NET Razor Pages + TurboJS + Bootstrap — no React/Vue/SPA framework
-- **Project**: Standalone `.csproj` inside `Backlot.Studio/`, added to `Backlot.sln`
+- **Project**: Razor Class Library `.csproj` (`Microsoft.NET.Sdk.Razor`) inside `Backlot.Studio/`, packed as a NuGet package and mounted by a host — not a standalone web host (no `Program.cs`)
 - **API**: All data comes from the Backlot API; Studio has no database of its own
 - **Auth**: Basic Auth only — username/password encoded as base64, sent on every request
 
