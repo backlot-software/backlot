@@ -98,3 +98,21 @@ $"\"pw\": \"{Convert.ToBase64String(hash)}\"".Dump();
 var bytes2 = Encoding.UTF8.GetBytes($"{user}:{pw}");
 $"Authorization: Basic {Convert.ToBase64String(bytes2)}".Dump();
 ```
+## Backlot Studio
+
+Every Backlot web host built with `BuildWebApp` mounts [Backlot Studio](https://www.backlot.software)
+— the management UI — at `/studio`. Nothing to wire up: run the project and browse there, then sign
+in with one of the users from `usersandgroups.json`.
+
+From there you can browse every registered scenario with its request and response examples, inspect
+and search roles, follow relations, edit configuration, and fire raw API requests from the built-in
+client.
+
+To move it elsewhere, or point it at an API in another process, add a `BacklotStudio` section to
+`appsettings.json`:
+
+```json
+"BacklotStudio": {
+  "PathPrefix": "/studio"
+}
+```

@@ -5,7 +5,7 @@ using Backlot.Core;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Exceptions;
 using Backlot.Core.Services;
-using Backlot.Experimental.WebApp.Services;
+using Backlot.Studio;
 using Backlot.Http;
 using Backlot.Http.Media;
 using Microsoft.AspNetCore.Builder;
@@ -13,8 +13,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
-using Scalar.AspNetCore;
 
 namespace Backlot.WebApp;
 
@@ -27,16 +27,37 @@ public static class ApplicationBuilding
     /// <param name="builder"></param>
     /// <param name="configureHostBuilder"></param>
     /// <param name="enableHttps">Enforce https redirection</param>
+    /// <param name="configureStudio">
+    /// Adjusts Backlot Studio on top of whatever the <c>BacklotStudio</c> configuration section supplied.
+    /// The Studio is mounted either way; this only configures it.
+    /// </param>
     /// <returns></returns>
     /// <exception cref="BadRequestException"></exception>
     /// <exception cref="NotFoundException"></exception>
     public static WebApplication BuildWebApp(this WebApplicationBuilder builder,
-        Action<ConfigureHostBuilder> configureHostBuilder, bool enableHttps = true)
+        Action<ConfigureHostBuilder> configureHostBuilder, bool enableHttps = true,
+        Action<BacklotStudioOptions> configureStudio = null)
     {
         
         configureHostBuilder(builder.Host);
 
-        builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BacklotOpenApiDocument>());
+        // Backlot Studio is part of what a Backlot web host is, so it is mounted here rather than by
+        // every host separately. AddBacklotStudio has to run before builder.Build() and MapBacklotStudio
+        // after it -- which is exactly the seam this method owns. A host must therefore not call
+        // AddBacklotStudio itself; doing so throws, by design, instead of silently ignoring one of the
+        // two configurations.
+        builder.Services.AddBacklotStudio(builder.Configuration, studio =>
+        {
+            // Without https redirection the app is reachable over plain http, on which a Secure-only
+            // cookie is never sent back and signing in loops to the login page forever. Guarded by
+            // IsDevelopment because enableHttps: false is also a legitimate production setup (a proxy
+            // terminating TLS in front), where downgrading the cookie would be a real weakening.
+            if (!enableHttps && builder.Environment.IsDevelopment())
+                studio.CookieSecurePolicy = CookieSecurePolicy.SameAsRequest;
+
+            configureStudio?.Invoke(studio); // the caller always gets the last word
+        });
+
         // for documentation purposes; Backlot relies on NewtonsoftJson telling .netcore to use this for serialization needs to be done with: builder.Services.AddControllers().AddNewtonsoftJson();
         // However we use; Note: Minimal APIs, and have return ContentResult with manually serialized JSON.
 
@@ -49,11 +70,15 @@ public static class ApplicationBuilding
             await next();
         });
 
-        app.MapOpenApi();
-        app.MapScalarApiReference();
-        
         if(enableHttps)
             app.UseHttpsRedirection();
+
+        // After UseHttpsRedirection on purpose: MapBacklotStudio adds the Studio's embedded static
+        // files and a session branched onto its mount path, and neither should be served on a request
+        // that was never upgraded. MapRazorPages only registers an endpoint data source, so the Studio
+        // pages themselves still run at the terminal endpoint middleware -- after everything the host
+        // adds once this method returns.
+        app.MapBacklotStudio();
 
         app.MapGet("api/status", async (HttpContext ctx,
             [FromServices] IMediaFormatResolver mediaResolver) =>

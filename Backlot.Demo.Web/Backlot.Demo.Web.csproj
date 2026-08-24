@@ -11,7 +11,6 @@
 
     <ItemGroup>
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +22,6 @@
       <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
       <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
       <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
-      <ProjectReference Include="..\Backlot.Studio\Backlot.Studio.csproj" />
       <ProjectReference Include="..\Backlot.WebApp\Backlot.WebApp.csproj" />
     </ItemGroup>
 

@@ -9,12 +9,6 @@
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Scenarios</h1>
     </div>
-    <div class="flex gap-3 mt-4 md:mt-0">
-        <a href="@(Model.ApiBaseUrl)scalar/v1" target="_blank" class="btn btn-outline">
-            <i class="bi bi-people"></i>
-            <span>API Documentation</span>
-        </a>
-    </div>
 </div>
 
 <!-- Error message -->
@@ -88,20 +82,51 @@ else
                                     </p>
                                     
                                 </div>
-                                @* <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                                        style="min-height:44px">
-                                    Documentation
-                                </button> *@
                             </div>
                             
                             <!-- Endpoint info -->
                             @if (s.Endpoints.Any())
                             {
+                                Model.Examples.TryGetValue(s.Scenario, out var example);
+
                                 <div class="mt-4 pt-4 border-t border-secondary-200">
                                     <div class="text-sm">
                                         <span class="text-secondary-500">Endpoint:</span>
+                                        @if (example != null)
+                                        {
+                                            <span class="badge badge-secondary ml-2">@example.Method</span>
+                                        }
                                         <code class="text-primary-600 ml-2">@s.Endpoints.First()</code>
                                     </div>
+
+                                    @if (example != null)
+                                    {
+                                        <details class="mt-3">
+                                            <summary class="text-sm text-primary-600 cursor-pointer select-none">
+                                                Request &amp; response example
+                                            </summary>
+                                            <div class="mt-3 space-y-3">
+                                                @if (!string.IsNullOrWhiteSpace(example.RequestExample))
+                                                {
+                                                    <div>
+                                                        <div class="text-xs text-secondary-500 mb-1">Request body</div>
+                                                        <pre class="bg-secondary-50 border border-secondary-200 rounded p-3 overflow-x-auto text-xs"><code>@example.RequestExample</code></pre>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-xs text-secondary-500">
+                                                        This endpoint takes no request body.
+                                                    </div>
+                                                }
+
+                                                <div>
+                                                    <div class="text-xs text-secondary-500 mb-1">Response</div>
+                                                    <pre class="bg-secondary-50 border border-secondary-200 rounded p-3 overflow-x-auto text-xs"><code>@example.ResponseExample</code></pre>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    }
                                 </div>
                             }
                         </div>

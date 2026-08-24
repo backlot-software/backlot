@@ -18,23 +18,6 @@
     margin-left: 64px !important;
 }
 
-/* === Phase 2: Scalar side panel slide-in === */
-
-/* Slide transition (complements the Tailwind transform default) */
-#scalar-panel {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Open state for scalar panel */
-#scalar-panel.is-open {
-    transform: translateX(0) !important;
-}
-
-/* Show backdrop when panel is open */
-#scalar-panel.is-open ~ #scalar-backdrop {
-    display: block !important;
-}
-
 /* === Modern Admin Styles === */
 
 /* Custom focus ring styles */

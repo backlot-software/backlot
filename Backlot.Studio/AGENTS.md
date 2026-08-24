@@ -23,7 +23,7 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 |------------|---------|---------|-----------------|
 | .NET / ASP.NET Core | **10.0** (LTS) | Runtime + web host for Razor Pages | .NET 10 went GA Nov 2025 and is LTS through Nov 2028. Matches the Backlot framework target (.NET 10 per CLAUDE.md). No reason to pin to 8 — same project already builds on 10. |
 | Razor Pages | (ASP.NET Core 10) | Page-per-route server-rendered UI | Page-centric model fits an admin tool's "one screen = one page" structure better than MVC controllers or Minimal APIs. Built-in model binding + antiforgery + `PageModel` handlers map cleanly to the proxy-and-render flow. |
-| Hotwired Turbo (`@hotwired/turbo`) | **8.0.23** | SPA-like navigation (Turbo Drive), partial updates (Turbo Frames), targeted DOM mutation (Turbo Streams) | Constraint-mandated. Turbo 8 is the current major (8.x). Delivers SPA feel with zero JS build pipeline — exactly the project's stated goal ("SPA-like UX without a JS framework build pipeline"). Drive intercepts links/forms; Frames let the Scalar side panel and role-detail sections load independently. |
+| Hotwired Turbo (`@hotwired/turbo`) | **8.0.23** | SPA-like navigation (Turbo Drive), partial updates (Turbo Frames), targeted DOM mutation (Turbo Streams) | Constraint-mandated. Turbo 8 is the current major (8.x). Delivers SPA feel with zero JS build pipeline — exactly the project's stated goal ("SPA-like UX without a JS framework build pipeline"). Drive intercepts links/forms; Frames let role-detail sections load independently. |
 | Tailwind | **4.3** | Layout, components, utility classes | CDN-deliverable, no build step. |
 
 
@@ -41,7 +41,7 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 | Tool | Purpose | Notes |
 |------|---------|-------|
 | `dotnet` CLI (.NET 10 SDK) | Build/run/test | `dotnet new razor`, `dotnet run`, add to `Backlot.sln`. |
-| LibMan (optional) | Pin CDN assets locally | Only if you want offline/self-hosted Turbo/Bootstrap/Scalar instead of CDN. Keeps "no npm build" promise. Skip for v1 (CDN is simpler). |
+| LibMan (optional) | Pin CDN assets locally | Only if you want offline/self-hosted Turbo/Bootstrap instead of CDN. Keeps "no npm build" promise. Skip for v1 (CDN is simpler). |
 | `dotnet user-secrets` | Local config (API base URL) | Store `BacklotApi:BaseUrl` outside source. Defaults to `https://localhost:7221`. |
 
 
@@ -53,8 +53,6 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 
 - A Razor Page handler can return only the frame's HTML (a partial) for frame requests, detected via the `Turbo-Frame` request header.
 - Use `data-turbo-frame` / `data-turbo="false"` attributes to opt specific links in/out of frame targeting.
-
-### 3. Scalar side panel init
 
 ## Alternatives Considered
 
@@ -82,7 +80,6 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 ## Stack Patterns by Variant
 
 - Use LibMan to vendor Tailwind, Turbo, Simulus into `wwwroot/lib`.
-- Add a per-request `nonce` to the Scalar inline init script (Scalar supports nonce).
 - Replace `AddDistributedMemoryCache()` with a distributed cache (Redis via `AddStackExchangeRedisCache`) so session/auth survives across instances.
 - Add `Microsoft.Extensions.Http.Resilience` and `.AddStandardResilienceHandler()` to the typed client. Defer for v1.
 
@@ -93,6 +90,5 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 - `https://registry.npmjs.org/bootstrap-icons/latest` — Bootstrap Icons 1.13.1 (npm registry, authoritative) — HIGH
 - Microsoft .NET blog / Microsoft Learn — .NET 10 GA Nov 2025, LTS to Nov 2028; ASP.NET Core 10 — HIGH
 - Microsoft Learn (IHttpClientFactory, DelegatingHandlers) — typed client + auth handler pattern — HIGH
-- scalar.com docs / GitHub README — `createApiReference()` CDN embed, nonce/CSP — MEDIUM
 - turbo.hotwired.dev handbook — Turbo Drive/Frames CDN install — MEDIUM
-- Backlot `AGENTS.md` + `openapidoc.json` — constraints, auth model, API endpoints — HIGH
+- Backlot `AGENTS.md` — constraints, auth model, API endpoints — HIGH

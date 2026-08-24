@@ -10,9 +10,9 @@
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Client</h1>
     </div>
     <div class="flex gap-3 mt-4 md:mt-0">
-        <a href="@(Model.ApiBaseUrl)scalar/v1" target="_blank" class="btn btn-outline">
+        <a asp-area="Studio" asp-page="/Scenarios/Index" class="btn btn-outline">
             <i class="bi bi-book"></i>
-            <span>API Documentation</span>
+            <span>Browse scenarios</span>
         </a>
     </div>
 </div>
@@ -110,12 +110,16 @@
 </div>
 
 @section Scripts {
+    <script type="application/json" id="request-examples">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RequestExamples))
+    </script>
     <script>
         (function () {
             const form = document.getElementById('client-form');
             if (!form) return;
 
             const endpointInput = document.getElementById('endpoint-input');
+            const bodyInput = document.getElementById('body-input');
             const methodDisplay = document.getElementById('method-display');
             const methodInput = document.getElementById('method-input');
             const executeBtn = document.getElementById('execute-btn');
@@ -135,12 +139,38 @@
                 methodInput.value = method;
             }
 
+            // --- Example request bodies ----------------------------------------------
+            // Prefill the body with the selected scenario's example, but never overwrite something
+            // the operator typed, nor the role JSON handed over by the Detail page's Play button.
+            let requestExamples = {};
+            try {
+                requestExamples = JSON.parse(document.getElementById('request-examples').textContent);
+            } catch (e) {
+                requestExamples = {};
+            }
+
+            // Starts empty on purpose: a body rendered server-side is the role JSON from Play, which
+            // counts as the operator's content and must survive the auto-select that follows.
+            let lastExample = '';
+
+            function applyExample(endpoint) {
+                const example = requestExamples[endpoint] || '';
+                const current = bodyInput.value.trim();
+
+                // Only fill an empty box, or replace an example we put there ourselves.
+                if (current !== '' && current !== lastExample.trim()) return;
+
+                bodyInput.value = example;
+                lastExample = example;
+            }
+
             // --- Shared searchable scenario dropdown ---------------------------------
             const scenarioSearch = window.initScenarioSearch({
                 id: 'scenario',
                 onSelect: function (name, endpoint) {
                     endpointInput.value = endpoint;
                     applyMethod(endpoint);
+                    applyExample(endpoint);
                 }
             });
 

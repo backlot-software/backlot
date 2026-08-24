@@ -33,6 +33,10 @@ public class IndexModel : AuthenticatedPageModel
     // True when the page was opened via the role Detail Play button.
     public bool FromDetail { get; private set; }
 
+    // Example request body per endpoint, used to prefill the body box when a scenario is picked.
+    // Best-effort: an API that does not serve examples simply leaves the box empty.
+    public Dictionary<string, string> RequestExamples { get; private set; } = [];
+
     // Endpoint the page should auto-select on load (the scenario chosen on Detail, or the
     // persist/persist option), or null.
     public string? DefaultEndpoint { get; private set; }
@@ -57,6 +61,8 @@ public class IndexModel : AuthenticatedPageModel
                 .Where(s => s.Endpoints.Length > 0)
                 .OrderBy(s => s.Scenario, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+
+            RequestExamples = await LoadRequestExamples();
 
             // Consume Play data (session-backed TempData, read once). Present → "from Detail" mode.
             var playBody = TempData["PlayBody"] as string;
@@ -95,6 +101,25 @@ public class IndexModel : AuthenticatedPageModel
             ErrorMessage = "Could not load scenarios. Check that the Backlot API is reachable and that your credentials are valid.";
         }
         return Page();
+    }
+
+    // Keyed by endpoint rather than scenario name: the dropdown selects an endpoint, and a scenario
+    // reachable through more than one role still shares the same body shape.
+    private async Task<Dictionary<string, string>> LoadRequestExamples()
+    {
+        try
+        {
+            var envelope = await _api.Get<IEnumerable<ScenarioSchemaItem>>("director", "scenarioschemas");
+            return (envelope?.Body ?? [])
+                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.RequestExample))
+                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().RequestExample, StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is not BacklotApiUnauthorizedException)
+        {
+            _logger.LogWarning(ex, "Failed to load scenario request examples from Backlot API");
+            return [];
+        }
     }
 
     public class ExecuteInput

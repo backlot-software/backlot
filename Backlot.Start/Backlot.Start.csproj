@@ -63,7 +63,6 @@
     <ItemGroup>
         <!-- Third-party packages (latest stable) -->
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     </ItemGroup>
 
     <ItemGroup>
