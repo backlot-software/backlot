@@ -86,6 +86,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{6B38F94B-57E6-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Studio", "Backlot.Studio\Backlot.Studio.csproj", "{4A5F2C1E-2C91-4114-BDE2-6B70DB98AC4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlot.Start", "Backlot.Start\Backlot.Start.csproj", "{1E5DF354-9301-4F63-B99E-0F37321C3F44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,12 @@ Global
 		{4A5F2C1E-2C91-4114-BDE2-6B70DB98AC4C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4A5F2C1E-2C91-4114-BDE2-6B70DB98AC4C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
 		{4A5F2C1E-2C91-4114-BDE2-6B70DB98AC4C}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Development|Any CPU.ActiveCfg = Development|Any CPU
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44}.Development|Any CPU.Build.0 = Development|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,6 +282,7 @@ Global
 		{DE0E3B94-50F3-4ED5-8D3B-ECBB0882B804} = {FE6A6561-0B1F-43D6-A565-E9D80E5B90B3}
 		{6B38F94B-57E6-4D16-860D-C886F3EA10C2} = {EEC7F482-4D96-4447-B7AC-D582B091CF73}
 		{4A5F2C1E-2C91-4114-BDE2-6B70DB98AC4C} = {6B38F94B-57E6-4D16-860D-C886F3EA10C2}
+		{1E5DF354-9301-4F63-B99E-0F37321C3F44} = {EEC7F482-4D96-4447-B7AC-D582B091CF73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D4409B46-7B19-425E-8AE0-E2A130B8BB3B}
