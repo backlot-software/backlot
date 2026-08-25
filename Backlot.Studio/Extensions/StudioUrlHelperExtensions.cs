@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Backlot.Studio;
+namespace Backlot.Studio.Extensions;
 
 /// <summary>
 /// URL helpers for the Studio views.

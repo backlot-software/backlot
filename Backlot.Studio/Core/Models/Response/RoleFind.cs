@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 /// <summary>Represents a single filter criterion for the simplequery/find endpoint.</summary>
 public class FindCriteria
@@ -8,15 +8,6 @@ public class FindCriteria
     public string Field { get; set; } = "";
     public string Condition { get; set; } = "";
     public string Value { get; set; } = "";
-}
-
-/// <summary>POST body for POST /api/role/simplequery/find.</summary>
-public class FindRequest : IRequestBody
-{
-    public string For { get; set; } = "Persist";
-    public FindCriteria[]? Criteria { get; set; }
-    public int PageSize { get; set; }
-    public int Page { get; set; }
 }
 
 /// <summary>

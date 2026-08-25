@@ -4,6 +4,8 @@
 
 Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management frontend for the Backlot API. It gives developers and operators a visual interface to browse all registered scenarios, manage persisted roles (search, view details, edit), and inspect role relations — all backed by the Backlot API. It is embedded into a host app (e.g. the Backlot API web host) via `builder.Services.AddBacklotStudio(...)` + `app.MapBacklotStudio("/studio")`; the pages live in the `Studio` MVC area (`Areas/Studio/Pages`) and `wwwroot` is embedded and served from `{prefix}/assets`. See `README.md` for the mounting contract and `BacklotStudioExtensions.cs` for the implementation.
 
+**Why an area, given there is only one?** The `Studio` area does not separate Studio from other areas in this project — it separates Studio's Razor Pages from *the host application's*. It is the selector for all three conventions in `BacklotStudioExtensions.cs` (`AddAreaFolderRouteModelConvention` applies the mount-path prefix, `AuthorizeAreaFolder`/`AllowAnonymousToAreaPage` scope the Studio cookie policy), and it keeps page paths like `Index`, `Login` and `Error` — `Index.cshtml` is `@page "/"` — out of a host's own `/Pages` root. Removing it would prefix and authorize the host's pages too. The area name never appears in a URL. Only `Areas/Studio/Pages` belongs under `Areas/`; plain C# (`Core/`, `Implementation/`, `ViewModels/`, `Extensions/`) stays at the project root.
+
 **Core Value:** A developer or operator can find any role in the system, inspect its state and relations, and edit it — without writing a single API call by hand.
 
 ### Constraints

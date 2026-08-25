@@ -1,4 +1,4 @@
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 public class StatusBody
 {

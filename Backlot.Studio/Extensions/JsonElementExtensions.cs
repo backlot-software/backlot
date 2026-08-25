@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Backlot.Studio.Services;
+namespace Backlot.Studio.Extensions;
 
 public static class JsonElementExtensions
 {

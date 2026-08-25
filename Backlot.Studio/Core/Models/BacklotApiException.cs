@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Backlot.Studio.Services;
+namespace Backlot.Studio.Core.Models;
 
 /// <summary>
 /// Thrown when the Backlot API returns a non-success status. Unlike the bare

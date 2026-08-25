@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Backlot.WebApp;
 
+/// <summary>
+/// Provides extension methods for working with HTTP requests and responses in the context of a web application.
+/// </summary>
 public static class HttpExtensions
 {
     /// <summary>

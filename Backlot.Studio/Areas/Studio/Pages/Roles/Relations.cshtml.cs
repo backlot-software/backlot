@@ -1,8 +1,8 @@
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Roles;
+namespace Backlot.Studio.Areas.Studio.Pages.Roles;
 
 public class RelationsModel : AuthenticatedPageModel
 {
@@ -30,7 +30,7 @@ public class RelationsModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Get<IEnumerable<RelationItem>>("persist", "relations", Uid));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Play<IEnumerable<RelationItem>>("persist", "relations", Uid));
             if (redirect != null) return redirect;
             Relations = result?.Body ?? [];
         }

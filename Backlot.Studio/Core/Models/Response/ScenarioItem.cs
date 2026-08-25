@@ -1,4 +1,4 @@
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 public class ScenarioItem
 {
@@ -7,5 +7,5 @@ public class ScenarioItem
     public string[] Roles { get; set; } = [];              // role names
     public string[] Tags { get; set; } = [];               // grouping tags (namespace-derived when not explicit)
     public string[] Endpoints { get; set; } = [];          // URL paths; director endpoint first when multi-role
-    public string[] Configurations { get; set; } = [];     // named config variants
+    // todo: public string[] Configurations { get; set; } = [];     // named config variants
 }

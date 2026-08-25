@@ -1,8 +1,7 @@
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Backlot.Studio.Services;
+namespace Backlot.Studio.Implementation;
 
 // CRITICAL: Uses IHttpContextAccessor (not a scoped session) to avoid ObjectDisposedException
 // under load (T-02-05). Session is read inside SendAsync only — never in the constructor.
@@ -37,7 +36,7 @@ public class BasicAuthHandler : DelegatingHandler
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            throw new BacklotApiUnauthorizedException();
+            throw new UnauthorizedAccessException();
         }
 
         return response;

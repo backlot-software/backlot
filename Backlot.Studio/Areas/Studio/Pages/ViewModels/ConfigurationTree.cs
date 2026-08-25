@@ -1,4 +1,4 @@
-namespace Backlot.Studio.ViewModels;
+namespace Backlot.Studio.Areas.Studio.Pages.ViewModels;
 
 // View models backing the Configuration screen. A flat list of ConfigurationInfo entries is turned
 // into a namespace tree (ConfigTreeNode) for the left nav plus, per owning class, a list of editable

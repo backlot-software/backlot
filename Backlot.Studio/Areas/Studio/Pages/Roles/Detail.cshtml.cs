@@ -1,11 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
-using Backlot.Studio.ViewModels;
+using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Request;
+using Backlot.Studio.Core.Models.Response;
+using Backlot.Studio.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Roles;
+namespace Backlot.Studio.Areas.Studio.Pages.Roles;
 
 public class DetailModel : AuthenticatedPageModel
 {
@@ -55,7 +57,7 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (env, redirect) = await SafeApiCall(async () => await _api.Post<Seek, JsonElement>("seek", "detail", new Seek { For = Uid}));
+            var (env, redirect) = await SafeApiCall(async () => await _api.Play<Seek, JsonElement>("seek", "detail", new Seek { For = Uid}));
             if (redirect != null) return redirect;
             var rd = env?.Body.Unwrap("Role");
 
@@ -89,7 +91,7 @@ public class DetailModel : AuthenticatedPageModel
         try
         {
             var (env, redirect) = await SafeApiCall(async () =>
-                await _api.Get<IEnumerable<ScenarioItem>>("director", "scenarios"));
+                await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
             if (redirect != null) return redirect;
 
             var scenarios = (env?.Body ?? []).Where(s => s.Endpoints.Length > 0);
@@ -119,7 +121,7 @@ public class DetailModel : AuthenticatedPageModel
 
         try
         {
-            var (env, redirect) = await SafeApiCall(async () => await _api.Post<Seek, JsonElement>("seek", "detail", new Seek { For = Uid}));
+            var (env, redirect) = await SafeApiCall(async () => await _api.Play<Seek, JsonElement>("seek", "detail", new Seek { For = Uid}));
             if (redirect != null) return redirect;
 
             var roleData = env?.Body.Unwrap("Role") ?? new JsonElement();

@@ -1,8 +1,8 @@
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages;
+namespace Backlot.Studio.Areas.Studio.Pages;
 
 public class IndexModel : AuthenticatedPageModel
 {

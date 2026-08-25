@@ -1,6 +1,6 @@
-using Backlot.Studio.Models.Api;
+using Backlot.Studio.Core.Models.Response;
 
-namespace Backlot.Studio.ViewModels;
+namespace Backlot.Studio.Areas.Studio.Pages.ViewModels;
 
 // A single selectable scenario entry in the shared scenario search box: a scenario name paired
 // with one endpoint of the form api/role/{role}/{scenario}.

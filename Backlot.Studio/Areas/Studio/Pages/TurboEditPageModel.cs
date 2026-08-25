@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages;
+namespace Backlot.Studio.Areas.Studio.Pages;
 
 /// <summary>
 /// Base PageModel for Turbo-driven write forms. Isolates the phase's central hazard:

@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
-using Backlot.Studio.ViewModels;
+using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Configuration;
+namespace Backlot.Studio.Areas.Studio.Pages.Configuration;
 
 // Configuration — browse and manage the Backlot API's configuration entries. The flat list from
 // GET /api/role/director/configurationinfos is turned into a namespace tree (left nav) plus a
@@ -36,7 +36,7 @@ public class IndexModel : AuthenticatedPageModel
         try
         {
             var (result, redirect) = await SafeApiCall(async () =>
-                await _api.Get<List<ConfigurationInfo>>("director", "configurationinfos"));
+                await _api.Play<List<ConfigurationInfo>>("configurationinfos"));
             if (redirect != null) return redirect;
 
             BuildTree(result?.Body ?? []);
@@ -194,7 +194,7 @@ public class IndexModel : AuthenticatedPageModel
                 error = ExtractError(response.Body) ?? $"Update failed ({response.StatusCode} {response.ReasonPhrase})."
             });
         }
-        catch (BacklotApiUnauthorizedException)
+        catch (UnauthorizedAccessException)
         {
             return new JsonResult(new { ok = false, unauthorized = true, error = "Unauthorized — your session may have expired. Please sign in again." })
             {

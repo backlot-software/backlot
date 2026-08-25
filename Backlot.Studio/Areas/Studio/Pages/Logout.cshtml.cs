@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Backlot.Studio.Pages;
+namespace Backlot.Studio.Areas.Studio.Pages;
 
 public class LogoutModel : PageModel
 {

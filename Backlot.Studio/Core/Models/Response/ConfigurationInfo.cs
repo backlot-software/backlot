@@ -1,4 +1,4 @@
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 /// <summary>
 /// One entry from GET /api/role/director/configurationinfos. A configuration entry is addressed by

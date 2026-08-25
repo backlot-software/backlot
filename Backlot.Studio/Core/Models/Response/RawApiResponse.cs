@@ -1,4 +1,4 @@
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 // Result of an arbitrary (method + path + body) request sent through the authenticated
 // Backlot API pipeline by the Client tester page. Unlike PlayAsync it never throws on a

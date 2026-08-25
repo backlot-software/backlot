@@ -1,14 +1,17 @@
 using System.Text.Json;
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Request;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Roles;
+namespace Backlot.Studio.Areas.Studio.Pages.Roles;
 
 public class IndexModel : AuthenticatedPageModel
 {
     private readonly IBacklotApiClient _api;
     private readonly ILogger<IndexModel> _logger;
+    
+    public readonly string[] DefaultRoles = ["Uid", "Role", "Permission", "Persist"]; 
 
     public FindResult? RoleResult { get; private set; }
     public string? ErrorMessage { get; private set; }
@@ -42,7 +45,7 @@ public class IndexModel : AuthenticatedPageModel
 
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Post<FindRequest,FindResult>("simplequery", "find", request));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Play<FindRequest,FindResult>("simplequery", "find", request));
             if (redirect != null) return redirect;
             RoleResult = result?.Body;
         }

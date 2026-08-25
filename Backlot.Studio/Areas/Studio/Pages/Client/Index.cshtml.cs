@@ -1,11 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
-using Backlot.Studio.ViewModels;
+using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Client;
+namespace Backlot.Studio.Areas.Studio.Pages.Client;
 
 // Client — a lightweight HTTP request tester. The operator picks a method (GET/POST), selects a
 // registered scenario from a searchable dropdown (which loads that scenario's endpoint), optionally
@@ -54,7 +54,7 @@ public class IndexModel : AuthenticatedPageModel
         try
         {
             var (result, redirect) = await SafeApiCall(async () =>
-                await _api.Get<IEnumerable<ScenarioItem>>("director", "scenarios"));
+                await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
             if (redirect != null) return redirect;
 
             Scenarios = (result?.Body ?? [])
@@ -109,13 +109,13 @@ public class IndexModel : AuthenticatedPageModel
     {
         try
         {
-            var envelope = await _api.Get<IEnumerable<ScenarioSchemaItem>>("director", "scenarioschemas");
+            var envelope = await _api.Play<IEnumerable<ScenarioSchemaItem>>("scenarioschemas");
             return (envelope?.Body ?? [])
                 .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.RequestExample))
                 .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First().RequestExample, StringComparer.OrdinalIgnoreCase);
         }
-        catch (Exception ex) when (ex is not BacklotApiUnauthorizedException)
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Failed to load scenario request examples from Backlot API");
             return [];
@@ -158,7 +158,7 @@ public class IndexModel : AuthenticatedPageModel
                 body = response.Body
             });
         }
-        catch (BacklotApiUnauthorizedException)
+        catch (UnauthorizedAccessException)
         {
             // Credentials expired/invalid — the session Basic header no longer authenticates. Tell the
             // client to send the operator back through login rather than silently failing.

@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.BuildWebApp(hostBuilder =>
 {
     hostBuilder.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-    hostBuilder.ConfigureBacklotWeb((c, b) =>
+    hostBuilder.ConfigureBacklotWeb((_, b) =>
     {
         var fs = new LocalDiskStorage();
         return new WebDirector(

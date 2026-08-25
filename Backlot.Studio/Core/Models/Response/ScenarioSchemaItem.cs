@@ -1,4 +1,4 @@
-namespace Backlot.Studio.Models.Api;
+namespace Backlot.Studio.Core.Models.Response;
 
 // One scenario endpoint described by example: the JSON you send and the JSON you get back.
 // Returned by the director/scenarioschemas scenario; joined onto ScenarioItem by Scenario name.

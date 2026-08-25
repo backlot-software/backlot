@@ -11,7 +11,6 @@ using Backlot.Http.Media;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
@@ -22,7 +21,7 @@ public static class ApplicationBuilding
 {
     private static ILogger Logger = ServiceLocator.GetLog<ILogger<WebApplicationBuilder>>();
     /// <summary>
-    /// Build a Aspnet Core compatible webapplication.
+    /// Build a Aspnet Core compatible webapplication inclusind the Backlot.Studio frontend.
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="configureHostBuilder"></param>
@@ -41,11 +40,8 @@ public static class ApplicationBuilding
         
         configureHostBuilder(builder.Host);
 
-        // Backlot Studio is part of what a Backlot web host is, so it is mounted here rather than by
-        // every host separately. AddBacklotStudio has to run before builder.Build() and MapBacklotStudio
-        // after it -- which is exactly the seam this method owns. A host must therefore not call
-        // AddBacklotStudio itself; doing so throws, by design, instead of silently ignoring one of the
-        // two configurations.
+        // Backlot Studio is part of what a Backlot web host is, so it is mounted here.
+        // AddBacklotStudio has to run before builder.Build() and MapBacklotStudio
         builder.Services.AddBacklotStudio(builder.Configuration, studio =>
         {
             // Without https redirection the app is reachable over plain http, on which a Secure-only
@@ -76,10 +72,10 @@ public static class ApplicationBuilding
         // After UseHttpsRedirection on purpose: MapBacklotStudio adds the Studio's embedded static
         // files and a session branched onto its mount path, and neither should be served on a request
         // that was never upgraded. MapRazorPages only registers an endpoint data source, so the Studio
-        // pages themselves still run at the terminal endpoint middleware -- after everything the host
-        // adds once this method returns.
+        // pages themselves still run at the terminal endpoint middleware.
         app.MapBacklotStudio();
 
+        // Generic minimal API for application status and versioning. 
         app.MapGet("api/status", async (HttpContext ctx,
             [FromServices] IMediaFormatResolver mediaResolver) =>
         {
@@ -96,6 +92,7 @@ public static class ApplicationBuilding
                 }, stopwatch, Logger);
         });
         
+        // Get endpoint for requests without bodies (directors and such).
         app.MapGet("api/role/{rolename}/{scenario}", async (
                 string rolename,
                 string scenario,
@@ -146,6 +143,7 @@ public static class ApplicationBuilding
             })
             .WithName("PlayGet");
 
+        // Post endpoints for requests with bodies.
         app.MapPost("api/role/{rolename}/{scenario}", async (
                 string rolename,
                 string scenario,

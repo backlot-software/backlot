@@ -1,7 +1,6 @@
 @page "/roles/{RoleType?}"
-@model Backlot.Studio.Pages.Roles.IndexModel
+@model Backlot.Studio.Areas.Studio.Pages.Roles.IndexModel
 @using System.Text.Json
-@using Backlot.Studio.Models
 @{
     ViewData["Title"] = "Roles";
 }
@@ -129,7 +128,7 @@
                                     foreach (var s in skillsEl.EnumerateArray())
                                     {
                                         var sv = s.ValueKind == JsonValueKind.String ? s.GetString() : s.ToString();
-                                        if (!string.IsNullOrWhiteSpace(sv) && Meta.DefaultRoles.All(dr => dr != sv)) skills.Add(sv);
+                                        if (!string.IsNullOrWhiteSpace(sv) && Model.DefaultRoles.All(dr => dr != sv)) skills.Add(sv);
                                     }
                                 }
 

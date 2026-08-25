@@ -1,7 +1,10 @@
 using System.Text.Json;
-using Backlot.Studio.Models.Api;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models;
+using Backlot.Studio.Core.Models.Request;
+using Backlot.Studio.Core.Models.Response;
 
-namespace Backlot.Studio.Services;
+namespace Backlot.Studio.Implementation;
 
 public class BacklotApiClient : IBacklotApiClient
 {
@@ -43,17 +46,17 @@ public class BacklotApiClient : IBacklotApiClient
     // The uid is appended as the sole query param only when non-empty (mirroring the GET branch in
     // ApplicationBuilding.cs: director scenarios pass no uid; other roles require uid as the only
     // query param). uid is escaped via Uri.EscapeDataString to prevent query/path injection (T-ou7-01).
-    public async Task<ApiEnvelope<TR>> Get<TR>(string roleName, string scenario, CancellationToken ct = default)
+    public async Task<ApiEnvelope<T>> Play<T>(string scenario, CancellationToken ct = default)
     {
-        var path = $"api/role/{roleName}/{scenario}";
+        var path = $"api/role/director/{scenario}";
 
         var response = await _httpClient.GetAsync(path, ct);
         await EnsureSuccessAsync(response, ct);
         // todo: throw exception when ReadFromJson returns null.
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
-    public async Task<ApiEnvelope<TR>> Get<TR>(string roleName, string scenario, string uid, CancellationToken ct = default)
+    public async Task<ApiEnvelope<T>> Play<T>(string roleName, string scenario, string uid, CancellationToken ct = default)
     {
         var path = $"api/role/{roleName}/{scenario}";
         
@@ -64,29 +67,29 @@ public class BacklotApiClient : IBacklotApiClient
 
         var response = await _httpClient.GetAsync(path, ct);
         await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
     // PlayAsync (POST) — generic primitive that posts the body as JSON to api/role/{rolename}/{scenario}.
-    public async Task<ApiEnvelope<TR>> Post<TB,TR>(string roleName, string scenario, TB body, CancellationToken ct = default) where TB: IRequestBody
+    public async Task<ApiEnvelope<R>> Play<B,R>(string roleName, string scenario, B body, CancellationToken ct = default) where B: IRequestBody
     {
         var path = $"api/role/{roleName}/{scenario}";
         var response = await _httpClient.PostAsJsonAsync(path, body, JsonOptions, ct);
         await EnsureSuccessAsync(response, ct);
-        return await response.Content.ReadFromJsonAsync<ApiEnvelope<TR>>(JsonOptions, ct) ?? throw new InvalidOperationException();
+        return await response.Content.ReadFromJsonAsync<ApiEnvelope<R>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
 
     // IsAuthenticatedAsync — called from Login.cshtml.cs to validate credentials
     public async Task<bool> IsAuthenticated()
     {
-        var envelope = await Get<bool>("director", "isauthenticated");
+        var envelope = await Play<bool>("isauthenticated");
         return envelope?.Body ?? false;
     }
 
     // WhoAmIAsync — called server-side from authenticated PageModels
     public async Task<object> WhoAmI()
     {
-        var envelope = await Get<object>("director", "whoami");
+        var envelope = await Play<object>("whoami");
         return envelope.Body;
     }
     
@@ -102,7 +105,7 @@ public class BacklotApiClient : IBacklotApiClient
     // SendRawAsync — send an arbitrary (method + path + body) request through the authenticated
     // pipeline for the Client tester page. Deliberately does NOT call EnsureSuccessAsync: the raw
     // status, reason and body are returned for every non-401 outcome so the operator can inspect
-    // the response regardless of success. (401 still throws BacklotApiUnauthorizedException from
+    // the response regardless of success. (401 still throws UnAuthorizedException from
     // BasicAuthHandler, which the caller translates into a re-login.) The path is used relative to
     // BaseAddress; a leading slash is tolerated. A JSON body is attached only for methods that
     // carry one.

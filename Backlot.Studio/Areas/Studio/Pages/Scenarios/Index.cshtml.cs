@@ -1,8 +1,8 @@
-using Backlot.Studio.Models.Api;
-using Backlot.Studio.Services;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backlot.Studio.Pages.Scenarios;
+namespace Backlot.Studio.Areas.Studio.Pages.Scenarios;
 
 public class IndexModel : AuthenticatedPageModel
 {
@@ -28,7 +28,7 @@ public class IndexModel : AuthenticatedPageModel
         SetUserContext();
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Get<IEnumerable<ScenarioItem>>("director", "scenarios"));
+            var (result, redirect) = await SafeApiCall(async () => await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
             if (redirect != null) return redirect;
             Groups = (result?.Body ?? [])
                 .GroupBy(s => s.Tags.Length > 0 ? s.Tags[0] : "Uncategorized")
@@ -51,12 +51,12 @@ public class IndexModel : AuthenticatedPageModel
     {
         try
         {
-            var envelope = await _api.Get<IEnumerable<ScenarioSchemaItem>>("director", "scenarioschemas");
+            var envelope = await _api.Play<IEnumerable<ScenarioSchemaItem>>("scenarioschemas");
             return (envelope?.Body ?? [])
                 .GroupBy(e => e.Scenario, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         }
-        catch (Exception ex) when (ex is not BacklotApiUnauthorizedException)
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Failed to load scenario examples from Backlot API");
             return new Dictionary<string, ScenarioSchemaItem>(StringComparer.OrdinalIgnoreCase);

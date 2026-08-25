@@ -1,7 +1,7 @@
-namespace Backlot.Studio.Services;
+namespace Backlot.Studio.Core.Models.Response;
 
 /// <summary>
-///
+/// All Backlot API calls do return json in this format.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ApiEnvelope<T>

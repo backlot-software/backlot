@@ -1,5 +1,5 @@
 @page "/login"
-@model Backlot.Studio.Pages.LoginModel
+@model Backlot.Studio.Areas.Studio.Pages.LoginModel
 @{
     Layout = "_LoginLayout";
     ViewData["Title"] = "Sign in — Backlot Studio";
@@ -7,7 +7,7 @@
 
 <div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
     <div class="w-full max-w-md">
-        <form method="post" asp-page="/Login" data-turbo="false" class="bg-white shadow-md rounded-lg p-8 space-y-6">
+        <form method="post" asp-area="Studio" asp-page="/Login" data-turbo="false" class="bg-white shadow-md rounded-lg p-8 space-y-6">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="ReturnUrl" />
             
