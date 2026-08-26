@@ -105,7 +105,7 @@ public class ScenarioSchemas : DirectorScenario<ScenarioSchemas, IEnumerable<Sce
         {
             ["Body"] = BuildValueExample("Body", resultType, cycleGuard),
             ["TimeInMs"] = 12,
-            ["ExecutionTime"] = DateTimeOffset.Now.ToString("O"),
+            ["ExecutionTime"] = Convert.ToDateTime("2000-01-01 00:00:00"),
             ["Status"] = "OK"
         };
 
