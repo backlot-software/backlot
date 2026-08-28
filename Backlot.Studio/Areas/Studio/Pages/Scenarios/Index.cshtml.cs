@@ -1,3 +1,4 @@
+using System.Text;
 using Backlot.Studio.Core;
 using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,29 @@ public class IndexModel : AuthenticatedPageModel
             ErrorMessage = "Could not load scenarios. Check that the Backlot API is reachable and that your credentials are valid.";
         }
         return Page();
+    }
+
+    // Downloads the TypeSpec contract for the endpoints this user may play, for a consumer to run
+    // through `tsp compile`. A named handler rather than part of the page load: it is a build-time
+    // artifact, and nothing on the scenario list depends on it.
+    public async Task<IActionResult> OnGetSpecAsync()
+    {
+        SetUserContext();
+
+        var (result, redirect) = await SafeApiCall(async () => await _api.Play<string>("scenariospec"));
+        if (redirect != null) return redirect;
+
+        var spec = result?.Body;
+
+        if (string.IsNullOrWhiteSpace(spec))
+        {
+            // Same degrade-rather-than-fail stance as the examples below: send the operator back to
+            // a working page instead of an error one.
+            _logger.LogWarning("Backlot API returned an empty TypeSpec contract");
+            return RedirectToPage();
+        }
+
+        return File(Encoding.UTF8.GetBytes(spec), "text/plain; charset=utf-8", "backlot.tsp");
     }
 
     // Separate from the scenario list on purpose: the examples are reflected server-side and cost

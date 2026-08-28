@@ -9,6 +9,16 @@
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Scenarios</h1>
     </div>
+    <!-- The machine-readable counterpart of this page: types for a non-.NET client, rather than
+         examples for a human. data-turbo="false" so Turbo Drive lets the browser download it. -->
+    <div>
+        <a asp-area="Studio" asp-page="/Scenarios/Index" asp-page-handler="Spec"
+           data-turbo="false" class="btn btn-secondary"
+           title="TypeSpec contract for these endpoints. Compile with: tsp compile backlot.tsp --emit @@typespec/openapi3">
+            <i class="bi bi-download"></i>
+            <span>Download .tsp contract</span>
+        </a>
+    </div>
 </div>
 
 <!-- Error message -->
