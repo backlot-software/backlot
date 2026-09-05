@@ -57,6 +57,10 @@ public static class WebBuilderExtensions
                     .As<IMediaFormatter>()
                     .InstancePerRequest();
                 
+                builder.RegisterType<PlainTextFormatter>()
+                    .As<IMediaFormatter>()
+                    .InstancePerRequest();
+                
                 var d = createDirector(context.Configuration, builder);
                 d.Registration(); // register all defaults
 

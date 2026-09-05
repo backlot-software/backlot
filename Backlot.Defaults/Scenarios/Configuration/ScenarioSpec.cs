@@ -22,7 +22,7 @@ public class ScenarioSpec : DirectorScenario<ScenarioSpec, string>
 {
     public ScenarioSpec(IDirector role) : base(role)
     {
-    }
+    } 
 
     protected override async Task<string> ExecAsync()
     {
