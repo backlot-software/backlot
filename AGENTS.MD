@@ -17,6 +17,9 @@ dotnet test Backlot.Testing/Backlot.Testing.csproj --filter "FullyQualifiedName~
 # Run a demo app
 dotnet run --project Backlot.Demo.Web/Backlot.Demo.Web.csproj
 dotnet run --project Backlot.Demo.Console/Backlot.Demo.Console.csproj
+
+# Run the standalone Studio host against a running API (see its README for the two-terminal walkthrough)
+dotnet run --project Backlot.Demo.Studio/Backlot.Demo.Studio.csproj
 ```
 
 ### Build configurations
@@ -135,6 +138,7 @@ This wires up Autofac with in-memory repositories and calls `director.Incept()`.
 | Autofac DI director base | `Backlot.DependencyInjection.Autofac/` |
 | Test bootstrap | `Backlot.Testing/Initialize.cs` |
 | Web demo (reference implementation) | `Backlot.Demo.Web/` |
+| Standalone Studio-only host demo | `Backlot.Demo.Studio/` |
 
 ## Techstack
 

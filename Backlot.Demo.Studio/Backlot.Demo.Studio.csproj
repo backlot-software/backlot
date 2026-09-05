@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Configurations>Debug;Release;Development</Configurations>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+          The only reference this host needs. Backlot Studio talks to the Backlot API over HTTP, so a
+          Studio-only host requires none of the framework itself: no Backlot.Core, no Backlot.Http, no
+          Backlot.WebApp, no Autofac and no Director. That absence is the point of this demo.
+        -->
+        <ProjectReference Include="..\Backlot.Studio\Backlot.Studio.csproj" />
+    </ItemGroup>
+
+</Project>

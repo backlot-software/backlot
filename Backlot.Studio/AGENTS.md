@@ -11,7 +11,7 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 ### Constraints
 
 - **Tech Stack**: .NET Razor Pages + TurboJS + Bootstrap — no React/Vue/SPA framework
-- **Project**: Razor Class Library `.csproj` (`Microsoft.NET.Sdk.Razor`) inside `Backlot.Studio/`, packed as a NuGet package and mounted by a host — not a standalone web host (no `Program.cs`)
+- **Project**: Razor Class Library `.csproj` (`Microsoft.NET.Sdk.Razor`) inside `Backlot.Studio/`, packed as a NuGet package and mounted by a host. The project it self is not a standalone web host (no `Program.cs`). A host can run it on its own, against an API in another process, like demo'ed in `Backlot.Demo.Studio/`.
 - **API**: All data comes from the Backlot API; Studio has no database of its own
 - **Auth**: Basic Auth only — username/password encoded as base64, sent on every request
 

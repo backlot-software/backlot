@@ -41,6 +41,10 @@ app.MapBacklotStudio("/studio");   // after UseHttpsRedirection, if the host red
 app.Run();
 ```
 
+`Backlot.Demo.Studio/` in this repository is a runnable example of exactly this: a host that mounts
+only the Studio and points it at a Backlot API in another process through `BaseUrl`. Because it has
+no co-hosted API, it treats `BaseUrl` as required and fails at startup when it is unset.
+
 `AddBacklotStudio` throws when called twice, so a host that uses `BuildWebApp` must **not** also
 call it — use the `configureStudio` argument instead. That is deliberate: silently dropping one of
 two configurations is far harder to diagnose than failing at startup.
