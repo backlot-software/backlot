@@ -40,6 +40,24 @@ dotnet new backlot-start
 This package includes the opinionated defaults to get you up and running quickly. 
 For further instructions, visit https://docs.backlot.software.
 
+### API Documentation
+
+Via the scenario ScenarioSpec a TypeSpec schema is exposed.
+It takes authentication into account. It only exposes the scenario spec for the scenarios the user is authorized to access.
+
+```http request
+GET http://localhost:portnmbr/api/role/director/scenariospec
+Accept: text/plain
+```
+
+This can be used to generate code, and documantation for your backlot solution. 
+Below a sample command to generate OpenAPI documentation.
+
+```bash
+npm i -D @typespec/http @typespec/openapi3
+npx -p @typespec/compiler -p @typespec/openapi3 tsp compile yourfilename.tsp --emit @typespec/openapi3
+```
+
 ### Versioning
 
 We use a 4 digit version number.
