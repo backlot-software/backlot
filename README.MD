@@ -42,21 +42,29 @@ For further instructions, visit https://docs.backlot.software.
 
 ### API Documentation
 
-Via the scenario ScenarioSpec a TypeSpec schema is exposed.
+You can create any API documentation by using TypeSpec. Via the scenario ScenarioSpec a TypeSpec schema is exposed.
 It takes authentication into account. It only exposes the scenario spec for the scenarios the user is authorized to access.
+Save the result of the next call into main.tsp
 
 ```http request
 GET http://localhost:portnmbr/api/role/director/scenariospec
 Accept: text/plain
 ```
 
-This can be used to generate code, and documantation for your backlot solution. 
+The tsp file can be used to generate code, and documantation for your backlot solution. 
 Below a sample command to generate OpenAPI documentation.
 
 ```bash
 npm i -D @typespec/http @typespec/openapi3
-npx -p @typespec/compiler -p @typespec/openapi3 tsp compile yourfilename.tsp --emit @typespec/openapi3
+npx -p @typespec/compiler -p @typespec/openapi3 tsp compile main.tsp --emit @typespec/openapi3
 ```
+
+This outputs the OpenAPI specification file at:
+```text
+tsp-output/@typespec/openapi3/openapi.yaml
+```
+
+For solutions you build with the backlot framework you can choose to commit the openapi.yaml file to your repository or to publish it to a location accessible by your clients, without the need to expose the tsp file and a backlot server.
 
 ### Versioning
 
