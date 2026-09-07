@@ -40,6 +40,8 @@ Launch the application using Electron:
 npm start
 ```
 
+Alternatively, if using **JetBrains Rider**, select the **`Backlot Studio (Electron)`** launch profile from the run dropdown and click Run/Debug. Rider will automatically compile the project and launch the Electron application.
+
 When launched:
 1. The **Connection Manager** screen will appear.
 2. Enter your Backlot API URL (e.g. `https://localhost:7221/` or your remote environment) and click **Test Connection** to verify reachability.
