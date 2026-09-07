@@ -1,0 +1,64 @@
+{
+  "name": "backlot-studio-desktop",
+  "version": "1.0.0",
+  "description": "Standalone desktop application for Backlot Studio",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test-lifecycle.js",
+    "build:dotnet": "dotnet publish ../Backlot.Studio.Desktop.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./dotnet-bin",
+    "build:dotnet:linux": "dotnet publish ../Backlot.Studio.Desktop.csproj -c Release -p:PublishProfile=linux-x64 -o ./dotnet-bin/linux-x64",
+    "build:dotnet:win": "dotnet publish ../Backlot.Studio.Desktop.csproj -c Release -p:PublishProfile=win-x64 -o ./dotnet-bin/win-x64",
+    "build:dotnet:osx": "dotnet publish ../Backlot.Studio.Desktop.csproj -c Release -p:PublishProfile=osx-arm64 -o ./dotnet-bin/osx-arm64",
+    "pack": "npm run build:dotnet && electron-builder --dir",
+    "dist": "npm run build:dotnet && electron-builder"
+  },
+  "build": {
+    "appId": "software.backlot.studio.desktop",
+    "productName": "Backlot Studio",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dotnet-bin",
+        "to": "dotnet-bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "linux": {
+      "target": [
+        "tar.gz",
+        "AppImage"
+      ],
+      "category": "Development"
+    },
+    "win": {
+      "target": [
+        "zip",
+        "nsis"
+      ]
+    },
+    "mac": {
+      "target": [
+        "zip",
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools"
+    }
+  },
+  "author": "Backlot",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}

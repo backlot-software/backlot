@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backlot Studio — Connection Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              DEFAULT: '#4f46e5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+    <div class="flex items-center space-x-3">
+      <img src="../assets/icon.png" alt="Backlot Logo" class="w-8 h-8 rounded" />
+      <div>
+        <h1 class="text-lg font-bold text-slate-900 tracking-tight leading-none">Backlot Studio</h1>
+        <p class="text-xs text-slate-500 mt-1">Standalone Desktop Administration</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+        Desktop Sidecar
+      </span>
+    </div>
+  </header>
+
+  <!-- Error / Alert Banner -->
+  <div id="alert-banner" class="hidden px-6 py-3 bg-red-50 border-b border-red-200 flex items-center justify-between text-sm text-red-700">
+    <div class="flex items-center space-x-2">
+      <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+      <span id="alert-message"></span>
+    </div>
+    <button id="alert-close-btn" class="text-red-500 hover:text-red-800 font-bold">&times;</button>
+  </div>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+    <!-- Left Column: Connection Profiles List -->
+    <section class="md:col-span-5 flex flex-col space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Connection Profiles</h2>
+        <button id="new-profile-btn" class="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-800 bg-primary-50 px-2.5 py-1.5 rounded border border-primary-200 transition-colors">
+          + Add Profile
+        </button>
+      </div>
+
+      <div id="profiles-list" class="space-y-3 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Right Column: Profile Configuration / Editor -->
+    <section class="md:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+      <div>
+        <div class="border-b border-slate-100 pb-4 mb-5 flex items-center justify-between">
+          <div>
+            <h3 id="form-heading" class="text-base font-semibold text-slate-900">Configure Profile</h3>
+            <p class="text-xs text-slate-500">Set target Backlot HTTP API endpoint</p>
+          </div>
+          <button id="delete-btn" class="hidden text-xs text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors">
+            Delete Profile
+          </button>
+        </div>
+
+        <form id="profile-form" class="space-y-5" onsubmit="return false;">
+          <input type="hidden" id="profile-id" />
+
+          <div>
+            <label for="profile-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Profile Name</label>
+            <input type="text" id="profile-name" placeholder="e.g. Local Development, Staging API" required
+                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
+          </div>
+
+          <div>
+            <label for="profile-url" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Backlot API Base URL</label>
+            <div class="relative">
+              <input type="url" id="profile-url" placeholder="https://localhost:7221/" required
+                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-24" />
+              <button type="button" id="test-connection-btn"
+                      class="absolute right-1 top-1 bottom-1 px-3 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 transition-colors">
+                Test Ping
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Endpoint targeting the remote Backlot API host (checks <code class="bg-slate-100 px-1 py-0.5 rounded text-[11px]">/api/status</code>).</p>
+          </div>
+
+          <!-- Connection Test Feedback -->
+          <div id="test-result" class="hidden text-xs p-3 rounded-lg border"></div>
+        </form>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+        <button type="button" id="save-btn" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+          Save Profile
+        </button>
+        <button type="button" id="connect-btn" class="inline-flex items-center space-x-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-700 rounded-lg shadow-sm transition-colors">
+          <span>Connect to Studio</span>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Fullscreen Loading Modal -->
+  <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center space-y-4">
+      <div class="w-12 h-12 rounded-full bg-primary-50 text-primary mx-auto flex items-center justify-center">
+        <span class="spinner w-6 h-6 border-2 border-primary border-r-transparent"></span>
+      </div>
+      <div>
+        <h4 class="text-base font-semibold text-slate-900">Starting Studio Backend</h4>
+        <p id="loading-message" class="text-xs text-slate-500 mt-1">Spawning Kestrel sidecar and binding ephemeral loopback port...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="connections.js"></script>
+</body>
+</html>
