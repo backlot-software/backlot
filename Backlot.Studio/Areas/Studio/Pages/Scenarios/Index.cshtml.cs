@@ -69,6 +69,43 @@ public class IndexModel : AuthenticatedPageModel
         return File(Encoding.UTF8.GetBytes(spec), "text/plain; charset=utf-8", "backlot.tsp");
     }
 
+    // Play — stashes this scenario's example request body and its endpoint in session-backed
+    // TempData (consume-once) and redirects to the Client, which pre-fills the body box and
+    // auto-selects the endpoint. The same handover the role Detail Play button makes, minus the
+    // skills: arriving from the catalogue the operator keeps the full scenario list.
+    public async Task<IActionResult> OnGetPlayAsync(string scenario, string? endpoint)
+    {
+        SetUserContext();
+
+        if (string.IsNullOrWhiteSpace(scenario))
+            return RedirectToPage("/Client/Index");
+
+        // A handler gets a fresh model instance, so OnGetAsync's Examples are not available here;
+        // re-read them. SafeApiCall turns an expired credential into a login redirect rather than
+        // letting it escape as a 500.
+        var (examples, redirect) = await SafeApiCall(LoadExamples);
+        if (redirect != null) return redirect;
+
+        examples ??= new Dictionary<string, ScenarioSchemaItem>(StringComparer.OrdinalIgnoreCase);
+        examples.TryGetValue(scenario, out var example);
+
+        // Empty rather than absent: an endpoint with no request body must still hand over, so the
+        // Client switches into Play mode and selects the endpoint.
+        TempData["PlayBody"] = example?.RequestExample ?? string.Empty;
+
+        // The endpoint the card displayed (Endpoints.First()) so it matches the entry the Client
+        // builds for this scenario; the schema's own endpoint is the fallback.
+        var target = !string.IsNullOrWhiteSpace(endpoint) ? endpoint : example?.Endpoint;
+        if (!string.IsNullOrWhiteSpace(target))
+            TempData["PlayEndpoint"] = target;
+
+        // Defensive: a Play from role Detail that never reached the Client would leave skills in
+        // session and wrongly narrow the dropdown for this scenario.
+        TempData.Remove("PlaySkills");
+
+        return RedirectToPage("/Client/Index");
+    }
+
     // Separate from the scenario list on purpose: the examples are reflected server-side and cost
     // more to produce, so a failure here degrades the page to a plain list instead of an error.
     private async Task<Dictionary<string, ScenarioSchemaItem>> LoadExamples()

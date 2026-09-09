@@ -14,7 +14,7 @@
     <div>
         <a asp-area="Studio" asp-page="/Scenarios/Index" asp-page-handler="Spec"
            data-turbo="false" class="btn btn-secondary"
-           title="TypeSpec contract for these endpoints. Compile with: tsp compile backlot.tsp --emit @@typespec/openapi3">
+           title="TypeSpec contract for these endpoints">
             <i class="bi bi-download"></i>
             <span>Download .tsp contract</span>
         </a>
@@ -28,6 +28,44 @@
         <i class="bi bi-exclamation-circle-fill"></i>
         <span>@Model.ErrorMessage</span>
         <a asp-area="Studio" asp-page="/Scenarios/Index" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+<!-- Search bar. Client-side only: every scenario is already on the page, so filtering here avoids
+     re-paying the two API calls a ?q= round-trip would cost, and leaves open <details> examples
+     open. Styled to match the Roles search box. -->
+@if (Model.Groups.Any())
+{
+    <div class="card mb-6">
+        <div class="card-body">
+            @* No method/asp-page: the script cancels the submit. The input is deliberately unnamed so
+               that without JS a submit is a plain reload rather than a URL with a dead query string. *@
+            <form id="scenario-filter-form" class="flex flex-col md:flex-row items-center gap-3">
+                <div class="relative flex-1">
+                    <input type="text"
+                           id="scenario-filter"
+                           class="form-input pe-10"
+                           placeholder="Search, f.e. persist user — matches name, endpoint, roles, tags and result"
+                           aria-label="Search scenarios"
+                           autocomplete="off" />
+                    <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary" style="min-height:44px">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                    <button type="button" id="scenario-filter-clear" class="btn btn-ghost hidden" style="min-height:44px">
+                        <i class="bi bi-x-lg"></i>
+                        <span>Clear</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-secondary-200">
+                <small id="scenario-filter-count" class="text-secondary-500"></small>
+            </div>
+        </div>
     </div>
 }
 
@@ -50,49 +88,82 @@ else
     <div class="space-y-6">
         @foreach (var (category, scenarios) in Model.Groups)
         {
-            <!-- Category header -->
-            <div class="flex items-center gap-3 mb-4">
-                <h2 class="text-lg font-semibold text-secondary-900">@category</h2>
-            </div>
-            
-            <!-- Scenarios list -->
-            <div class="grid grid-cols-1 gap-4">
-                @foreach (var s in scenarios)
-                {
-                    <div class="card card-hover">
-                        <div class="card-body">
-                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                <!-- Scenario info -->
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="text-lg font-semibold text-secondary-900">@s.Scenario</h3>
-                                        <span class="badge badge-info">@s.Endpoints.FirstOrDefault()</span>
-                                    </div>
-                                    
-                                    <!-- Description/Result -->
-                                    <p class="text-secondary-600 text-sm mb-3">
-                                        <strong>Returns:</strong> @s.Result
-                                    </p>
-                                    
-                                  
-                                    <p class="text-secondary-600 text-sm mb-3">
-                                        <strong>Roles:</strong>
-                                        @foreach (var role in s.Roles)
-                                        {
-                                            <span class="badge badge-primary">@role</span>
-                                        }
-                                    </p>
+            <!-- One element per category so the search can hide a header together with its cards. -->
+            <div class="space-y-6" data-scenario-group>
+                <!-- Category header -->
+                <div class="flex items-center gap-3 mb-4">
+                    <h2 class="text-lg font-semibold text-secondary-900">@category</h2>
+                </div>
+
+                <!-- Scenarios list -->
+                <div class="grid grid-cols-1 gap-4">
+                    @foreach (var s in scenarios)
+                    {
+                        @* The fields the search matches, lowercased server-side. Explicit rather than
+                           the card's textContent: the <details> block below carries example JSON that
+                           would otherwise produce matches on any common type name. *@
+                        var haystack = string.Join(' ',
+                            new[] { s.Scenario, s.Result }
+                                .Concat(s.Roles)
+                                .Concat(s.Tags)
+                                .Concat(s.Endpoints)
+                                .Where(v => !string.IsNullOrWhiteSpace(v)))
+                            .ToLowerInvariant();
+
+                        <div class="card card-hover" data-scenario-card data-search="@haystack">
+                            <div class="card-body">
+                                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                    <!-- Scenario info -->
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h3 class="text-lg font-semibold text-secondary-900">@s.Scenario</h3>
+                                            <span class="badge badge-info">@s.Endpoints.FirstOrDefault()</span>
+                                        </div>
                                         
-                                    <p class="text-secondary-600 text-sm mb-3">
-                                        <strong>Tags:</strong>
-                                        @foreach (var tag in s.Tags)
-                                        {
-                                            <span class="badge badge-secondary">@tag</span>
-                                        }
-                                    </p>
-                                    
+                                        <!-- Description/Result -->
+                                        <p class="text-secondary-600 text-sm mb-3">
+                                            <strong>Returns:</strong> @s.Result
+                                        </p>
+                                        
+                                      
+                                        <p class="text-secondary-600 text-sm mb-3">
+                                            <strong>Roles:</strong>
+                                            @foreach (var role in s.Roles)
+                                            {
+                                                <span class="badge badge-primary">@role</span>
+                                            }
+                                        </p>
+                                            
+                                        <p class="text-secondary-600 text-sm mb-3">
+                                            <strong>Tags:</strong>
+                                            @foreach (var tag in s.Tags)
+                                            {
+                                                <span class="badge badge-secondary">@tag</span>
+                                            }
+                                        </p>
+                                        
+                                    </div>
+
+                                    @* Play: hands this scenario's example request body and endpoint to the
+                                       Client, the same handover the role Detail Play button makes.
+                                       data-turbo-prefetch="false" because the handler has a side effect
+                                       (it writes TempData) and Turbo 8 prefetches links on hover by
+                                       default, which would fire it before the operator ever clicks. *@
+                                    @if (s.Endpoints.Any())
+                                    {
+                                        <div class="shrink-0 self-start">
+                                            <a asp-area="Studio" asp-page="/Scenarios/Index" asp-page-handler="Play"
+                                               asp-route-scenario="@s.Scenario"
+                                               asp-route-endpoint="@s.Endpoints.First()"
+                                               class="btn-icon"
+                                               data-turbo-prefetch="false"
+                                               title="Play in Client — opens this scenario with its request body"
+                                               aria-label="Play @s.Scenario in the Client">
+                                                <i class="bi bi-play-fill text-xl text-primary-600"></i>
+                                            </a>
+                                        </div>
+                                    }
                                 </div>
-                            </div>
                             
                             <!-- Endpoint info -->
                             @if (s.Endpoints.Any())
@@ -139,13 +210,83 @@ else
                                     }
                                 </div>
                             }
+                            </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         }
+    </div>
+
+    <!-- Shown by the search script when the filter hides every card. -->
+    <div id="scenario-no-results" class="empty-state hidden">
+        <i class="bi bi-search"></i>
+        <h3>No scenarios match your search</h3>
+        <p>Try a different search term, or clear the search to see all scenarios.</p>
     </div>
 }
 
 <!-- Toast container for notifications -->
 <div class="hidden"></div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const input = document.getElementById('scenario-filter');
+            if (!input) return;
+
+            const form      = document.getElementById('scenario-filter-form');
+            const clearBtn  = document.getElementById('scenario-filter-clear');
+            const countEl   = document.getElementById('scenario-filter-count');
+            const noResults = document.getElementById('scenario-no-results');
+            const groups    = Array.from(document.querySelectorAll('[data-scenario-group]'));
+            const cards     = Array.from(document.querySelectorAll('[data-scenario-card]'));
+
+            // AND over whitespace-separated terms: "persist user" matches a card whose name,
+            // endpoint, roles, tags or result contain both.
+            function apply() {
+                const raw = input.value.trim();
+                const terms = raw.toLowerCase().split(/\s+/).filter(Boolean);
+                let visible = 0;
+
+                cards.forEach(function (card) {
+                    const hay = card.dataset.search || '';
+                    const match = terms.every(function (t) { return hay.indexOf(t) !== -1; });
+                    card.classList.toggle('hidden', !match);
+                    if (match) visible++;
+                });
+
+                // A category header is only meaningful while one of its cards is still visible.
+                groups.forEach(function (group) {
+                    const any = group.querySelector('[data-scenario-card]:not(.hidden)') !== null;
+                    group.classList.toggle('hidden', !any);
+                });
+
+                if (noResults) noResults.classList.toggle('hidden', visible !== 0);
+                if (clearBtn) clearBtn.classList.toggle('hidden', raw === '');
+                if (countEl) {
+                    countEl.textContent = raw === ''
+                        ? 'Showing all ' + cards.length + ' scenarios'
+                        : 'Showing ' + visible + ' of ' + cards.length + ' scenarios matching “' + raw + '”';
+                }
+            }
+
+            input.addEventListener('input', apply);
+            if (form) form.addEventListener('submit', function (e) { e.preventDefault(); apply(); });
+            if (clearBtn) clearBtn.addEventListener('click', function () {
+                input.value = '';
+                apply();
+                input.focus();
+            });
+
+            // Turbo caches the DOM as it stands when you navigate away, so a filtered list would
+            // flash back as the restore preview. Reset before the snapshot is taken.
+            document.addEventListener('turbo:before-cache', function () {
+                input.value = '';
+                apply();
+            }, { once: true });
+
+            apply();
+        })();
+    </script>
+}

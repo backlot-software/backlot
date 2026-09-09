@@ -52,32 +52,97 @@ function saveProfilesData(data) {
   }
 }
 
-// Locate the .NET executable or fallback to dotnet dll/run
+const DOTNET_BINARY_NAME =
+  process.platform === 'win32' ? 'Backlot.Studio.Desktop.exe' : 'Backlot.Studio.Desktop';
+
+// Candidate locations for a pre-published self-contained bundle: the flat
+// `dotnet-bin` written by `build:dotnet`, plus the per-RID subdirectories
+// written by `build:dotnet:linux|win|osx`.
+function publishedBundleCandidates(root) {
+  const rids = ['linux-x64', 'win-x64', 'osx-arm64'];
+  return [
+    path.join(root, DOTNET_BINARY_NAME),
+    ...rids.map((rid) => path.join(root, rid, DOTNET_BINARY_NAME))
+  ];
+}
+
+// Newest compiled DLL across every build configuration (Debug, Development,
+// Release, ...) and target framework, so a Rider build into bin/Development is
+// picked up just like a bin/Debug one. Honours BACKLOT_DESKTOP_CONFIGURATION
+// when set, which pins the lookup to a single configuration.
+function findLocalBuildDll() {
+  const binRoot = path.join(__dirname, '..', 'bin');
+  if (!fs.existsSync(binRoot)) return null;
+
+  const pinned = process.env.BACKLOT_DESKTOP_CONFIGURATION;
+  const configurations = pinned
+    ? [pinned]
+    : fs.readdirSync(binRoot).filter((entry) => {
+        try {
+          return fs.statSync(path.join(binRoot, entry)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+
+  const candidates = [];
+  for (const configuration of configurations) {
+    const configDir = path.join(binRoot, configuration);
+    let frameworks;
+    try {
+      frameworks = fs.readdirSync(configDir);
+    } catch {
+      continue;
+    }
+
+    for (const framework of frameworks) {
+      const dll = path.join(configDir, framework, 'Backlot.Studio.Desktop.dll');
+      try {
+        candidates.push({ dll, mtime: fs.statSync(dll).mtimeMs });
+      } catch {
+        // Not a build output directory
+      }
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => b.mtime - a.mtime);
+  return candidates[0].dll;
+}
+
+// Locate the .NET executable or fallback to dotnet dll/run.
+//
+// When packaged, the bundled self-contained binary is the only option. In
+// development the freshly compiled output wins over any pre-published bundle in
+// `dotnet-bin`, which is gitignored and otherwise silently serves stale code.
 function resolveDotnetCommand(args) {
-  const isWindows = process.platform === 'win32';
-  const binaryName = isWindows ? 'Backlot.Studio.Desktop.exe' : 'Backlot.Studio.Desktop';
-
-  // 1. Packaged resources path
-  const packagedPath = path.join(process.resourcesPath || '', 'dotnet-bin', binaryName);
-  if (fs.existsSync(packagedPath)) {
-    return { command: packagedPath, args };
+  if (app.isPackaged) {
+    const packagedRoot = path.join(process.resourcesPath || '', 'dotnet-bin');
+    const packagedPath = publishedBundleCandidates(packagedRoot).find((candidate) =>
+      fs.existsSync(candidate)
+    );
+    if (packagedPath) {
+      return { command: packagedPath, args };
+    }
   }
 
-  // 2. Pre-published local bundle directory
-  const localBinPath = path.join(__dirname, 'dotnet-bin', binaryName);
-  if (fs.existsSync(localBinPath)) {
-    return { command: localBinPath, args };
-  }
-
-  // 3. Local compiled DLL
-  const dllPath = path.join(__dirname, '..', 'bin', 'Debug', 'net10.0', 'Backlot.Studio.Desktop.dll');
-  if (fs.existsSync(dllPath)) {
+  // 1. Local compiled output — the current code.
+  const dllPath = findLocalBuildDll();
+  if (dllPath) {
     return { command: 'dotnet', args: [dllPath, ...args] };
   }
 
-  // 4. Dotnet project fallback
+  // 2. Pre-published local bundle directory.
+  const localBinPath = publishedBundleCandidates(path.join(__dirname, 'dotnet-bin')).find(
+    (candidate) => fs.existsSync(candidate)
+  );
+  if (localBinPath) {
+    return { command: localBinPath, args };
+  }
+
+  // 3. Dotnet project fallback — builds on demand.
   const projectPath = path.join(__dirname, '..', 'Backlot.Studio.Desktop.csproj');
-  return { command: 'dotnet', args: ['run', '--project', projectPath, '--no-build', '--', ...args] };
+  return { command: 'dotnet', args: ['run', '--project', projectPath, '--', ...args] };
 }
 
 // Start the .NET Kestrel sidecar process

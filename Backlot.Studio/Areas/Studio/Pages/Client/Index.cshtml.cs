@@ -64,35 +64,48 @@ public class IndexModel : AuthenticatedPageModel
 
             RequestExamples = await LoadRequestExamples();
 
-            // Consume Play data (session-backed TempData, read once). Present → "from Detail" mode.
+            // Consume Play data (session-backed TempData, read once). Present → "from Play" mode:
+            // the body is pre-filled and the chosen endpoint auto-selected. Two callers hand over —
+            // Roles/Detail sends body + skills + endpoint, Scenarios/Index sends body + endpoint.
+            // Skills are therefore optional: they narrow the dropdown to what one role can play,
+            // and without them the full scenario list stays available.
             var playBody = TempData["PlayBody"] as string;
             var playSkillsJson = TempData["PlaySkills"] as string;
             var playEndpoint = TempData["PlayEndpoint"] as string;
 
-            if (playBody != null && playSkillsJson != null)
+            // Normal mode: one option per scenario (its first endpoint).
+            var allOptions = Scenarios
+                .Select(s => new ScenarioSearchOption(s.Scenario, s.Endpoints.First()))
+                .ToList();
+
+            if (playBody != null || playEndpoint != null)
             {
                 FromDetail = true;
-                PrefilledBody = playBody;
+                PrefilledBody = playBody ?? string.Empty;
 
-                var skills = new HashSet<string>(
-                    JsonSerializer.Deserialize<string[]>(playSkillsJson) ?? [],
-                    StringComparer.OrdinalIgnoreCase);
+                if (playSkillsJson != null)
+                {
+                    var skills = new HashSet<string>(
+                        JsonSerializer.Deserialize<string[]>(playSkillsJson) ?? [],
+                        StringComparer.OrdinalIgnoreCase);
 
-                // One option per (scenario, endpoint) whose role segment is one of the role's skills.
-                Options = ScenarioEndpoint.OptionsForSkills(Scenarios, skills);
+                    // One option per (scenario, endpoint) whose role segment is one of the role's skills.
+                    Options = ScenarioEndpoint.OptionsForSkills(Scenarios, skills);
+                }
+                else
+                {
+                    Options = allOptions;
+                }
 
-                // Default to the scenario the operator picked on the Detail page; fall back to
-                // persist/persist. Either way it must have survived the skill filter above.
+                // Default to the endpoint the caller picked; fall back to persist/persist. Either
+                // way it must have survived the skill filter above.
                 DefaultEndpoint =
                     Options.FirstOrDefault(o => string.Equals(o.Endpoint, playEndpoint, StringComparison.OrdinalIgnoreCase))?.Endpoint
                     ?? Options.FirstOrDefault(o => o.Endpoint.TrimEnd('/').EndsWith("/persist/persist", StringComparison.OrdinalIgnoreCase))?.Endpoint;
             }
             else
             {
-                // Normal mode: one option per scenario (its first endpoint).
-                Options = Scenarios
-                    .Select(s => new ScenarioSearchOption(s.Scenario, s.Endpoints.First()))
-                    .ToList();
+                Options = allOptions;
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)

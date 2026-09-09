@@ -40,7 +40,11 @@ Launch the application using Electron:
 npm start
 ```
 
-Alternatively, if using **JetBrains Rider**, select the **`Backlot Studio (Electron)`** launch profile from the run dropdown and click Run/Debug. Rider will automatically compile the project and launch the Electron application.
+`npm start` runs `dotnet build` first, so the sidecar always reflects the current source. Use `npm run start:no-build` to skip that step.
+
+Alternatively, if using **JetBrains Rider**, select the **`Backlot Studio (Electron)`** launch profile from the run dropdown and click Run/Debug. That profile shells out to `npm start`, which performs the .NET build itself — Rider does not compile the project on its own for this profile.
+
+In development, Electron runs the newest compiled `bin/<Configuration>/<tfm>/Backlot.Studio.Desktop.dll` across all configurations, so a Debug, Development, or Release build is all picked up. Set `BACKLOT_DESKTOP_CONFIGURATION` to pin it to one configuration. The pre-published `electron/dotnet-bin` bundle is only used when packaged, or as a fallback when nothing has been compiled locally.
 
 When launched:
 1. The **Connection Manager** screen will appear.
