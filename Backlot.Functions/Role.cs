@@ -89,7 +89,11 @@ namespace Backlot.Functions
             try
             {
                 if (req.Body.Length == 0)
-                    throw new BadRequestException("POST requests must contain a body.");
+                    throw new BadRequestException(
+                        "POST requests must contain a body. Note that a request sent without a " +
+                        "Content-Length header (chunked transfer encoding) reaches this worker with " +
+                        "an empty body: the Functions host does not forward a body of unknown length. " +
+                        "Buffer the content client-side so Content-Length is set.");
 
                 if (req.Query.Count > 0)
                     throw new BadRequestException("POST requests should not contain query strings.");

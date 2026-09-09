@@ -71,10 +71,24 @@ public class BacklotApiClient : IBacklotApiClient
     }
 
     // PlayAsync (POST) — generic primitive that posts the body as JSON to api/role/{rolename}/{scenario}.
+    //
+    // Deliberately NOT PostAsJsonAsync: that attaches a JsonContent, whose TryComputeLength returns
+    // false, so HttpClient streams the request chunked with no Content-Length header. ASP.NET Core
+    // hosts (Backlot.Demo.Web) read the body stream directly and do not care, but an Azure Functions
+    // host marshals the request into RpcHttp for the isolated worker and only carries a body when the
+    // length is known -- without it the worker receives HttpRequestData.Body == Stream.Null and the
+    // request looks bodyless. StringContent buffers, so Content-Length is set and both hosts agree.
+    // SendRawAsync below already posts this way. Do not "simplify" this back to PostAsJsonAsync.
     public async Task<ApiEnvelope<R>> Play<B,R>(string roleName, string scenario, B body, CancellationToken ct = default) where B: IRequestBody
     {
         var path = $"api/role/{roleName}/{scenario}";
-        var response = await _httpClient.PostAsJsonAsync(path, body, JsonOptions, ct);
+
+        // Serialized against the runtime type (object as the declared type makes JsonSerializer use
+        // it) so a derived body keeps its extra members; PostAsJsonAsync<B> used the declared B.
+        var json = JsonSerializer.Serialize<object?>(body, JsonOptions);
+        using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(path, content, ct);
         await EnsureSuccessAsync(response, ct);
         return await response.Content.ReadFromJsonAsync<ApiEnvelope<R>>(JsonOptions, ct) ?? throw new InvalidOperationException();
     }
