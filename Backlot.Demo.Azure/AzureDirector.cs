@@ -1,7 +1,8 @@
 using Autofac;
-using Backlot.Authentication.BuiltIn;
-using Backlot.Authentication.BuiltIn.Scenarios;
-using Backlot.Authentication.BuiltIn.Services;
+using Backlot.Authentication.Basic;
+// using Backlot.Authentication.BuiltIn;
+// using Backlot.Authentication.BuiltIn.Scenarios;
+// using Backlot.Authentication.BuiltIn.Services;
 using Backlot.Core;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Services;
@@ -27,7 +28,8 @@ public class AzureDirector(IFileSystem fileSystem, IConfigurationManager configu
         RavenRelationRepository, 
         RavenPersistedRoleRepository, 
         RavenUnitOfWork, 
-        BuiltInUserContext,
+        BasicUserContext,
+        //BuiltInUserContext,
         CacheFactory>(fileSystem, configurationManager, builder)
 {
     protected override string SecretKey => "dev_E76548691F3A49DAB38B136EC1E95B21";
@@ -68,15 +70,14 @@ public class AzureDirector(IFileSystem fileSystem, IConfigurationManager configu
         
         // 4) -- Backlot define watchers for all or per scenario.
         
-        // Watch<Login, Services.Postmark.MailWatcher<Login>>();
-        WatchAll<DebugWatcher>();
+        //WatchAll<DebugWatcher>();
         Watch<Calculate, FollowUpScenarioWatcher<Calculate, FollowUp>>();
         
         // example when having a the authentication library installed which does have a login scenario, such as Authentication.Jwt
-        Watch<Login, MailWatcher<Login>>(l =>
-        {
-            l.Events = nameof(Login.Authenticated); // comma seperated in case you want add extra events.
-        });
+        // Watch<Login, MailWatcher<Login>>(l =>
+        // {
+        //     l.Events = nameof(Login.Authenticated); // comma seperated in case you want add extra events.
+        // });
     }
     
     
@@ -88,17 +89,17 @@ public class AzureDirector(IFileSystem fileSystem, IConfigurationManager configu
         
         // custom needs for authentication.
         
-        Builder.Register(_ => new JwtTokenService($"token_security{SecretKey}"))
-            .As<JwtTokenService>()
-            .SingleInstance();
-                
+        // Builder.Register(_ => new JwtTokenService($"token_security{SecretKey}"))
+        //     .As<JwtTokenService>()
+        //     .SingleInstance();
+        //         
         Builder.RegisterType<UserFileRepository>()
             .As<IUserRepository>()
             .SingleInstance();
             
-        Builder.RegisterType<DummyTokenRepository>()
-            .As<ITokenRepository>()
-            .SingleInstance(); // token repository is singleton.
+        // Builder.RegisterType<DummyTokenRepository>()
+        //     .As<ITokenRepository>()
+        //     .SingleInstance(); // token repository is singleton.
         
         #endregion
         

@@ -41,7 +41,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Backlot.Authentication.BuiltIn\Backlot.Authentication.BuiltIn.csproj" />
+		<ProjectReference Include="..\Backlot.Authentication.Basic\Backlot.Authentication.Basic.csproj" />
 		<ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
 		<ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
 		<ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
