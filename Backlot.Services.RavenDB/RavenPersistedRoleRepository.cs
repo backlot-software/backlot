@@ -302,6 +302,54 @@ namespace Backlot.Services.RavenDb
 
         
 
+        /// <summary>
+        /// Appends a single criterion to the query, wherever it sits in the clause tree.
+        /// </summary>
+        /// <remarks>
+        /// The caller is responsible for the operator in front of it: ravendb only falls back to its
+        /// own default operator when none was given, and that fallback is an OrElse whenever the
+        /// previous where token was a Search, even across a closed subclause.
+        /// </remarks>
+        private static IDocumentQuery<object> AppendCriteria(IDocumentQuery<object> query, Criteria itm)
+        {
+            // for safety reasons we only allow a few characters in the fieldname.
+            // dynamic fields are always started with a _ during indexing with Roles_BySkillAndReadPermission
+            var fieldName = $"_{Regex.Replace(itm.Field, Rgx, string.Empty)}";
+
+            switch (itm.ConditionEnum)
+            {
+                case ConditionEnum.lt: // 11 - less than
+                    return query.WhereLessThan(fieldName, itm.Value);
+                case ConditionEnum.gt: // 12 - greater than
+                    return query.WhereGreaterThan(fieldName, itm.Value);
+                // ---
+                case ConditionEnum.ct: // 2 - contains / like
+                    // the ngram twin only exists for strings, anything else can not be
+                    // searched and degrades to an equality on the exact field.
+                    if (itm.Value is not string ctValue)
+                        return query.WhereEquals(fieldName, itm.Value);
+
+                    // The "~" twin of the field is indexed with NGramAnalyzer, so every substring
+                    // of every word is an indexed term and Search becomes a contains:
+                    // 'jo' hits 'john', 'lenjonas' and 'peter jo'.
+                    var terms = ToNGramTerms(ctValue);
+                    return terms == null
+                        // nothing the ngram twin can match (every word is shorter than MinGram),
+                        // so degrade to a prefix match on the exact field. It can not be a
+                        // Search with a wildcard: ravendb fails the whole query because it can
+                        // not build an NGramAnalyzer for a wildcard term, and within this index
+                        // every Search resolves to that analyzer.
+                        ? query.WhereStartsWith(fieldName, ctValue.Trim())
+                        // SearchOperator.And because ToNGramTerms can return several terms for one
+                        // search term, and the value has to contain all of them.
+                        : query.Search($"{fieldName}{Roles_BySkillAndReadPermission.NGramSuffix}", terms, SearchOperator.And);
+                // ReSharper disable once RedundantCaseLabel : we like to show other default values as well here.
+                case ConditionEnum.eq: // 1 - equal
+                default:
+                    return query.WhereEquals(fieldName, itm.Value);
+            }
+        }
+
         private IEnumerable<IRole> Query(Type objType,
             int page,
             int pageSize,
@@ -328,7 +376,10 @@ namespace Backlot.Services.RavenDb
                     query = query.AndAlso().WhereLessThanOrEqual(nameof(IPersist.LastModified), till.Value);
                 }
                 
-                query = query.OpenSubclause() // check for specific user 
+                // never lean on the implicit operator between two clauses: ravendb walks back to the
+                // last where token, past any closing bracket, and defaults to OrElse when that token
+                // happens to be a Search (which the ct criteria below emit).
+                query = query.AndAlso().OpenSubclause() // check for specific user
                         .ContainsAny("UsersCanRead", [UserContext.Current.UserName])
                         .OrElse() // or group rights (wildcard groups supported with *)
                         .ContainsAny("GroupsCanRead", UserContext.Current.Groups.Concat(["*"]).ToArray())
@@ -342,94 +393,47 @@ namespace Backlot.Services.RavenDb
                 // build the criteria, only indexed dynamic fields are supported;
 
                 var criteriaEnumerable = criteria as Criteria[] ?? criteria?.ToArray();
-                if (criteria != null)
+                if (criteriaEnumerable != null)
                 {
-                    // group all fields in subclauses.
+                    // group all fields in subclauses, one subclause per fieldname.
                     var criteriaGroups = criteriaEnumerable.GroupBy(c => c.Field, StringComparer.InvariantCultureIgnoreCase);
-                    
+
                     foreach (var grp in criteriaGroups)
                     {
-                        query = query.OpenSubclause(); // start a new subclause for the grp
-                        
-                        var needsOr = false; // indication if the next statement needs to be and OrElse
-                        var ltgtSubGroupOpened = false; // indication if a sub group for < AND > is openend.
-                        
-                        foreach (var itm in grp.OrderBy(c => c.ConditionEnum)) // loop through the criteria eq and ct first, than lt and gt
-                        {
-                            switch(itm.ConditionEnum)
-                            {
-                                case ConditionEnum.ct:
-                                case ConditionEnum.eq:
-                                    if (needsOr) // when the first item is a lt or gt we need to open a subclause.
-                                    {
-                                        query = query.OrElse();
-                                    }
-                                    needsOr = true;
-                                    break;
-                                case ConditionEnum.lt:
-                                case ConditionEnum.gt:
-                                    if (needsOr && !ltgtSubGroupOpened)
-                                    {
-                                        ltgtSubGroupOpened = true;
-                                        query = query.OrElse();
-                                        query = query.OpenSubclause();
-                                    }
-                                    needsOr = false;
-                                    break;
-                            }
-                            
-                            // for safety reasons we only allow a few characters in the fieldname.
-                            // dynamic fields are always started with a _ during indexing with Roles_BySkillAndReadPermission
-                            var fieldName = $"_{Regex.Replace(itm.Field, Rgx, string.Empty)}";
-                            switch (itm.ConditionEnum)
-                            {
-                                case ConditionEnum.lt: // 11 - less than
-                                    query = query.WhereLessThan(fieldName, itm.Value);
-                                    break;
-                                case ConditionEnum.gt: // 12 - greater than
-                                    query = query.WhereGreaterThan(fieldName, itm.Value);
-                                    break;
-                                // ---
-                                case ConditionEnum.ct: // 2 - contains / like
-                                    // the ngram twin only exists for strings, anything else can not be
-                                    // searched and degrades to an equality on the exact field.
-                                    if (itm.Value is not string ctValue)
-                                    {
-                                        query = query.WhereEquals(fieldName, itm.Value);
-                                        break;
-                                    }
+                        // a range narrows, so the lt and gt of one fieldname are And-ed together. every
+                        // other condition of that same fieldname widens and is Or-ed. both parts are
+                        // And-ed with each other, just like the groups of the different fieldnames are.
+                        var matches = grp.Where(c => c.ConditionEnum is not (ConditionEnum.lt or ConditionEnum.gt))
+                            .OrderBy(c => c.ConditionEnum).ToArray();
+                        var ranges = grp.Where(c => c.ConditionEnum is ConditionEnum.lt or ConditionEnum.gt)
+                            .OrderBy(c => c.ConditionEnum).ToArray();
 
-                                    // The "~" twin of the field is indexed with NGramAnalyzer, so every substring
-                                    // of every word is an indexed term and Search becomes a contains:
-                                    // 'jo' hits 'john', 'lenjonas' and 'peter jo'.
-                                    var terms = ToNGramTerms(ctValue);
-                                    query = terms == null
-                                        // nothing the ngram twin can match (every word is shorter than MinGram),
-                                        // so degrade to a prefix match on the exact field. It can not be a
-                                        // Search with a wildcard: ravendb fails the whole query because it can
-                                        // not build an NGramAnalyzer for a wildcard term, and within this index
-                                        // every Search resolves to that analyzer.
-                                        ? query.WhereStartsWith(fieldName, ctValue.Trim())
-                                        // SearchOperator.And because ToNGramTerms can return several terms for one
-                                        // search term, and the value has to contain all of them.
-                                        : query.Search($"{fieldName}{Roles_BySkillAndReadPermission.NGramSuffix}", terms, SearchOperator.And);
-                                    break;
-                                // ReSharper disable once RedundantCaseLabel : we like to show other default values as well here.
-                                case ConditionEnum.eq: // 1 - equal
-                                default:
-                                    if(itm.Value is string)
-                                        query = query.WhereEquals(fieldName, itm.Value);
-                                    else
-                                        query = query.WhereEquals(fieldName, itm.Value);
-                                    break;
-                            }
-                        }
-                        
-                        if (ltgtSubGroupOpened) // close this group when it was opened.
+                        // And binds stronger than Or in rql, so both parts need brackets of their own
+                        // when both are there: 'a or b and c' would read as 'a or (b and c)'.
+                        var both = matches.Length > 0 && ranges.Length > 0;
+
+                        query = query.AndAlso().OpenSubclause(); // start a new subclause for the grp
+
+                        if (matches.Length > 0)
                         {
-                            query = query.CloseSubclause();
+                            if (both) query = query.OpenSubclause();
+
+                            for (var i = 0; i < matches.Length; i++)
+                                query = AppendCriteria(i == 0 ? query : query.OrElse(), matches[i]);
+
+                            if (both) query = query.CloseSubclause();
                         }
-                        
+
+                        if (ranges.Length > 0)
+                        {
+                            if (both) query = query.AndAlso().OpenSubclause();
+
+                            for (var i = 0; i < ranges.Length; i++)
+                                query = AppendCriteria(i == 0 ? query : query.AndAlso(), ranges[i]);
+
+                            if (both) query = query.CloseSubclause();
+                        }
+
                         query = query.CloseSubclause();
                     }
                 }

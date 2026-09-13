@@ -106,6 +106,24 @@ Never call `ServiceLocator.Configure()` in application code — it is set up by 
 
 Relations between `IUid` roles are stored separately in `IRelationRepository`. The `ScenarioBuilder` uses stored relations to auto-resolve missing constructor role parameters.
 
+### RoleRepository implementations
+
+A role repository stores and retrieves roles for one storage technology. It derives from `BasePersistedRoleRepository`, and `GetAll` translates a flat list of `Criteria` (field, condition `eq`/`ct`/`lt`/`gt`, value) plus paging and ordering into that technology's own query language.
+
+**Criteria group semantics** — every implementation has to produce the same boolean shape:
+
+- criteria are grouped by **field name**; one field name is always exactly one group;
+- inside a group, `lt` and `gt` are joined with **AND** (a range narrows: `LastModified > 1901 AND LastModified < 1998`);
+- inside a group, all other conditions are joined with **OR** (`Name eq 'John' OR Name ct 'Doe'`);
+- inside a group, the OR-ed part and the AND-ed range part are joined with **AND**;
+- between groups it is always **AND**.
+
+```
+(Name = 'John' OR Name ct 'Doe') AND (LastModified > 1901 AND LastModified < 1998)
+```
+
+Because `AND` binds stronger than `OR` in both RQL and SQL, each part needs brackets of its own whenever a single group holds both parts. Never lean on a query builder's default operator either: RavenDB, for one, falls back to `OrElse` when the previous clause was a `Search`, even across a closed subclause — so emit every operator explicitly.
+
 ---
 
 ## Testing
