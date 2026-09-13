@@ -161,11 +161,55 @@ namespace Backlot.Services.SqlDb.Dynamic
             IEnumerable<Criteria> criteria = null, DateTimeOffset? from = null, DateTimeOffset? till = null,
             string orderby = null)
         {
-            
+            var validCriteria = SelectValidCriteria(objType, criteria);
+
+            var query = BuildQuery(objType, validCriteria, from, till, orderby);
+
+            // compile;
+
+            var sql = _db.Compiler.Compile(query).Sql;
+
+            Logger.LogDebug(
+                "SQL generated for {Role} having a total of {CriteriaCount} criteria. Query: '{SQL}', within '{Clss}.{Fn}'",
+                objType.GetRoleName(),
+                validCriteria.Count,
+                sql,
+                nameof(DynamicPersistedRoleRepository),
+                nameof(GetAll));
+
+            var result = _db.Paginate<StoreEntity>(query, page, pageSize);
+            total = Convert.ToInt32(result
+                .Count); // total results over all pages. throws an overflow exception when the count is larger than int.MaxValue.
+
+            return result.List.Select(entity =>
+            {
+                return entity.JsonData.PresentsType(objType,
+                    (r, _) => StoreEntityMetaDataInitializer.Initialize(r as IPersist, entity));
+            });
+        }
+
+        /// <summary>
+        /// Only fields that really exist on the role can be a criterion, everything else is dropped:
+        /// the fieldname ends up in the generated OPENJSON WITH, so an unknown one would be a sql error.
+        /// </summary>
+        internal static List<Criteria> SelectValidCriteria(Type objType, IEnumerable<Criteria> criteria)
+        {
             var validFields = objType.GetFieldInfo(false).ToArray(); // fields valid to be criteria
             // select criteria to be one of the valid fields
-            var validCriteria = criteria == null ? [] : criteria.Where(c => validFields.Any(vf => vf.Name == c.Field)).ToList();
-            
+            return criteria == null ? [] : criteria.Where(c => validFields.Any(vf => vf.Name == c.Field)).ToList();
+        }
+
+        /// <summary>
+        /// Translates the skill, the read permission of the current user, the date range, the criteria
+        /// and the ordering into one sql query. Kept apart from the execution in GetAll so the compiled
+        /// sql can be asserted without a database.
+        /// </summary>
+        internal static Query BuildQuery(Type objType,
+            List<Criteria> validCriteria,
+            DateTimeOffset? from = null,
+            DateTimeOffset? till = null,
+            string orderby = null)
+        {
             #region build BaseQuery for ;WITH base AS () - for performance
             
             var baseQuery = new Query($"dbo.{DynamicStoreTableName} as r")
@@ -225,6 +269,8 @@ namespace Backlot.Services.SqlDb.Dynamic
             
             #region Build main Query using the shinked base results.
 
+            var validFields = objType.GetFieldInfo(false).ToArray();
+
             var jsnWithFields = new List<(string, string)>();
             foreach (var parameter in validCriteria
                          .SkipWhile(c =>
@@ -256,7 +302,7 @@ namespace Backlot.Services.SqlDb.Dynamic
                 jsnWithFields.Add((parameter.Field, fieldType));
             }
 
-            var query = _db.Query();
+            var query = new Query();
 
             if (!jsnWithFields.Any()) // no json fields then do not execute OPENJSON.
             {
@@ -284,7 +330,7 @@ namespace Backlot.Services.SqlDb.Dynamic
 
                 // cirteria generation here
                 // Criteria generation
-                if (criteria != null)
+                if (validCriteria != null)
                 {
                     var criteriaGroups =
                         validCriteria.GroupBy(c => c.Field, StringComparer.InvariantCultureIgnoreCase);
@@ -370,28 +416,9 @@ namespace Backlot.Services.SqlDb.Dynamic
             else
                 query = query.OrderBy(nameof(StoreEntity.LastModified));
 
-            // compile;
-
-            var sql = _db.Compiler.Compile(query).Sql;
-
-            Logger.LogDebug(
-                "SQL generated for {Role} having a total of {CriteriaCount} criteria. Query: '{SQL}', within '{Clss}.{Fn}'",
-                objType.GetRoleName(),
-                validCriteria.Count(),
-                sql,
-                nameof(DynamicPersistedRoleRepository),
-                nameof(GetAll));
-
-            var result = _db.Paginate<StoreEntity>(query, page, pageSize);
-            total = Convert.ToInt32(result
-                .Count); // total results over all pages. throws an overflow exception when the count is larger than int.MaxValue.
-
-            return result.List.Select(entity =>
-            {
-                return entity.JsonData.PresentsType(objType,
-                    (r, _) => StoreEntityMetaDataInitializer.Initialize(r as IPersist, entity));
-            });
+            return query;
         }
+
 
         public override IEnumerable<T> GetAll<T>(int page, int pageSize, out int total,
             IEnumerable<Criteria> criteria = null, DateTimeOffset? from = null, DateTimeOffset? till = null, string orderby = null)

@@ -40,7 +40,7 @@ namespace Backlot.Services.RavenDb
         /// Words shorter than NGramMinGram have no ngram to match and are dropped.
         /// </remarks>
         /// <returns>The terms to search for, or null when the term has nothing matchable in it.</returns>
-        private static string ToNGramTerms(string value)
+        internal static string ToNGramTerms(string value)
         {
             // split on everything the indexing tokenizer also treats as a separator, so that a term
             // like "roles/lenjonas" is cut per word instead of straddling the '/'.
@@ -350,6 +350,108 @@ namespace Backlot.Services.RavenDb
             }
         }
 
+        /// <summary>
+        /// Translates the skill, the read permission of the current user, the date range, the criteria
+        /// and the ordering into one ravendb query against Roles_BySkillAndReadPermission. Kept apart
+        /// from the execution in Query so the generated RQL can be asserted without a server.
+        /// </summary>
+        internal static IDocumentQuery<object> BuildQuery(IDocumentSession session,
+            Type objType,
+            IEnumerable<Criteria> criteria = null,
+            DateTimeOffset? from = null,
+            DateTimeOffset? till = null,
+            string orderby = null)
+        {
+            var query = session.Advanced
+                .DocumentQuery<object>(indexName: Roles_BySkillAndReadPermission._IndexName)
+                // general canread and from the right skill
+                .WhereEquals("CanRead", true).ContainsAny("Skills", [objType.GetRoleName()]);
+            
+            if(from.HasValue)
+            {
+                query = query.AndAlso().WhereGreaterThanOrEqual(nameof(IPersist.LastModified), from.Value);
+            }
+            
+            if(till.HasValue)
+            {
+                query = query.AndAlso().WhereLessThanOrEqual(nameof(IPersist.LastModified), till.Value);
+            }
+            
+            // never lean on the implicit operator between two clauses: ravendb walks back to the
+            // last where token, past any closing bracket, and defaults to OrElse when that token
+            // happens to be a Search (which the ct criteria below emit).
+            query = query.AndAlso().OpenSubclause() // check for specific user
+                    .ContainsAny("UsersCanRead", [UserContext.Current.UserName])
+                    .OrElse() // or group rights (wildcard groups supported with *)
+                    .ContainsAny("GroupsCanRead", UserContext.Current.Groups.Concat(["*"]).ToArray())
+                    .OrElse() // when users or groups are not found
+                    .OpenSubclause()
+                        .Not.WhereExists("UsersCanRead")
+                        .Not.WhereExists("GroupsCanRead")
+                    .CloseSubclause()
+                .CloseSubclause();
+            
+            // build the criteria, only indexed dynamic fields are supported;
+
+            var criteriaEnumerable = criteria as Criteria[] ?? criteria?.ToArray();
+            if (criteriaEnumerable != null)
+            {
+                // group all fields in subclauses, one subclause per fieldname.
+                var criteriaGroups = criteriaEnumerable.GroupBy(c => c.Field, StringComparer.InvariantCultureIgnoreCase);
+
+                foreach (var grp in criteriaGroups)
+                {
+                    // a range narrows, so the lt and gt of one fieldname are And-ed together. every
+                    // other condition of that same fieldname widens and is Or-ed. both parts are
+                    // And-ed with each other, just like the groups of the different fieldnames are.
+                    var matches = grp.Where(c => c.ConditionEnum is not (ConditionEnum.lt or ConditionEnum.gt))
+                        .OrderBy(c => c.ConditionEnum).ToArray();
+                    var ranges = grp.Where(c => c.ConditionEnum is ConditionEnum.lt or ConditionEnum.gt)
+                        .OrderBy(c => c.ConditionEnum).ToArray();
+
+                    // And binds stronger than Or in rql, so both parts need brackets of their own
+                    // when both are there: 'a or b and c' would read as 'a or (b and c)'.
+                    var both = matches.Length > 0 && ranges.Length > 0;
+
+                    query = query.AndAlso().OpenSubclause(); // start a new subclause for the grp
+
+                    if (matches.Length > 0)
+                    {
+                        if (both) query = query.OpenSubclause();
+
+                        for (var i = 0; i < matches.Length; i++)
+                            query = AppendCriteria(i == 0 ? query : query.OrElse(), matches[i]);
+
+                        if (both) query = query.CloseSubclause();
+                    }
+
+                    if (ranges.Length > 0)
+                    {
+                        if (both) query = query.AndAlso().OpenSubclause();
+
+                        for (var i = 0; i < ranges.Length; i++)
+                            query = AppendCriteria(i == 0 ? query : query.AndAlso(), ranges[i]);
+
+                        if (both) query = query.CloseSubclause();
+                    }
+
+                    query = query.CloseSubclause();
+                }
+            }
+            
+            // optionally add the field on which to order the result.
+            if (orderby != null)
+            {
+                var fieldname = Regex.Replace(orderby, Rgx, string.Empty);
+                if (!string.IsNullOrEmpty(orderby))
+                {
+                   query = query.OrderBy(fieldname);
+                }
+            }
+
+            return query;
+        }
+
         private IEnumerable<IRole> Query(Type objType,
             int page,
             int pageSize,
@@ -361,101 +463,18 @@ namespace Backlot.Services.RavenDb
         {
             using (var session = Db.Store.OpenSession())
             {
-                var query = session.Advanced
-                    .DocumentQuery<object>(indexName: Roles_BySkillAndReadPermission._IndexName)
-                    // general canread and from the right skill
-                    .WhereEquals("CanRead", true).ContainsAny("Skills", [objType.GetRoleName()]);
-                
-                if(from.HasValue)
-                {
-                    query = query.AndAlso().WhereGreaterThanOrEqual(nameof(IPersist.LastModified), from.Value);
-                }
-                
-                if(till.HasValue)
-                {
-                    query = query.AndAlso().WhereLessThanOrEqual(nameof(IPersist.LastModified), till.Value);
-                }
-                
-                // never lean on the implicit operator between two clauses: ravendb walks back to the
-                // last where token, past any closing bracket, and defaults to OrElse when that token
-                // happens to be a Search (which the ct criteria below emit).
-                query = query.AndAlso().OpenSubclause() // check for specific user
-                        .ContainsAny("UsersCanRead", [UserContext.Current.UserName])
-                        .OrElse() // or group rights (wildcard groups supported with *)
-                        .ContainsAny("GroupsCanRead", UserContext.Current.Groups.Concat(["*"]).ToArray())
-                        .OrElse() // when users or groups are not found
-                        .OpenSubclause()
-                            .Not.WhereExists("UsersCanRead")
-                            .Not.WhereExists("GroupsCanRead")
-                        .CloseSubclause()
-                    .CloseSubclause();
-                
-                // build the criteria, only indexed dynamic fields are supported;
-
                 var criteriaEnumerable = criteria as Criteria[] ?? criteria?.ToArray();
-                if (criteriaEnumerable != null)
-                {
-                    // group all fields in subclauses, one subclause per fieldname.
-                    var criteriaGroups = criteriaEnumerable.GroupBy(c => c.Field, StringComparer.InvariantCultureIgnoreCase);
 
-                    foreach (var grp in criteriaGroups)
-                    {
-                        // a range narrows, so the lt and gt of one fieldname are And-ed together. every
-                        // other condition of that same fieldname widens and is Or-ed. both parts are
-                        // And-ed with each other, just like the groups of the different fieldnames are.
-                        var matches = grp.Where(c => c.ConditionEnum is not (ConditionEnum.lt or ConditionEnum.gt))
-                            .OrderBy(c => c.ConditionEnum).ToArray();
-                        var ranges = grp.Where(c => c.ConditionEnum is ConditionEnum.lt or ConditionEnum.gt)
-                            .OrderBy(c => c.ConditionEnum).ToArray();
-
-                        // And binds stronger than Or in rql, so both parts need brackets of their own
-                        // when both are there: 'a or b and c' would read as 'a or (b and c)'.
-                        var both = matches.Length > 0 && ranges.Length > 0;
-
-                        query = query.AndAlso().OpenSubclause(); // start a new subclause for the grp
-
-                        if (matches.Length > 0)
-                        {
-                            if (both) query = query.OpenSubclause();
-
-                            for (var i = 0; i < matches.Length; i++)
-                                query = AppendCriteria(i == 0 ? query : query.OrElse(), matches[i]);
-
-                            if (both) query = query.CloseSubclause();
-                        }
-
-                        if (ranges.Length > 0)
-                        {
-                            if (both) query = query.AndAlso().OpenSubclause();
-
-                            for (var i = 0; i < ranges.Length; i++)
-                                query = AppendCriteria(i == 0 ? query : query.AndAlso(), ranges[i]);
-
-                            if (both) query = query.CloseSubclause();
-                        }
-
-                        query = query.CloseSubclause();
-                    }
-                }
-                
-                // optionally add the field on which to order the result.
-                if (orderby != null)
-                {
-                    var fieldname = Regex.Replace(orderby, Rgx, string.Empty);
-                    if (!string.IsNullOrEmpty(orderby))
-                    {
-                       query = query.OrderBy(fieldname);
-                    }
-                }
+                var query = BuildQuery(session, objType, criteriaEnumerable, from, till, orderby);
 
                 // When debug logging is on, log the underlying RQL generated.
                 Logger.LogDebug("RQL generated for {Role} having a total of {CriteriaCount} criteria. Query: '{RQL}', within '{Clss}.{Fn}'",
                     objType.GetRoleName(),
-                    criteriaEnumerable?.Count() ?? 0,
+                    criteriaEnumerable?.Length ?? 0,
                     query.ToString(),
                     nameof(RavenPersistedRoleRepository),
                     nameof(Query));
-                    
+
                 var result = query
                     .SelectFields<object>() // select the original "underlying" document (server side) .. using OfType<object> is a client side action.
                     .Skip((page - 1) * pageSize).Take(pageSize)

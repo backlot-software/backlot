@@ -23,6 +23,9 @@
     <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
     <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
+    <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
+    <ProjectReference Include="..\Backlot.Services.RavenDB\Backlot.Services.RavenDb.csproj" />
+    <ProjectReference Include="..\Backlot.Services.SqlDb\Backlot.Services.SqlDb.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging">

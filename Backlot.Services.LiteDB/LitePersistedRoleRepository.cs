@@ -135,6 +135,40 @@ public class LitePersistedRoleRepository : BasePersistedRoleRepository
         IEnumerable<Criteria> criteria = null, DateTimeOffset? from = null, DateTimeOffset? till = null,
         string orderby = null)
     {
+        var queryExp = BuildQueryExpression(objType, criteria, from, till);
+
+        total = Roles.Count(queryExp);
+
+        // Execute the query
+        var queryable = Roles.Query().Where(queryExp);
+
+        if (!string.IsNullOrEmpty(orderby))
+        {
+            queryable = queryable.OrderBy(ResolveSortField(orderby));
+        }
+
+        var entities = queryable
+            .Skip((page - 1) * pageSize)
+            .Limit(pageSize)
+            .ToEnumerable();
+
+        return entities.Select(entity =>
+        {
+            var rawJson = LDB.JsonSerializer.Serialize(entity.Data);
+            return rawJson.PresentsType(objType, (r, _) => StoreEntityMetaDataInitializer.Initialize(r as IPersist, entity));
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Translates the skill, the read permission of the current user, the date range and the criteria
+    /// into one LiteDb expression. Kept apart from the execution in GetAll so the generated expression
+    /// can be asserted without a database.
+    /// </summary>
+    internal static LDB.BsonExpression BuildQueryExpression(Type objType,
+        IEnumerable<Criteria> criteria,
+        DateTimeOffset? from,
+        DateTimeOffset? till)
+    {
         LDB.BsonExpression queryExp = LDB.BsonExpression.Create("1=1"); // Without 1=1, the code would need extra logic to handle the first condition:
 
         // Base filters: CanRead and Skill
@@ -229,30 +263,20 @@ public class LitePersistedRoleRepository : BasePersistedRoleRepository
             }
         }
 
-        total = Roles.Count(queryExp);
-        
-        // Execute the query
-        var queryable = Roles.Query().Where(queryExp);
-        
-        if (!string.IsNullOrEmpty(orderby))
-        {
-            var fieldName = Regex.Replace(orderby, Rgx, string.Empty);
-            var topLevelFields = new[] { "Id", "LastModified", "CanRead", "Permission" };
-            var sortField = Enumerable.Contains(topLevelFields, fieldName, StringComparer.OrdinalIgnoreCase) ? fieldName : $"Data.{fieldName}";
-            queryable = queryable.OrderBy(sortField);
-        }
-
-        var entities = queryable
-            .Skip((page - 1) * pageSize)
-            .Limit(pageSize)
-            .ToEnumerable();
-
-        return entities.Select(entity =>
-        {
-            var rawJson = LDB.JsonSerializer.Serialize(entity.Data);
-            return rawJson.PresentsType(objType, (r, _) => StoreEntityMetaDataInitializer.Initialize(r as IPersist, entity));
-        }).ToList();
+        return queryExp;
     }
+
+    /// <summary>
+    /// The field to sort on. Everything that is not indexed as a top level field of the StoreEntity
+    /// lives inside the serialized role, so it has to be addressed through Data.
+    /// </summary>
+    internal static string ResolveSortField(string orderby)
+    {
+        var fieldName = Regex.Replace(orderby, Rgx, string.Empty);
+        var topLevelFields = new[] { "Id", "LastModified", "CanRead", "Permission" };
+        return Enumerable.Contains(topLevelFields, fieldName, StringComparer.OrdinalIgnoreCase) ? fieldName : $"Data.{fieldName}";
+    }
+
 
     public override IEnumerable<T> GetAll<T>(int page, int pageSize, out int total, IEnumerable<Criteria> criteria = null,
         DateTimeOffset? from = null, DateTimeOffset? till = null, string orderby = null)

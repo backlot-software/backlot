@@ -44,7 +44,11 @@ public static class Initialize
         {
             { "Backlot.Services.RavenDb.Settings.ServerUrl", "http://127.0.0.1:8080" },
             { "Backlot.Services.RavenDb.Settings.DatabaseName", "Development.Versla" },
-            { "Backlot.Services.RavenDb.Settings.X509Certificate2", "" }
+            { "Backlot.Services.RavenDb.Settings.X509Certificate2", "" },
+            { "Backlot.Services.RavenDb.Settings.NGramMinGram", "3" },
+            { "Backlot.Services.RavenDb.Settings.NGramMaxGram", "6" },
+            { "Backlot.Services.LiteDB.Settings.ConnectionString", ":memory:" },
+            { "Backlot.Services.SqlDb.Settings.ConnectionString", "Server=(local);Database=BacklotTest;Integrated Security=true;TrustServerCertificate=True;" }
         });
         
         var director = buildDirector == null ? new Director(new LocalDiskStorage(), configstub, builder) : buildDirector(builder);
