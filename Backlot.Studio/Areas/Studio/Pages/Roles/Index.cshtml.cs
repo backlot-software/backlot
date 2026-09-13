@@ -21,7 +21,15 @@ public class IndexModel : AuthenticatedPageModel
 
     [FromQuery(Name = "page")]
     public int CurrentPage { get; set; } = 1;
-    
+
+    /// <summary>Optional start of the date range. Null when the picker is left empty.</summary>
+    [FromQuery(Name = "from")]
+    public DateTimeOffset? From { get; set; }
+
+    /// <summary>Optional end of the date range. Null when the picker is left empty.</summary>
+    [FromQuery(Name = "till")]
+    public DateTimeOffset? Till { get; set; }
+
     [BindProperty(SupportsGet = true)]
     public string RoleType { get; set; } = "Persist";
 
@@ -63,6 +71,33 @@ public class IndexModel : AuthenticatedPageModel
     public int StartItem => RoleResult == null || RoleResult.Total == 0 ? 0 : (CurrentPage - 1) * PageSize + 1;
     public int EndItem => RoleResult == null ? 0 : Math.Min(CurrentPage * PageSize, RoleResult.Total);
     public int TotalPages => RoleResult == null || RoleResult.Total == 0 ? 0 : (int)Math.Ceiling((double)RoleResult.Total / PageSize);
+
+    /// <summary>Hidden-input value the picker reads and writes; empty string when unset.</summary>
+    public string FromInput => From?.ToString("yyyy-MM-ddTHH:mm:ss") ?? "";
+    public string TillInput => Till?.ToString("yyyy-MM-ddTHH:mm:ss") ?? "";
+
+    /// <summary>Date shown on the summary chips.</summary>
+    public string? FromDisplay => From?.ToString("yyyy-MM-dd");
+    public string? TillDisplay => Till?.ToString("yyyy-MM-dd");
+
+    /// <summary>Round-trippable form used in pagination links, so the range survives paging.</summary>
+    public string? FromRoute => From?.ToString("O");
+    public string? TillRoute => Till?.ToString("O");
+
+    /// <summary>True when either end of the date range is set; keeps the picker row expanded.</summary>
+    public bool HasDateRange => From.HasValue || Till.HasValue;
+
+    /// <summary>True when any filter (text or date range) is active.</summary>
+    public bool HasFilters => !string.IsNullOrWhiteSpace(SearchQuery) || HasDateRange;
+
+    /// <summary>Human-readable suffix describing the active date range, empty when none is set.</summary>
+    public string DateRangeText => (FromDisplay, TillDisplay) switch
+    {
+        ({ } f, { } t) => $" between {f} and {t}",
+        ({ } f, null) => $" from {f}",
+        (null, { } t) => $" until {t}",
+        _ => ""
+    };
 
     /// <summary>Extracts a string field value from a dynamic role JsonElement row.</summary>
     public static string GetField(JsonElement row, string key)
@@ -125,7 +160,10 @@ public class IndexModel : AuthenticatedPageModel
             For = RoleType,
             Criteria = criteria,
             PageSize = PageSize,
-            Page = CurrentPage
+            Page = CurrentPage,
+            // Left null when the pickers are empty; the endpoint applies its own defaults.
+            From = From,
+            Till = Till
         };
     }
 }

@@ -9,4 +9,7 @@ public class FindRequest : IRequestBody
     public FindCriteria[]? Criteria { get; set; }
     public int PageSize { get; set; }
     public int Page { get; set; }
+    
+    public DateTimeOffset? From { get; set; }
+    public DateTimeOffset? Till { get; set; } 
 }
