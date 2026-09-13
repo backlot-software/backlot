@@ -8,6 +8,7 @@ using Backlot.Core.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Documents.Commands;
+using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
 using Sparrow.Json;
 // ReSharper disable ConvertToUsingDeclaration
@@ -27,6 +28,45 @@ namespace Backlot.Services.RavenDb
         }
         
         private const string Rgx =  @"[^A-Za-z0-9_\-.@]";
+
+        /// <summary>
+        /// Rewrites a "contains" search term into terms the ngram twin of a field can actually match.
+        /// </summary>
+        /// <remarks>
+        /// NGramAnalyzer is only used to analyze the indexed value, never the search term, so the term
+        /// stays a single token and a word longer than NGramMaxGram matches no indexed ngram at all.
+        /// Ngrams never cross a word boundary either, so every word is cut on its own into overlapping
+        /// pieces of at most NGramMaxGram characters, which the caller then requires all of (And).
+        /// Words shorter than NGramMinGram have no ngram to match and are dropped.
+        /// </remarks>
+        /// <returns>The terms to search for, or null when the term has nothing matchable in it.</returns>
+        private static string ToNGramTerms(string value)
+        {
+            // split on everything the indexing tokenizer also treats as a separator, so that a term
+            // like "roles/lenjonas" is cut per word instead of straddling the '/'.
+            var words = Regex.Split(value ?? string.Empty, @"[^A-Za-z0-9]+");
+            var terms = new List<string>();
+
+            foreach (var word in words)
+            {
+                if (word.Length < Roles_BySkillAndReadPermission.NGramMinGram)
+                    continue; // no indexed ngram is this short.
+
+                if (word.Length <= Roles_BySkillAndReadPermission.NGramMaxGram)
+                {
+                    terms.Add(word);
+                    continue;
+                }
+
+                // too long to be an indexed ngram, so slide a NGramMaxGram sized window over the word.
+                for (var i = 0; i + Roles_BySkillAndReadPermission.NGramMaxGram <= word.Length; i++)
+                {
+                    terms.Add(word.Substring(i, Roles_BySkillAndReadPermission.NGramMaxGram));
+                }
+            }
+
+            return terms.Count == 0 ? null : string.Join(' ', terms);
+        }
 
         private static async Task<BlittableJsonReaderObject> ParseJson(JsonOperationContext context, string json)
         {
@@ -351,7 +391,28 @@ namespace Backlot.Services.RavenDb
                                     break;
                                 // ---
                                 case ConditionEnum.ct: // 2 - contains / like
-                                    query = query.Search(fieldName, itm.Value.ToString());
+                                    // the ngram twin only exists for strings, anything else can not be
+                                    // searched and degrades to an equality on the exact field.
+                                    if (itm.Value is not string ctValue)
+                                    {
+                                        query = query.WhereEquals(fieldName, itm.Value);
+                                        break;
+                                    }
+
+                                    // The "~" twin of the field is indexed with NGramAnalyzer, so every substring
+                                    // of every word is an indexed term and Search becomes a contains:
+                                    // 'jo' hits 'john', 'lenjonas' and 'peter jo'.
+                                    var terms = ToNGramTerms(ctValue);
+                                    query = terms == null
+                                        // nothing the ngram twin can match (every word is shorter than MinGram),
+                                        // so degrade to a prefix match on the exact field. It can not be a
+                                        // Search with a wildcard: ravendb fails the whole query because it can
+                                        // not build an NGramAnalyzer for a wildcard term, and within this index
+                                        // every Search resolves to that analyzer.
+                                        ? query.WhereStartsWith(fieldName, ctValue.Trim())
+                                        // SearchOperator.And because ToNGramTerms can return several terms for one
+                                        // search term, and the value has to contain all of them.
+                                        : query.Search($"{fieldName}{Roles_BySkillAndReadPermission.NGramSuffix}", terms, SearchOperator.And);
                                     break;
                                 // ReSharper disable once RedundantCaseLabel : we like to show other default values as well here.
                                 case ConditionEnum.eq: // 1 - equal

@@ -33,7 +33,7 @@
                            name="q"
                            value="@Model.SearchQuery"
                            class="form-input pe-10"
-                           placeholder="Search, f.e. Name=John Uid:00 shows all records where name equals John and Uid contains 00"
+                           placeholder="Search, f.e. Name=John Uid:00 shows all records where name equals John and Uid contains 00. Case sensitive for most database setups."
                            aria-label="Search roles" />
                     <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
                 </div>
@@ -111,7 +111,7 @@
                     <table class="w-full text-sm font-sans" id="roles-table">
                         <thead>
                             <tr class="bg-secondary-50">
-                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">UID</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">Uid</th>
                                 <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Name">Name</th>
                                 <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="LastModified">Last Modified</th>
                                 <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Type">Type</th>
@@ -137,9 +137,9 @@
                                         <div class="flex items-center gap-2">
                                             <button type="button"
                                                     class="btn btn-ghost btn-icon"
-                                                    data-action="copy-detail-url"
-                                                    data-detail-url="@Url.Page("/Roles/Detail", new { RoleType = Model.RoleType, Uid = uid })"
-                                                    aria-label="Copy link to detail page">
+                                                    data-action="copy-uid"s
+                                                    data-detail-url="@uid"
+                                                    aria-label="Copy uid">
                                                 <i class="bi bi-clipboard"></i>
                                             </button>
                                             <span class="text-secondary-700 text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
@@ -251,7 +251,7 @@
     if (!window.__copyDetailUrlBound) {
         window.__copyDetailUrlBound = true;
         document.addEventListener('click', function (e) {
-            const btn = e.target.closest('[data-action="copy-detail-url"]');
+            const btn = e.target.closest('[data-action="copy-uid"]');
             if (!btn) return;
 
             const path = btn.dataset.detailUrl;
