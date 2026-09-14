@@ -123,14 +123,27 @@ public class BacklotApiClient : IBacklotApiClient
     // BasicAuthHandler, which the caller translates into a re-login.) The path is used relative to
     // BaseAddress; a leading slash is tolerated. A JSON body is attached only for methods that
     // carry one.
-    public async Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct = default)
+    public Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct)
+        => SendRawAsync(method, path, body, null, ct);
+
+    public async Task<RawApiResponse> SendRawAsync(string method, string path, string? body, string? accept = null, CancellationToken ct = default)
     {
         var httpMethod = new HttpMethod(method.Trim().ToUpperInvariant());
-        
+
+        using var request = new HttpRequestMessage(httpMethod, path);
+        if (httpMethod == HttpMethod.Post && body != null)
+        {
+            request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        }
+
+        if (!string.IsNullOrWhiteSpace(accept))
+        {
+            request.Headers.Accept.Clear();
+            request.Headers.TryAddWithoutValidation("Accept", accept.Trim());
+        }
+
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var response = httpMethod == HttpMethod.Post
-            ? await _httpClient.PostAsync(path, new StringContent(body ?? string.Empty, System.Text.Encoding.UTF8, "application/json"), ct)
-            : await _httpClient.GetAsync(path, ct);
+        var response = await _httpClient.SendAsync(request, ct);
         stopwatch.Stop();
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);

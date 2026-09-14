@@ -22,6 +22,8 @@ public class IndexModel : AuthenticatedPageModel
     public List<ScenarioItem> Scenarios { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
 
+    public List<string> MediaFormatters { get; private set; } = [];
+
     // The dropdown entries. In normal mode there is one per scenario (its first endpoint). In
     // "from Detail" mode (arrived via Play) the list is filtered to endpoints whose role segment
     // is one of the role's skills, so a scenario may contribute several entries.
@@ -63,6 +65,7 @@ public class IndexModel : AuthenticatedPageModel
                 .ToList();
 
             RequestExamples = await LoadRequestExamples();
+            MediaFormatters = await LoadMediaFormatters();
 
             // Consume Play data (session-backed TempData, read once). Present → "from Play" mode:
             // the body is pre-filled and the chosen endpoint auto-selected. Two callers hand over —
@@ -135,11 +138,29 @@ public class IndexModel : AuthenticatedPageModel
         }
     }
 
+    private async Task<List<string>> LoadMediaFormatters()
+    {
+        try
+        {
+            var envelope = await _api.Play<IEnumerable<string>>("mediaformatters");
+            return (envelope?.Body ?? [])
+                .Where(f => !string.IsNullOrWhiteSpace(f))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Failed to load media formatters from Backlot API");
+            return ["application/json", "text/plain"];
+        }
+    }
+
     public class ExecuteInput
     {
         public string Method { get; set; } = "GET";
         public string Endpoint { get; set; } = string.Empty;
         public string? Body { get; set; }
+        public string? Accept { get; set; }
     }
 
     [BindProperty]
@@ -161,7 +182,7 @@ public class IndexModel : AuthenticatedPageModel
 
         try
         {
-            var response = await _api.SendRawAsync(Input.Method, Input.Endpoint, Input.Body, ct);
+            var response = await _api.SendRawAsync(Input.Method, Input.Endpoint, Input.Body, Input.Accept, ct);
             return new JsonResult(new
             {
                 statusCode = response.StatusCode,
@@ -204,14 +225,15 @@ public class IndexModel : AuthenticatedPageModel
             };
         }
 
-        return new JsonResult(new { text = BuildHttpRequest(Input.Method, Input.Endpoint, Input.Body) });
+        return new JsonResult(new { text = BuildHttpRequest(Input.Method, Input.Endpoint, Input.Body, Input.Accept) });
     }
 
-    // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body. The
-    // Authorization line carries the same base64 credential the app uses for its own API requests,
-    // read from session ("BasicAuthHeader", stored without the "Basic " prefix by Login.cshtml.cs);
-    // missing session value → empty. The body block is omitted for GET requests (and empty bodies).
-    private string BuildHttpRequest(string method, string endpoint, string? body)
+    // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body and
+    // optional Accept header. The Authorization line carries the same base64 credential the app
+    // uses for its own API requests, read from session ("BasicAuthHeader", stored without the "Basic "
+    // prefix by Login.cshtml.cs); missing session value → empty. The body block is omitted for GET
+    // requests (and empty bodies).
+    private string BuildHttpRequest(string method, string endpoint, string? body, string? accept = null)
     {
         var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
         var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
@@ -220,6 +242,10 @@ public class IndexModel : AuthenticatedPageModel
 
         var sb = new StringBuilder();
         sb.Append(verb).Append(' ').Append(baseUrl).Append('/').Append(path).Append('\n');
+        if (!string.IsNullOrWhiteSpace(accept))
+        {
+            sb.Append("Accept: ").Append(accept.Trim()).Append('\n');
+        }
         sb.Append("Content-Type: application/json").Append('\n');
         sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
 

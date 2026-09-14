@@ -71,15 +71,27 @@
                 </div>
             </div>
 
-            <!-- Endpoint (loaded from the selected scenario, editable) -->
-            <div class="mb-4">
-                <label for="endpoint-input" class="form-label">Endpoint</label>
-                <input type="text"
-                       id="endpoint-input"
-                       name="Input.Endpoint"
-                       class="form-input font-mono text-sm bg-secondary-50"
-                       readonly
-                       placeholder="Select a scenario to load its endpoint…" />
+            <!-- Endpoint (loaded from the selected scenario, editable) and Accept header -->
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex-1">
+                    <label for="endpoint-input" class="form-label">Endpoint</label>
+                    <input type="text"
+                           id="endpoint-input"
+                           name="Input.Endpoint"
+                           class="form-input font-mono text-sm bg-secondary-50"
+                           readonly
+                           placeholder="Select a scenario to load its endpoint…" />
+                </div>
+                <div class="md:w-72">
+                    <label for="accept-select" class="form-label">Accept</label>
+                    <select id="accept-select" name="Input.Accept" class="form-input text-sm bg-white">
+                        <option value="">Default (application/json)</option>
+                        @foreach (var formatter in (Model.MediaFormatters ?? []).Where(f => !string.Equals(f, "application/json", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <option value="@formatter">@formatter</option>
+                        }
+                    </select>
+                </div>
             </div>
 
             <!-- Body -->

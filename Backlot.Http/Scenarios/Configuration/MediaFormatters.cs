@@ -1,25 +1,22 @@
-using System.Reflection;
 using Backlot.Core;
-using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Abstraction.Scenarios;
-using Backlot.Core.Json;
 using Backlot.Core.Security;
-using Backlot.Defaults.Scenarios.Configuration.Models;
+using Backlot.Http.Media;
 
-namespace Backlot.Defaults.Scenarios.Configuration;
+namespace Backlot.Http.Scenarios.Configuration;
 
 [Scenario(typeof(MediaFormatters), access: [Access.Everyone])]
 public class MediaFormatters : DirectorScenario<MediaFormatters, IEnumerable<string>>
 {
-    public MediaFormatters(IDirector role) : base(role)
+    private readonly IEnumerable<IMediaFormatter> _mediaFormatters;
+
+    public MediaFormatters(IDirector role, IEnumerable<IMediaFormatter> mediaFormatters) : base(role)
     {
+        _mediaFormatters = mediaFormatters;
     }
 
     protected override IEnumerable<string> Exec()
     {
-        // get all supported media formatters
-        IEnumerable<IMediaFormatter> formatters = Role.Resolve<IEnumerable<IMediaFormatter>>();
-        
-        return Enumerable.Empty<string>();
+        return _mediaFormatters.Select(f => f.MediaType);
     }
 }
