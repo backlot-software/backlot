@@ -4,6 +4,13 @@
   },
   "Backlot": {
     "Services": {
+      "AI": {
+        "Settings": {
+          "ApiKey": "",
+          "Endpoint": "https://api.mistral.ai/v1/chat/completions",
+          "Model": "mistral-large-latest"
+        }
+      },
       "LiteDB":{
         "Settings" : {
           "ConnectionString": "mydata.db"

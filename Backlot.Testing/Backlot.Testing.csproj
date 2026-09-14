@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
     <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
     <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
+    <ProjectReference Include="..\Backlot.Services.AI\Backlot.Services.AI.csproj" />
     <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,7 @@
       <ProjectReference Include="..\Backlot.Http.DependencyInjection.Autofac\Backlot.Http.DependencyInjection.Autofac.csproj" />
       <ProjectReference Include="..\Backlot.Http.Media.Formatters.Csv\Backlot.Http.Media.Formatters.Csv.csproj" />
       <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+      <ProjectReference Include="..\Backlot.Services.AI\Backlot.Services.AI.csproj" />
       <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
       <ProjectReference Include="..\Backlot.Services.LiteDB\Backlot.Services.LiteDB.csproj" />
       <ProjectReference Include="..\Backlot.WebApp\Backlot.WebApp.csproj" />
