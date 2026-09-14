@@ -39,6 +39,11 @@ public class IndexModel : AuthenticatedPageModel
     // Best-effort: an API that does not serve examples simply leaves the box empty.
     public Dictionary<string, string> RequestExamples { get; private set; } = [];
 
+    // Authoritative HTTP method per endpoint, taken straight from scenarioschemas. The page uses
+    // this instead of guessing GET/POST from the endpoint's role segment. Endpoints missing here
+    // default to GET on the client.
+    public Dictionary<string, string> EndpointMethods { get; private set; } = [];
+
     // Endpoint the page should auto-select on load (the scenario chosen on Detail, or the
     // persist/persist option), or null.
     public string? DefaultEndpoint { get; private set; }
@@ -55,16 +60,25 @@ public class IndexModel : AuthenticatedPageModel
         SetUserContext();
         try
         {
-            var (result, redirect) = await SafeApiCall(async () =>
-                await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
+            var (scenarios, redirect) = await SafeApiCall(() => ScenarioCatalog.LoadScenariosAsync(_api));
             if (redirect != null) return redirect;
 
-            Scenarios = (result?.Body ?? [])
+            Scenarios = (scenarios ?? [])
                 .Where(s => s.Endpoints.Length > 0)
                 .OrderBy(s => s.Scenario, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            RequestExamples = await LoadRequestExamples();
+            // One load of scenarioschemas feeds both the example bodies and the authoritative
+            // per-endpoint methods, so the two can never disagree.
+            var schemas = await ScenarioCatalog.LoadSchemasAsync(_api, _logger);
+            RequestExamples = schemas
+                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.RequestExample))
+                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().RequestExample, StringComparer.OrdinalIgnoreCase);
+            EndpointMethods = schemas
+                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.Method))
+                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Method, StringComparer.OrdinalIgnoreCase);
             MediaFormatters = await LoadMediaFormatters();
 
             // Consume Play data (session-backed TempData, read once). Present → "from Play" mode:
@@ -117,25 +131,6 @@ public class IndexModel : AuthenticatedPageModel
             ErrorMessage = "Could not load scenarios. Check that the Backlot API is reachable and that your credentials are valid.";
         }
         return Page();
-    }
-
-    // Keyed by endpoint rather than scenario name: the dropdown selects an endpoint, and a scenario
-    // reachable through more than one role still shares the same body shape.
-    private async Task<Dictionary<string, string>> LoadRequestExamples()
-    {
-        try
-        {
-            var envelope = await _api.Play<IEnumerable<ScenarioSchemaItem>>("scenarioschemas");
-            return (envelope?.Body ?? [])
-                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.RequestExample))
-                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.First().RequestExample, StringComparer.OrdinalIgnoreCase);
-        }
-        catch (Exception ex) when (ex is not UnauthorizedAccessException)
-        {
-            _logger.LogWarning(ex, "Failed to load scenario request examples from Backlot API");
-            return [];
-        }
     }
 
     private async Task<List<string>> LoadMediaFormatters()

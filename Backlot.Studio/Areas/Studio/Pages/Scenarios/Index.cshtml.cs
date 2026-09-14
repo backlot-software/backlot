@@ -29,9 +29,9 @@ public class IndexModel : AuthenticatedPageModel
         SetUserContext();
         try
         {
-            var (result, redirect) = await SafeApiCall(async () => await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
+            var (scenarios, redirect) = await SafeApiCall(() => ScenarioCatalog.LoadScenariosAsync(_api));
             if (redirect != null) return redirect;
-            Groups = (result?.Body ?? [])
+            Groups = (scenarios ?? [])
                 .GroupBy(s => s.Tags.Length > 0 ? s.Tags[0] : "Uncategorized")
                 .Select(g => (g.Key, g.AsEnumerable()))
                 .ToList();
@@ -108,19 +108,13 @@ public class IndexModel : AuthenticatedPageModel
 
     // Separate from the scenario list on purpose: the examples are reflected server-side and cost
     // more to produce, so a failure here degrades the page to a plain list instead of an error.
+    // The load itself lives in the shared ScenarioCatalog; this page keeps its own projection,
+    // keying the schemas by scenario name.
     private async Task<Dictionary<string, ScenarioSchemaItem>> LoadExamples()
     {
-        try
-        {
-            var envelope = await _api.Play<IEnumerable<ScenarioSchemaItem>>("scenarioschemas");
-            return (envelope?.Body ?? [])
-                .GroupBy(e => e.Scenario, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-        }
-        catch (Exception ex) when (ex is not UnauthorizedAccessException)
-        {
-            _logger.LogWarning(ex, "Failed to load scenario examples from Backlot API");
-            return new Dictionary<string, ScenarioSchemaItem>(StringComparer.OrdinalIgnoreCase);
-        }
+        var schemas = await ScenarioCatalog.LoadSchemasAsync(_api, _logger);
+        return schemas
+            .GroupBy(e => e.Scenario, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
     }
 }

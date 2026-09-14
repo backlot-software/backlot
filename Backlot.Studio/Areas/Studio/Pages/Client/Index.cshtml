@@ -125,6 +125,9 @@
     <script type="application/json" id="request-examples">
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RequestExamples))
     </script>
+    <script type="application/json" id="endpoint-methods">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EndpointMethods))
+    </script>
     <script>
         (function () {
             const form = document.getElementById('client-form');
@@ -141,12 +144,18 @@
             const resultTime = document.getElementById('result-time');
             const resultBody = document.getElementById('result-body').querySelector('code');
 
-            // Derive the HTTP method from the endpoint's role segment: api/role/{role}/{scenario}.
-            // The director role is read-only (GET); everything else is a POST.
+            // The authoritative HTTP method per endpoint, served by scenarioschemas. Endpoints not
+            // present in the map (e.g. a path typed by hand) default to GET.
+            let endpointMethods = {};
+            try {
+                endpointMethods = JSON.parse(document.getElementById('endpoint-methods').textContent);
+            } catch (e) {
+                endpointMethods = {};
+            }
+
+            // Set the method from the scenarioschemas map rather than guessing it from the endpoint.
             function applyMethod(endpoint) {
-                const parts = (endpoint || '').replace(/^\/+|\/+$/g, '').split('/');
-                const role = (parts[0] === 'api' && parts[1] === 'role') ? parts[2] : null;
-                const method = (role && role.toLowerCase() === 'director') ? 'GET' : 'POST';
+                const method = endpointMethods[endpoint] || 'GET';
                 methodDisplay.textContent = method;
                 methodInput.value = method;
             }
