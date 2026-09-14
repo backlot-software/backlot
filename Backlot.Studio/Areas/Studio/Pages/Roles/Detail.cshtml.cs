@@ -90,14 +90,13 @@ public class DetailModel : AuthenticatedPageModel
     {
         try
         {
-            var (env, redirect) = await SafeApiCall(async () =>
-                await _api.Play<IEnumerable<ScenarioItem>>("scenarios"));
+            var (scenarios, redirect) = await SafeApiCall(() => ScenarioCatalog.LoadScenariosAsync(_api));
             if (redirect != null) return redirect;
 
-            var scenarios = (env?.Body ?? []).Where(s => s.Endpoints.Length > 0);
+            var playable = (scenarios ?? []).Where(s => s.Endpoints.Length > 0);
             var skills = new HashSet<string>(GetSkills(RoleData), StringComparer.OrdinalIgnoreCase);
 
-            ScenarioOptions = ScenarioEndpoint.OptionsForSkills(scenarios, skills);
+            ScenarioOptions = ScenarioEndpoint.OptionsForSkills(playable, skills);
             DefaultScenarioEndpoint =
                 ScenarioOptions.FirstOrDefault(o => o.Endpoint.TrimEnd('/').EndsWith("/persist/persist", StringComparison.OrdinalIgnoreCase))?.Endpoint
                 ?? ScenarioOptions.FirstOrDefault()?.Endpoint;
