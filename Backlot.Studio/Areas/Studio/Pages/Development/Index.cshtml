@@ -1,0 +1,252 @@
+@page "/development"
+@model Backlot.Studio.Areas.Studio.Pages.Development.IndexModel
+@{
+    ViewData["Title"] = "Development";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Development</h1>
+        <p class="text-sm text-secondary-500">Describe what you want to build. The roles and scenarios the conversation agrees on collect on the right.</p>
+    </div>
+</div>
+
+<div id="development-root" class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+
+    <!-- Chat -->
+    <div class="card self-start flex flex-col">
+        <div id="chat-log" class="card-body flex flex-col gap-4 h-[60vh] overflow-y-auto custom-scrollbar">
+            @foreach (var turn in Model.Chat.Turns)
+            {
+                @if (turn.FromUser)
+                {
+                    <div class="flex justify-end">
+                        <div class="max-w-[80%] rounded-lg rounded-br-none bg-primary-600 text-white px-4 py-2 whitespace-pre-wrap break-words">@turn.Text</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="flex justify-start">
+                        <div class="max-w-[80%] rounded-lg rounded-bl-none bg-secondary-100 text-secondary-900 px-4 py-2 whitespace-pre-wrap break-words">@turn.Text</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Inline failure notice; replaces nothing in the transcript so a failed turn is never stored -->
+        <div id="chat-error" class="alert alert-danger mx-6 hidden" role="alert">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span id="chat-error-text"></span>
+        </div>
+
+        <div class="card-footer">
+            @* data-turbo="false": the turn is sent with fetch() and the reply patched into the log,
+               so Turbo must not try to navigate on submit. *@
+            <form id="chat-form" data-turbo="false" class="flex items-end gap-3">
+                @Html.AntiForgeryToken()
+                <textarea id="chat-message"
+                          name="Input.Message"
+                          rows="2"
+                          class="form-input flex-1 resize-none"
+                          placeholder="Enter to send, Shift+Enter for a new line…"
+                          autocomplete="off"></textarea>
+                <button type="submit" id="chat-send" class="btn btn-primary">
+                    <i class="bi bi-send"></i>
+                    <span>Send</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- The two "file" panes -->
+    <div class="flex flex-col gap-6">
+        <div class="card self-start">
+            <div class="card-header flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Roles</h2>
+                <span id="roles-count" class="badge">@Model.Chat.Roles.Count</span>
+            </div>
+            <div class="card-body max-h-[35vh] overflow-y-auto custom-scrollbar">
+                <ul id="roles-pane" class="space-y-1 font-mono text-sm text-secondary-700 @(Model.Chat.Roles.Count == 0 ? "hidden" : "")">
+                    @foreach (var name in Model.Chat.Roles)
+                    {
+                        <li class="px-2 py-1 rounded hover:bg-secondary-100 truncate" title="@name">@name</li>
+                    }
+                </ul>
+                <div id="roles-empty" class="empty-state py-8 @(Model.Chat.Roles.Count == 0 ? "" : "hidden")">
+                    <i class="bi bi-person-badge"></i>
+                    <p>No roles yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card self-start">
+            <div class="card-header flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Scenarios</h2>
+                <span id="scenarios-count" class="badge">@Model.Chat.Scenarios.Count</span>
+            </div>
+            <div class="card-body max-h-[35vh] overflow-y-auto custom-scrollbar">
+                <ul id="scenarios-pane" class="space-y-1 font-mono text-sm text-secondary-700 @(Model.Chat.Scenarios.Count == 0 ? "hidden" : "")">
+                    @foreach (var name in Model.Chat.Scenarios)
+                    {
+                        <li class="px-2 py-1 rounded hover:bg-secondary-100 truncate" title="@name">@name</li>
+                    }
+                </ul>
+                <div id="scenarios-empty" class="empty-state py-8 @(Model.Chat.Scenarios.Count == 0 ? "" : "hidden")">
+                    <i class="bi bi-play-circle"></i>
+                    <p>No scenarios yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById('chat-form');
+            if (!form) return;
+
+            const log = document.getElementById('chat-log');
+            const input = document.getElementById('chat-message');
+            const sendBtn = document.getElementById('chat-send');
+            const errorBox = document.getElementById('chat-error');
+            const errorText = document.getElementById('chat-error-text');
+
+            const panes = {
+                roles: {
+                    list: document.getElementById('roles-pane'),
+                    empty: document.getElementById('roles-empty'),
+                    count: document.getElementById('roles-count')
+                },
+                scenarios: {
+                    list: document.getElementById('scenarios-pane'),
+                    empty: document.getElementById('scenarios-empty'),
+                    count: document.getElementById('scenarios-count')
+                }
+            };
+
+            // --- Panes (first paint is server-rendered; this re-renders after each turn) ---
+            function renderPane(pane, names) {
+                pane.list.innerHTML = '';
+                (names || []).forEach(function (name) {
+                    const li = document.createElement('li');
+                    li.className = 'px-2 py-1 rounded hover:bg-secondary-100 truncate';
+                    li.title = name;
+                    li.textContent = name;
+                    pane.list.appendChild(li);
+                });
+                const count = (names || []).length;
+                pane.count.textContent = count;
+                pane.empty.classList.toggle('hidden', count !== 0);
+                pane.list.classList.toggle('hidden', count === 0);
+            }
+
+            // --- Transcript -----------------------------------------------------------
+            function appendTurn(text, fromUser) {
+                const row = document.createElement('div');
+                row.className = 'flex ' + (fromUser ? 'justify-end' : 'justify-start');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap break-words ' +
+                    (fromUser
+                        ? 'rounded-br-none bg-primary-600 text-white'
+                        : 'rounded-bl-none bg-secondary-100 text-secondary-900');
+                bubble.textContent = text;
+
+                row.appendChild(bubble);
+                log.appendChild(row);
+                log.scrollTop = log.scrollHeight;
+                return row;
+            }
+
+            function showError(message) {
+                errorText.textContent = message;
+                errorBox.classList.remove('hidden');
+            }
+
+            function clearError() {
+                errorBox.classList.add('hidden');
+                errorText.textContent = '';
+            }
+
+            log.scrollTop = log.scrollHeight;
+
+            // --- Send -----------------------------------------------------------------
+            let busy = false;
+
+            async function send() {
+                if (busy) return;
+
+                const message = input.value.trim();
+                if (!message) {
+                    input.focus();
+                    return;
+                }
+
+                busy = true;
+                clearError();
+
+                // The user's turn appears immediately; it is removed again if the call fails, so the
+                // transcript on screen always matches the one stored in session.
+                const optimistic = appendTurn(message, true);
+                input.value = '';
+
+                sendBtn.disabled = true;
+                const original = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span><span>Thinking…</span>';
+
+                try {
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                    const data = new FormData();
+                    data.append('Input.Message', message);
+
+                    const res = await fetch('?handler=Send', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'fetch' },
+                        body: data
+                    });
+                    const payload = await res.json();
+
+                    if (payload.unauthorized) {
+                        window.location.href = '@Url.Page("/Login")';
+                        return;
+                    }
+
+                    if (payload.error) {
+                        optimistic.remove();
+                        input.value = message;
+                        showError(payload.error);
+                        return;
+                    }
+
+                    appendTurn(payload.message, false);
+                    renderPane(panes.roles, payload.roles);
+                    renderPane(panes.scenarios, payload.scenarios);
+                } catch (err) {
+                    optimistic.remove();
+                    input.value = message;
+                    showError('Request failed: ' + String(err));
+                } finally {
+                    busy = false;
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = original;
+                    input.focus();
+                }
+            }
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                send();
+            });
+
+            // Enter sends, Shift+Enter inserts a newline.
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                }
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Title>Backlot.Services.AI</Title>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>
+    </VersionSuffix>
+    <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+    <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+    <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+    <PackageIcon>bl.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;Development</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\bl.png">
+      <Pack>True</Pack>
+      <PackagePath>
+      </PackagePath>
+      <Link>bl.png</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+    <!-- For BadRequestException: the shared exception-to-HTTP-status contract lives in
+         Backlot.Http (see MediaFormatResolver), and a misconfigured key or a malformed
+         upstream reply has to reach the operator as a 400 with its message intact rather
+         than a 500 with a logged GUID. -->
+    <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
+  </ItemGroup>
+
+</Project>
