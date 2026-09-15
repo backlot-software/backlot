@@ -27,8 +27,39 @@ This writes to your user-profile NuGet config, not to the project — don't comm
 PAT. In CI, supply it from your secret store instead.
 
 The framework references in `Backlot.Start.csproj` float via the `BacklotVersion`
-property (`0.0.*-*`), so a restore picks up the newest published build, prereleases
-included. Set `<BacklotVersion>` to an exact version to pin.
+property using the universal wildcard (`*-*`):
+* **Stable feeds (e.g., nuget.org):** When restoring against feeds hosting only stable releases, NuGet resolves the newest stable build.
+* **Pre-release feeds (e.g., GitHub Packages):** When restoring against feeds hosting developmental packages, NuGet resolves the newest build, including alpha or beta prereleases.
+
+### Pinning Package Versions
+
+If you need deterministic builds or want to isolate your project from upstream changes, you can pin the `Backlot.*` package versions using any of the following approaches:
+
+#### 1. Project file (permanent)
+Edit `Backlot.Start/Backlot.Start.csproj` directly to set an exact version:
+```xml
+<PropertyGroup>
+    <BacklotVersion>0.1.0</BacklotVersion>
+</PropertyGroup>
+```
+
+#### 2. Command line (transient override)
+Pass the `BacklotVersion` property as an argument during restore, build, or run without modifying the project file:
+```bash
+dotnet restore -p:BacklotVersion=0.1.0
+dotnet build -p:BacklotVersion=0.1.0
+dotnet run -p:BacklotVersion=0.1.0
+```
+
+#### 3. Centralized solution props (`Directory.Build.props`)
+To enforce a unified version across multiple projects in a solution, define `BacklotVersion` in a `Directory.Build.props` file in your repository root:
+```xml
+<Project>
+    <PropertyGroup>
+        <BacklotVersion>0.1.0</BacklotVersion>
+    </PropertyGroup>
+</Project>
+```
 
 ## WebDirector.cs
 
