@@ -7,6 +7,9 @@ using Backlot.Services.Filesystem.LocalDiskStorage;
 using Backlot.WebApp;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Backlot Studio is mounted by BuildWebApp; it is configured through the "BacklotStudio" section of
+// appsettings.json. There is no separate Studio process.
 var app = builder.BuildWebApp(hostBuilder =>
 {
     hostBuilder.UseServiceProviderFactory(new AutofacServiceProviderFactory());

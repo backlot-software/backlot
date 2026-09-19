@@ -7,6 +7,8 @@ using Backlot.Core.Services;
 using Backlot.Defaults.Scenarios.Authentication;
 using Backlot.Defaults.Services;
 using Backlot.DependencyInjection.Autofac;
+using Backlot.Http.Media;
+using Backlot.Http.Media.Formatters.Csv;
 using Backlot.Http.Watching;
 using Backlot.Services.LiteDB;
 using Newtonsoft.Json.Linq;
@@ -27,6 +29,10 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
     public override void Registration()
     {
         base.Registration();
+        
+        Builder.RegisterType<CsvFormatter>()
+            .As<IMediaFormatter>()
+            .InstancePerRequest();
         
         // the IUserRepository is used by BasicUserContext
         Builder.RegisterType<UserFileRepository>()

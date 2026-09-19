@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Backlot Studio (Electron)": {
+      "commandName": "Executable",
+      "executablePath": "npm",
+      "commandLineArgs": "start",
+      "workingDirectory": "$(ProjectDir)electron"
+    },
+    "Backlot Studio (Debug) 127.0.0.1:5221 Demo.Azure": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "commandLineArgs": "--BacklotStudio:BaseUrl=http://localhost:7071/ --urls=http://127.0.0.1:5221"
+    },
+    "Backlot Studio (Debug) 127.0.0.1:5221 Demo.Web": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "commandLineArgs": "--BacklotStudio:BaseUrl=https://localhost:7221/ --urls=http://127.0.0.1:5221"
+    }
+  }
+}

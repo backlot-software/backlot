@@ -11,7 +11,8 @@ public class Runner
 
     
     [Function("status")]
-    public static HttpResponseData Status([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req,
+    public static HttpResponseData Status(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var stopwatch = new Stopwatch();
@@ -22,13 +23,21 @@ public class Runner
             
         var backlotversion = typeof(Core.IDirector).Assembly.GetName().Version;
             
-        response.WriteString(JObject.FromObject(new
-        {
-            TimeInMs = stopwatch.ElapsedMilliseconds,
-            Body = $"Backlot - version {backlotversion}.",
-            Status = HttpStatusCode.OK,
-            ExcecutionTime = DateTimeOffset.Now
-        }).ToString());
+        response.WriteString(JObject.FromObject( // status compatible with default status endpoints.
+            new 
+            {
+                ExecutionTime = DateTimeOffset.Now,
+                TimeInMs = stopwatch.ElapsedMilliseconds,
+                Body = new
+                {
+                    TimeInMs = stopwatch.ElapsedMilliseconds,
+                    Body = $"Backlot - version {backlotversion}.",
+                    Status = HttpStatusCode.OK,
+                    ExcecutionTime = DateTimeOffset.Now
+                },
+                Status = "OK"
+            }
+        ).ToString());
             
         return response;
     }

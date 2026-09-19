@@ -1,0 +1,255 @@
+using System.Text;
+using System.Text.Json;
+using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Studio.Core;
+using Backlot.Studio.Core.Models.Response;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Backlot.Studio.Areas.Studio.Pages.Client;
+
+// Client — a lightweight HTTP request tester. The operator picks a method (GET/POST), selects a
+// registered scenario from a searchable dropdown (which loads that scenario's endpoint), optionally
+// edits the request body, and executes the call. The request is proxied through the authenticated
+// Backlot API pipeline so credentials never reach the browser (same boundary as every other page).
+public class IndexModel : AuthenticatedPageModel
+{
+    private readonly IBacklotApiClient _api;
+    private readonly ILogger<IndexModel> _logger;
+
+    public string ApiBaseUrl { get; }
+
+    // Flat list of scenarios (with their endpoints) used to populate the searchable dropdown.
+    public List<ScenarioItem> Scenarios { get; private set; } = [];
+    public string? ErrorMessage { get; private set; }
+
+    public List<string> MediaFormatters { get; private set; } = [];
+
+    // The dropdown entries. In normal mode there is one per scenario (its first endpoint). In
+    // "from Detail" mode (arrived via Play) the list is filtered to endpoints whose role segment
+    // is one of the role's skills, so a scenario may contribute several entries.
+    public List<ScenarioSearchOption> Options { get; private set; } = [];
+
+    // Pre-filled request body (the role's persist JSON) when arriving via Play; empty otherwise.
+    public string PrefilledBody { get; private set; } = string.Empty;
+
+    // True when the page was opened via the role Detail Play button.
+    public bool FromDetail { get; private set; }
+
+    // Example request body per endpoint, used to prefill the body box when a scenario is picked.
+    // Best-effort: an API that does not serve examples simply leaves the box empty.
+    public Dictionary<string, string> RequestExamples { get; private set; } = [];
+
+    // Authoritative HTTP method per endpoint, taken straight from scenarioschemas. The page uses
+    // this instead of guessing GET/POST from the endpoint's role segment. Endpoints missing here
+    // default to GET on the client.
+    public Dictionary<string, string> EndpointMethods { get; private set; } = [];
+
+    // Endpoint the page should auto-select on load (the scenario chosen on Detail, or the
+    // persist/persist option), or null.
+    public string? DefaultEndpoint { get; private set; }
+
+    public IndexModel(IBacklotApiClient api, ILogger<IndexModel> logger)
+    {
+        _api = api;
+        _logger = logger;
+        ApiBaseUrl = api.BaseUrl.AbsoluteUri;
+    }
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        SetUserContext();
+        try
+        {
+            var (scenarios, redirect) = await SafeApiCall(() => ScenarioCatalog.LoadScenariosAsync(_api));
+            if (redirect != null) return redirect;
+
+            Scenarios = (scenarios ?? [])
+                .Where(s => s.Endpoints.Length > 0)
+                .OrderBy(s => s.Scenario, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // One load of scenarioschemas feeds both the example bodies and the authoritative
+            // per-endpoint methods, so the two can never disagree.
+            var schemas = await ScenarioCatalog.LoadSchemasAsync(_api, _logger);
+            RequestExamples = schemas
+                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.RequestExample))
+                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().RequestExample, StringComparer.OrdinalIgnoreCase);
+            EndpointMethods = schemas
+                .Where(e => !string.IsNullOrWhiteSpace(e.Endpoint) && !string.IsNullOrWhiteSpace(e.Method))
+                .GroupBy(e => e.Endpoint, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Method, StringComparer.OrdinalIgnoreCase);
+            MediaFormatters = await LoadMediaFormatters();
+
+            // Consume Play data (session-backed TempData, read once). Present → "from Play" mode:
+            // the body is pre-filled and the chosen endpoint auto-selected. Two callers hand over —
+            // Roles/Detail sends body + skills + endpoint, Scenarios/Index sends body + endpoint.
+            // Skills are therefore optional: they narrow the dropdown to what one role can play,
+            // and without them the full scenario list stays available.
+            var playBody = TempData["PlayBody"] as string;
+            var playSkillsJson = TempData["PlaySkills"] as string;
+            var playEndpoint = TempData["PlayEndpoint"] as string;
+
+            // Normal mode: one option per scenario (its first endpoint).
+            var allOptions = Scenarios
+                .Select(s => new ScenarioSearchOption(s.Scenario, s.Endpoints.First()))
+                .ToList();
+
+            if (playBody != null || playEndpoint != null)
+            {
+                FromDetail = true;
+                PrefilledBody = playBody ?? string.Empty;
+
+                if (playSkillsJson != null)
+                {
+                    var skills = new HashSet<string>(
+                        JsonSerializer.Deserialize<string[]>(playSkillsJson) ?? [],
+                        StringComparer.OrdinalIgnoreCase);
+
+                    // One option per (scenario, endpoint) whose role segment is one of the role's skills.
+                    Options = ScenarioEndpoint.OptionsForSkills(Scenarios, skills);
+                }
+                else
+                {
+                    Options = allOptions;
+                }
+
+                // Default to the endpoint the caller picked; fall back to persist/persist. Either
+                // way it must have survived the skill filter above.
+                DefaultEndpoint =
+                    Options.FirstOrDefault(o => string.Equals(o.Endpoint, playEndpoint, StringComparison.OrdinalIgnoreCase))?.Endpoint
+                    ?? Options.FirstOrDefault(o => o.Endpoint.TrimEnd('/').EndsWith("/persist/persist", StringComparison.OrdinalIgnoreCase))?.Endpoint;
+            }
+            else
+            {
+                Options = allOptions;
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogWarning(ex, "Failed to load scenarios from Backlot API");
+            ErrorMessage = "Could not load scenarios. Check that the Backlot API is reachable and that your credentials are valid.";
+        }
+        return Page();
+    }
+
+    private async Task<List<string>> LoadMediaFormatters()
+    {
+        try
+        {
+            var envelope = await _api.Play<IEnumerable<string>>("mediaformatters");
+            return (envelope?.Body ?? [])
+                .Where(f => !string.IsNullOrWhiteSpace(f))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Failed to load media formatters from Backlot API");
+            return ["application/json", "text/plain"];
+        }
+    }
+
+    public class ExecuteInput
+    {
+        public string Method { get; set; } = "GET";
+        public string Endpoint { get; set; } = string.Empty;
+        public string? Body { get; set; }
+        public string? Accept { get; set; }
+    }
+
+    [BindProperty]
+    public ExecuteInput Input { get; set; } = new();
+
+    // OnPostExecuteAsync — invoked via fetch() from the page. Returns the raw response (status, body,
+    // timing) as JSON for the result area. Never lets a non-success API status become an error page;
+    // connection failures and expired credentials are reported inline so the operator sees what
+    // happened.
+    public async Task<IActionResult> OnPostExecuteAsync(CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(Input.Endpoint))
+        {
+            return new JsonResult(new { error = "An endpoint is required. Select a scenario or type a path." })
+            {
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
+        try
+        {
+            var response = await _api.SendRawAsync(Input.Method, Input.Endpoint, Input.Body, Input.Accept, ct);
+            return new JsonResult(new
+            {
+                statusCode = response.StatusCode,
+                reasonPhrase = response.ReasonPhrase,
+                elapsedMs = response.ElapsedMs,
+                isSuccess = response.IsSuccess,
+                body = response.Body
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Credentials expired/invalid — the session Basic header no longer authenticates. Tell the
+            // client to send the operator back through login rather than silently failing.
+            return new JsonResult(new { unauthorized = true, error = "Unauthorized — your session may have expired. Please sign in again." })
+            {
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogWarning(ex, "Client request to {Endpoint} failed", Input.Endpoint);
+            return new JsonResult(new { error = "Request failed. Check that the Backlot API is reachable." })
+            {
+                StatusCode = StatusCodes.Status502BadGateway
+            };
+        }
+    }
+
+    // OnPostCopy — builds a ready-to-send raw .http request for the request the operator has
+    // composed (the selected method/endpoint plus the current body) and returns it as text for the
+    // page to copy to the clipboard. Living here rather than on the role Detail page means the copy
+    // works for every scenario endpoint, not just persist.
+    public IActionResult OnPostCopy()
+    {
+        if (string.IsNullOrWhiteSpace(Input.Endpoint))
+        {
+            return new JsonResult(new { error = "An endpoint is required. Select a scenario or type a path." })
+            {
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
+        return new JsonResult(new { text = BuildHttpRequest(Input.Method, Input.Endpoint, Input.Body, Input.Accept) });
+    }
+
+    // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body and
+    // optional Accept header. The Authorization line carries the same base64 credential the app
+    // uses for its own API requests, read from session ("BasicAuthHeader", stored without the "Basic "
+    // prefix by Login.cshtml.cs); missing session value → empty. The body block is omitted for GET
+    // requests (and empty bodies).
+    private string BuildHttpRequest(string method, string endpoint, string? body, string? accept = null)
+    {
+        var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
+        var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
+        var path = endpoint.Trim().TrimStart('/');
+        var verb = string.IsNullOrWhiteSpace(method) ? "GET" : method.Trim().ToUpperInvariant();
+
+        var sb = new StringBuilder();
+        sb.Append(verb).Append(' ').Append(baseUrl).Append('/').Append(path).Append('\n');
+        if (!string.IsNullOrWhiteSpace(accept))
+        {
+            sb.Append("Accept: ").Append(accept.Trim()).Append('\n');
+        }
+        sb.Append("Content-Type: application/json").Append('\n');
+        sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
+
+        if (verb != "GET" && !string.IsNullOrWhiteSpace(body))
+        {
+            sb.Append('\n');
+            sb.Append(body).Append('\n');
+        }
+
+        return sb.ToString();
+    }
+}

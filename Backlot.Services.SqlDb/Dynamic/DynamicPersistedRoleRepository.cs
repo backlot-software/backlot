@@ -291,57 +291,62 @@ namespace Backlot.Services.SqlDb.Dynamic
 
                     foreach (var group in criteriaGroups)
                     {
-                        query = query.Where(groupQuery =>
+                        // a range narrows, so the lt and gt of one fieldname are And-ed together. every
+                        // other condition of that same fieldname widens and is Or-ed. both parts are
+                        // And-ed with each other, just like the groups of the different fieldnames are.
+                        var matches = group
+                            .Where(c => c.ConditionEnum is not (ConditionEnum.lt or ConditionEnum.gt))
+                            .OrderBy(c => c.ConditionEnum).ToList();
+                        var ranges = group
+                            .Where(c => c.ConditionEnum is ConditionEnum.lt or ConditionEnum.gt)
+                            .OrderBy(c => c.ConditionEnum).ToList();
+
+                        query = query.Where(groupQuery => // groups are always And-ed together
                         {
-                            var needsOr = false;
-                            var ltgtConditions = new List<(string FieldName, string Operator, object Value)>();
-
-                            foreach (var item in
-                                     group.OrderBy(c =>
-                                         c.ConditionEnum)) // loop through the criteria eq and ct first, than lt and gt
+                            if (matches.Any())
                             {
-                                // make sure field names are sanitized
-                                var fieldName = $"jsn.{Regex.Replace(item.Field, Rgx, string.Empty)}";
-
-                                switch (item.ConditionEnum)
+                                // the Or-ed part needs a subgroup of its own: 'a OR b' followed by the
+                                // range part renders as 'a OR b AND range', which sql binds as
+                                // 'a OR (b AND range)'.
+                                groupQuery = groupQuery.Where(matchQuery =>
                                 {
-                                    case ConditionEnum.eq:
-                                        if (needsOr) groupQuery = groupQuery.OrWhere(fieldName, item.Value);
-                                        else groupQuery = groupQuery.Where(fieldName, item.Value);
-                                        needsOr = true;
-                                        break;
+                                    var needsOr = false;
 
-                                    case ConditionEnum.ct:
-                                        if (needsOr)
-                                            groupQuery = groupQuery.OrWhereLike(fieldName, $"%{item.Value}%");
-                                        else groupQuery = groupQuery.WhereLike(fieldName, $"%{item.Value}%");
-                                        needsOr = true;
-                                        break;
-
-                                    case ConditionEnum.lt:
-                                        ltgtConditions.Add((fieldName, "<", item.Value));
-                                        break;
-
-                                    case ConditionEnum.gt:
-                                        ltgtConditions.Add((fieldName, "<", item.Value));
-                                        break;
-                                }
-                            }
-
-                            if (ltgtConditions.Any()) // custom subgroup with ands for lt and gt
-                            {
-                                var ltgtQuery = (Query q) =>
-                                {
-                                    foreach (var condition in ltgtConditions)
+                                    foreach (var item in matches)
                                     {
-                                        q = q.Where(condition.FieldName, condition.Operator, condition.Value);
+                                        // make sure field names are sanitized
+                                        var fieldName = $"jsn.{Regex.Replace(item.Field, Rgx, string.Empty)}";
+
+                                        matchQuery = item.ConditionEnum switch
+                                        {
+                                            ConditionEnum.ct when needsOr => matchQuery.OrWhereLike(fieldName, $"%{item.Value}%"),
+                                            ConditionEnum.ct => matchQuery.WhereLike(fieldName, $"%{item.Value}%"),
+                                            // eq, and anything that parsed into neither a range nor a ct.
+                                            _ when needsOr => matchQuery.OrWhere(fieldName, item.Value),
+                                            _ => matchQuery.Where(fieldName, item.Value)
+                                        };
+
+                                        needsOr = true;
                                     }
 
-                                    return q;
-                                };
+                                    return matchQuery;
+                                });
+                            }
 
-                                if (needsOr) groupQuery = groupQuery.OrWhere(ltgtQuery);
-                                else groupQuery = groupQuery.Where(ltgtQuery);
+                            if (ranges.Any()) // custom subgroup with ands for lt and gt
+                            {
+                                groupQuery = groupQuery.Where(rangeQuery =>
+                                {
+                                    foreach (var item in ranges)
+                                    {
+                                        var fieldName = $"jsn.{Regex.Replace(item.Field, Rgx, string.Empty)}";
+
+                                        rangeQuery = rangeQuery.Where(fieldName,
+                                            item.ConditionEnum == ConditionEnum.lt ? "<" : ">", item.Value);
+                                    }
+
+                                    return rangeQuery;
+                                });
                             }
 
                             return groupQuery;

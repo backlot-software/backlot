@@ -42,24 +42,65 @@ public class RelationalPersistedRoleRepository : BasePersistedRoleRepository
             var query = db.Query(tablename)
                 .Select();
 
-            foreach (var c in criteria ?? [])
+            /* todo: Only with these legacy systems we not need to map the fieldname used in the query (and defined in the role) to the actual field of the table.
+             * ADR in the making: therefor we need either a required mapping attribute on top of any role field representing something from a table, or we require names have to be the equal.
+             * We need to take in mind https://github.com/Chuhukon/Backlot/blob/main/_adr/docs/decisions/0001-Save-with-role-property.md#positive-consequences
+             */
+            foreach (var group in (criteria ?? []).GroupBy(c => c.Field, StringComparer.InvariantCultureIgnoreCase))
             {
-                if (c.ConditionEnum == ConditionEnum.ct)
-                {
-                    /* todo: Only with these legacy systems we not need to map the fieldname used in the query (and defined in the role) to the actual field of the table.
-                     * ADR in the making: therefor we need either a required mapping attribute on top of any role field representing something from a table, or we require names have to be the equal.
-                     * We need to take in mind https://github.com/Chuhukon/Backlot/blob/main/_adr/docs/decisions/0001-Save-with-role-property.md#positive-consequences
-                     */
-                    query = query.WhereContains(c.Field, c.Value);
-                }
-                else
-                {
-                    var op = c.ConditionEnum == ConditionEnum.gt ? ">" : // greater then
-                        c.ConditionEnum == ConditionEnum.lt ? "<" : // less then
-                        "="; // equal
+                // a range narrows, so the lt and gt of one fieldname are And-ed together. every other
+                // condition of that same fieldname widens and is Or-ed. both parts are And-ed with
+                // each other, just like the groups of the different fieldnames are.
+                var matches = group.Where(c => c.ConditionEnum is not (ConditionEnum.lt or ConditionEnum.gt))
+                    .OrderBy(c => c.ConditionEnum).ToList();
+                var ranges = group.Where(c => c.ConditionEnum is ConditionEnum.lt or ConditionEnum.gt)
+                    .OrderBy(c => c.ConditionEnum).ToList();
 
-                    query = query.Where(c.Field, op, c.Value);
-                }
+                query = query.Where(groupQuery => // groups are always And-ed together
+                {
+                    if (matches.Any())
+                    {
+                        // the Or-ed part needs a subgroup of its own: 'a OR b' followed by the range
+                        // part renders as 'a OR b AND range', which sql binds as 'a OR (b AND range)'.
+                        groupQuery = groupQuery.Where(matchQuery =>
+                        {
+                            var needsOr = false;
+
+                            foreach (var c in matches)
+                            {
+                                matchQuery = c.ConditionEnum switch
+                                {
+                                    ConditionEnum.ct when needsOr => matchQuery.OrWhereContains(c.Field, c.Value),
+                                    ConditionEnum.ct => matchQuery.WhereContains(c.Field, c.Value),
+                                    // eq, and anything that parsed into neither a range nor a ct.
+                                    _ when needsOr => matchQuery.OrWhere(c.Field, c.Value),
+                                    _ => matchQuery.Where(c.Field, c.Value)
+                                };
+
+                                needsOr = true;
+                            }
+
+                            return matchQuery;
+                        });
+                    }
+
+                    if (ranges.Any()) // custom subgroup with ands for lt and gt
+                    {
+                        groupQuery = groupQuery.Where(rangeQuery =>
+                        {
+                            foreach (var c in ranges)
+                            {
+                                rangeQuery = rangeQuery.Where(c.Field,
+                                    c.ConditionEnum == ConditionEnum.lt ? "<" : ">", // less then / greater then
+                                    c.Value);
+                            }
+
+                            return rangeQuery;
+                        });
+                    }
+
+                    return groupQuery;
+                });
             }
 
             total = query.Clone().Count<int>();

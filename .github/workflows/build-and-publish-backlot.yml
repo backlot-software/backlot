@@ -140,6 +140,7 @@ jobs:
       # so it has no build output to reuse and cannot use --no-build).
       - name: Pack library projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
+          set -euo pipefail
           mkdir -p nupkgs
           find . -name "*.csproj" \
             -not -path "*Backlot.Demo.*" \
@@ -154,6 +155,14 @@ jobs:
               /p:IncludeBuildOutput=true \
               --no-build
           done
+
+          # Backlot.WebApp declares a hard dependency on Backlot.Studio, so publishing the one
+          # without the other leaves every consumer with an unresolvable NU1102. The pack loop
+          # runs in a subshell, so assert the artifact exists rather than relying on set -e.
+          if ! ls nupkgs/Backlot.Studio.*.nupkg >/dev/null 2>&1; then
+            echo "::error::Backlot.Studio was not packed, but Backlot.WebApp depends on it."
+            exit 1
+          fi
 
       # The template compiles nothing — it only copies the Backlot.Start folder into
       # a content-only package — so restoring/building it costs nothing and never
