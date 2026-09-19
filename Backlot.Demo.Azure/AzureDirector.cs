@@ -88,15 +88,15 @@ public class AzureDirector(IFileSystem fileSystem, IConfigurationManager configu
         #region Backlot.Authentication 
         
         // custom needs for authentication.
+        Builder.RegisterType<UserFileRepository>()
+            .As<IUserRepository>()
+            .SingleInstance();
         
         // Builder.Register(_ => new JwtTokenService($"token_security{SecretKey}"))
         //     .As<JwtTokenService>()
         //     .SingleInstance();
         //         
-        Builder.RegisterType<UserFileRepository>()
-            .As<IUserRepository>()
-            .SingleInstance();
-            
+
         // Builder.RegisterType<DummyTokenRepository>()
         //     .As<ITokenRepository>()
         //     .SingleInstance(); // token repository is singleton.
