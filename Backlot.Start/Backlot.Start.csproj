@@ -31,12 +31,12 @@
     <PropertyGroup>
         <!--
           Single source of truth for the Backlot framework packages below.
-          Floats to the newest published build, prereleases included, so a project
-          generated from the template tracks whatever the pipeline last shipped
-          (alpha from develop, beta from release/*, stable from main).
-          Pin it when you need a fixed baseline: -p:BacklotVersion=0.0.2
+          Floats to the newest published build across all versions (*-*),
+          resolving the latest stable release on feeds hosting final packages (e.g. nuget.org)
+          or the latest prerelease build on developmental feeds (e.g. GitHub Packages).
+          Pin it when you need a fixed baseline: -p:BacklotVersion=0.1.0
         -->
-        <BacklotVersion>0.0.*-*</BacklotVersion>
+        <BacklotVersion>*-*</BacklotVersion>
     </PropertyGroup>
 
     <ItemGroup>
