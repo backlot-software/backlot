@@ -8,7 +8,11 @@ namespace Backlot.Studio.Implementation;
 
 public class BacklotApiClient : IBacklotApiClient
 {
-    public Uri BaseUrl { get; private set; }
+    /// <summary>Configured API address, or <c>null</c> when <c>BacklotStudio:BaseUrl</c> is not set.</summary>
+    public Uri? BaseUrl { get; }
+
+    /// <summary>Whether the client can talk to an API at all; false when BaseUrl is missing.</summary>
+    public bool IsConfigured => BaseUrl is not null;
     
     private readonly HttpClient _httpClient;
 
@@ -26,10 +30,19 @@ public class BacklotApiClient : IBacklotApiClient
     {
         _httpClient = httpClient;
 
-        if (httpClient.BaseAddress == null)
-            throw new ArgumentException($"BaseAddress is required for {nameof(BacklotApiClient)}");
-        
+        // Deliberately not a hard failure: BacklotStudio:BaseUrl is required, but a page (the login
+        // page in particular) must still be constructible so it can show that it is missing.
         BaseUrl = httpClient.BaseAddress;
+    }
+
+    // Every call goes through here, so an unconfigured Studio fails with the actionable message
+    // instead of HttpClient's "An invalid request URI was provided".
+    private void EnsureConfigured()
+    {
+        if (BaseUrl is null)
+            throw new InvalidOperationException(
+                $"{BacklotStudioOptions.SectionName}:{nameof(BacklotStudioOptions.BaseUrl)} is not configured. " +
+                "Set it in appsettings.json to the absolute URL of the Backlot API.");
     }
 
     // Throw a rich BacklotApiException (status + body) on non-success instead of the bare
@@ -48,6 +61,7 @@ public class BacklotApiClient : IBacklotApiClient
     // query param). uid is escaped via Uri.EscapeDataString to prevent query/path injection (T-ou7-01).
     public async Task<ApiEnvelope<T>> Play<T>(string scenario, CancellationToken ct = default)
     {
+        EnsureConfigured();
         var path = $"api/role/director/{scenario}";
 
         var response = await _httpClient.GetAsync(path, ct);
@@ -58,6 +72,7 @@ public class BacklotApiClient : IBacklotApiClient
 
     public async Task<ApiEnvelope<T>> Play<T>(string roleName, string scenario, string uid, CancellationToken ct = default)
     {
+        EnsureConfigured();
         var path = $"api/role/{roleName}/{scenario}";
         
         if (string.IsNullOrEmpty(uid)) throw new ArgumentException("Uid is required");
@@ -81,6 +96,7 @@ public class BacklotApiClient : IBacklotApiClient
     // SendRawAsync below already posts this way. Do not "simplify" this back to PostAsJsonAsync.
     public async Task<ApiEnvelope<R>> Play<B,R>(string roleName, string scenario, B body, CancellationToken ct = default) where B: IRequestBody
     {
+        EnsureConfigured();
         var path = $"api/role/{roleName}/{scenario}";
 
         // Serialized against the runtime type (object as the declared type makes JsonSerializer use
@@ -110,6 +126,7 @@ public class BacklotApiClient : IBacklotApiClient
     public async Task<ApiEnvelope<StatusBody>?> Status()
     {
 
+        EnsureConfigured();
         var path = $"api/status";
         var response = await _httpClient.GetAsync(path);
         await EnsureSuccessAsync(response, CancellationToken.None);
@@ -128,6 +145,7 @@ public class BacklotApiClient : IBacklotApiClient
 
     public async Task<RawApiResponse> SendRawAsync(string method, string path, string? body, string? accept = null, CancellationToken ct = default)
     {
+        EnsureConfigured();
         var httpMethod = new HttpMethod(method.Trim().ToUpperInvariant());
 
         using var request = new HttpRequestMessage(httpMethod, path);

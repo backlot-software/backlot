@@ -1,7 +1,5 @@
 using Backlot.Studio.Core;
 using Backlot.Studio.Implementation;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -54,16 +52,9 @@ public static class BacklotStudioExtensions
         configuration?.GetSection(BacklotStudioOptions.SectionName).Bind(options);
         configure?.Invoke(options);
 
-        // An empty BaseUrl means "the API is this same host", which is the normal case now that the
-        // Studio is mounted by BuildWebApp. The address is then resolved per request, below.
-        Uri? baseUri = null;
-        if (!string.IsNullOrWhiteSpace(options.BaseUrl) &&
-            !Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out baseUri))
-        {
-            throw new InvalidOperationException(
-                $"{nameof(BacklotStudioOptions)}.{nameof(BacklotStudioOptions.BaseUrl)} must be an absolute URI " +
-                $"or empty (to call the host the Studio is mounted in), but was '{options.BaseUrl}'.");
-        }
+        // BaseUrl is required and never inferred. A missing or malformed value is deliberately not a
+        // startup failure: the Studio comes up so the login page can tell the operator what to set.
+        var baseUri = options.BaseUri;
 
         // Registered as a plain singleton (not just IOptions) because MapBacklotStudio mutates the
         // same instance to apply a mount path given at map time.
@@ -76,11 +67,11 @@ public static class BacklotStudioExtensions
         services.AddHttpContextAccessor();
         services.AddTransient<BasicAuthHandler>();
 
-        // Resolved per resolution rather than once at registration: IHttpClientFactory hands out a
-        // fresh HttpClient for every typed-client resolution (only the handler is pooled) and the
-        // typed client is scoped, so a self-address computed here is the current request's.
-        services.AddHttpClient<IBacklotApiClient, BacklotApiClient>((provider, client) =>
-                client.BaseAddress = baseUri ?? ResolveSelfBaseAddress(provider))
+        // BaseAddress stays null when BaseUrl is not configured: BacklotApiClient then reports itself
+        // as unconfigured (and throws on use) instead of the whole page failing to be constructed,
+        // which is what lets the login page render its alert.
+        services.AddHttpClient<IBacklotApiClient, BacklotApiClient>(client =>
+                client.BaseAddress = baseUri)
             .AddHttpMessageHandler<BasicAuthHandler>();
 
         AddStudioAuthentication(services, options);
@@ -207,54 +198,6 @@ public static class BacklotStudioExtensions
                 });
         });
     }
-
-    /// <summary>
-    /// Works out the address of the host the Studio is mounted in, for the case where no explicit
-    /// <see cref="BacklotStudioOptions.BaseUrl"/> was configured.
-    /// </summary>
-    /// <remarks>
-    /// The server's own listening addresses come first, preferring a plain http listener: a loopback
-    /// call to an https listener has to satisfy full certificate validation, and the ASP.NET dev
-    /// certificate is frequently not in the trust store the runtime reads on Linux -- which shows up
-    /// as a Studio that cannot sign in while the browser works fine. Going straight to the local
-    /// listener also avoids routing a self-call back out through a container's ingress.
-    ///
-    /// Note that a self-call presents its own address as the Host header, so a host that narrows
-    /// AllowedHosts away from "*" has to include it.
-    /// </remarks>
-    private static Uri ResolveSelfBaseAddress(IServiceProvider provider)
-    {
-        var pathBase = provider.GetService<IHttpContextAccessor>()?.HttpContext?.Request.PathBase.Value ?? string.Empty;
-
-        var addresses = provider.GetService<IServer>()?.Features.Get<IServerAddressesFeature>()?.Addresses;
-        if (addresses is { Count: > 0 })
-        {
-            var address = addresses.FirstOrDefault(a => a.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase))
-                          ?? addresses.First();
-
-            // Kestrel reports wildcard binds as http://+:8080 or http://[::]:8080; neither is dialable.
-            var dialable = address
-                .Replace("://+", "://127.0.0.1")
-                .Replace("://*", "://127.0.0.1")
-                .Replace("://[::]", "://127.0.0.1");
-
-            if (Uri.TryCreate(Combine(dialable, pathBase), UriKind.Absolute, out var fromServer))
-                return fromServer;
-        }
-
-        // No server addresses (an in-memory test server, for instance): fall back to the request.
-        var request = provider.GetService<IHttpContextAccessor>()?.HttpContext?.Request;
-        if (request is not null &&
-            Uri.TryCreate(Combine($"{request.Scheme}://{request.Host}", pathBase), UriKind.Absolute, out var fromRequest))
-            return fromRequest;
-
-        throw new InvalidOperationException(
-            "Backlot Studio could not determine the address of the Backlot API it is mounted in. " +
-            $"Set {BacklotStudioOptions.SectionName}:{nameof(BacklotStudioOptions.BaseUrl)} to the API's absolute URL.");
-    }
-
-    private static string Combine(string origin, string pathBase) =>
-        $"{origin.TrimEnd('/')}/{pathBase.Trim('/')}".TrimEnd('/') + "/";
 
     private static SessionOptions BuildSessionOptions(BacklotStudioOptions options)
     {

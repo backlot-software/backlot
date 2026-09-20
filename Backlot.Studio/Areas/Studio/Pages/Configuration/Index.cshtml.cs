@@ -27,7 +27,7 @@ public class IndexModel : AuthenticatedPageModel
     {
         _api = api;
         _logger = logger;
-        ApiBaseUrl = api.BaseUrl.AbsoluteUri;
+        ApiBaseUrl = api.BaseUrl?.AbsoluteUri ?? string.Empty;
     }
 
     public async Task<IActionResult> OnGetAsync()

@@ -42,8 +42,7 @@ app.Run();
 ```
 
 `Backlot.Demo.Studio/` in this repository is a runnable example of exactly this: a host that mounts
-only the Studio and points it at a Backlot API in another process through `BaseUrl`. Because it has
-no co-hosted API, it treats `BaseUrl` as required and fails at startup when it is unset.
+only the Studio and points it at a Backlot API in another process through `BaseUrl`.
 
 `AddBacklotStudio` throws when called twice, so a host that uses `BuildWebApp` must **not** also
 call it — use the `configureStudio` argument instead. That is deliberate: silently dropping one of
@@ -57,16 +56,17 @@ overload is used) and then applies the inline delegate on top:
 ```jsonc
 {
   "BacklotStudio": {
-    "PathPrefix": "/studio",  // mount path; MapBacklotStudio("/x") overrides it
-    "BaseUrl": ""             // absolute URL of the Backlot API; leave empty when co-hosted
+    "PathPrefix": "/studio",              // mount path; MapBacklotStudio("/x") overrides it
+    "BaseUrl": "https://localhost:7221"   // absolute URL of the Backlot API; REQUIRED
   }
 }
 ```
 
-`BaseUrl` is optional. Left empty — the default — the Studio resolves the API address per request
-from the server's own listening addresses, so a local run on any port, and a container binding
-whatever the platform hands it, both work with no configuration. Set it only to point the Studio at
-an API running in a different process.
+`BaseUrl` is **required** and has no fallback: the address is never inferred from the server's own
+listening addresses, so it must be set even when the API is co-hosted with the Studio. A missing or
+non-absolute value is not a startup failure — the host still comes up and the Studio's login page
+reports `BaseUrl not configured correctly on host` through its validation summary, and every API
+call throws until it is set.
 
 Further knobs on `BacklotStudioOptions`: `IdleTimeout`, `CookieSecurePolicy`, and
 `ConfigureCookie` / `ConfigureSession` escape hatches. Note that `BuildWebApp` relaxes
