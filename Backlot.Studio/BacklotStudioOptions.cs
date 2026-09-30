@@ -22,16 +22,25 @@ public sealed class BacklotStudioOptions
     private string _pathPrefix = "/studio";
 
     /// <summary>
-    /// Absolute base address of the Backlot HTTP API the Studio talks to.
+    /// Absolute base address of the Backlot HTTP API the Studio talks to. Required.
     /// </summary>
     /// <remarks>
-    /// Leave empty -- the default -- when the Studio is co-hosted with the API, which is the case for
-    /// any host built with <c>BuildWebApp</c>. The address is then resolved per request from the
-    /// server's own listening addresses, so nothing has to be configured for a local run, a different
-    /// port or a container. Set it only to point the Studio at an API in another process, in which
-    /// case it must be an absolute URI.
+    /// There is no fallback: the address is never guessed from the server's own listening addresses.
+    /// Set <c>BacklotStudio:BaseUrl</c> in <c>appsettings.json</c> (or through the <c>configure</c>
+    /// delegate) to an absolute URI, also when the API is co-hosted with the Studio. When it is
+    /// missing or not an absolute URI the Studio still starts, but every page is unusable and the
+    /// login screen shows an alert saying so.
     /// </remarks>
     public string BaseUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// <see cref="BaseUrl"/> as an absolute <see cref="Uri"/>, or <c>null</c> when it is missing or
+    /// not an absolute URI. The single place the configured value is interpreted.
+    /// </summary>
+    public Uri? BaseUri =>
+        !string.IsNullOrWhiteSpace(BaseUrl) && Uri.TryCreate(BaseUrl, UriKind.Absolute, out var uri)
+            ? uri
+            : null;
 
     /// <summary>
     /// Path the Studio is mounted on, e.g. <c>/studio</c>. Normalised to a leading slash without a

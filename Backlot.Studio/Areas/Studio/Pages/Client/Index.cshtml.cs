@@ -52,7 +52,7 @@ public class IndexModel : AuthenticatedPageModel
     {
         _api = api;
         _logger = logger;
-        ApiBaseUrl = api.BaseUrl.AbsoluteUri;
+        ApiBaseUrl = api.BaseUrl?.AbsoluteUri ?? string.Empty;
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -230,7 +230,7 @@ public class IndexModel : AuthenticatedPageModel
     // requests (and empty bodies).
     private string BuildHttpRequest(string method, string endpoint, string? body, string? accept = null)
     {
-        var baseUrl = _api.BaseUrl.ToString().TrimEnd('/');
+        var baseUrl = _api.BaseUrl?.ToString().TrimEnd('/') ?? string.Empty;
         var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
         var path = endpoint.Trim().TrimStart('/');
         var verb = string.IsNullOrWhiteSpace(method) ? "GET" : method.Trim().ToUpperInvariant();

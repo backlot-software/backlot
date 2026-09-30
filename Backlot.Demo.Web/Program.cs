@@ -22,12 +22,7 @@ var app = builder.BuildWebApp(hostBuilder =>
             // new DuplexConfigurationSettingsManager(context.Configuration, jsonSettingsManager);
             builder: b);
     });
-    
-#if DEBUG
-}, false);
-#else
-}, true);
-#endif
+});
 
 app.UseMiddleware<AspNetMiddleware<AutofacScopeExecutor>>();
 app.UseMiddleware<AspNetMiddleware<Defender>>();

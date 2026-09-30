@@ -11,17 +11,6 @@ if (string.IsNullOrEmpty(builder.Configuration["urls"]) &&
     builder.WebHost.UseUrls("http://127.0.0.1:0");
 }
 
-const string BaseUrlKey = $"{BacklotStudioOptions.SectionName}:{nameof(BacklotStudioOptions.BaseUrl)}";
-var baseUrl = builder.Configuration[BaseUrlKey];
-
-if (string.IsNullOrWhiteSpace(baseUrl))
-{
-    Console.Error.WriteLine(
-        $"{BaseUrlKey} is required: Backlot.Studio.Desktop runs Backlot Studio headless targeting a remote Backlot API. " +
-        "Pass it via --BacklotStudio:BaseUrl=<url> or the BacklotStudio__BaseUrl environment variable.");
-    return 1;
-}
-
 builder.Services.AddBacklotStudio(builder.Configuration, studio =>
 {
     // The desktop sidecar runs over HTTP on loopback (127.0.0.1), so relax cookie policy to SameAsRequest

@@ -13,10 +13,7 @@
             
             <h2 class="text-2xl font-bold text-center text-gray-800">Sign in</h2>
             
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="text-red-500 text-sm text-center">Invalid username or password.</div>
-            }
+            <div asp-validation-summary="All" class="text-red-500 text-sm text-center"></div>
             
             <div class="space-y-4">
                 <div>

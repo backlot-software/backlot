@@ -5,7 +5,11 @@ namespace Backlot.Studio.Core;
 
 public interface IBacklotApiClient
 {
-    Uri BaseUrl { get; }
+    /// <summary>Configured API address, or <c>null</c> when <c>BacklotStudio:BaseUrl</c> is not set.</summary>
+    Uri? BaseUrl { get; }
+
+    /// <summary>False when <c>BacklotStudio:BaseUrl</c> is missing; the Studio cannot call the API.</summary>
+    bool IsConfigured { get; }
     
     Task<bool> IsAuthenticated();
     Task<object?> WhoAmI();
