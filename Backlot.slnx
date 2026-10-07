@@ -1,0 +1,63 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Development" />
+    <BuildType Name="Release" />
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Backlot/">
+    <File Path=".github/workflows/build-and-publish-backlot.yml" />
+    <File Path="LICENSE.MD" />
+    <File Path="README.MD" />
+    <Project Path="Backlot.Start/Backlot.Start.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Core/">
+    <Project Path="Backlot.Core/Backlot.Core.csproj" />
+    <Project Path="Backlot.Defaults/Backlot.Defaults.csproj" />
+    <Project Path="Backlot.DependencyInjection.Autofac/Backlot.DependencyInjection.Autofac.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Infrastructure/" />
+  <Folder Name="/Backlot/Infrastructure/Authentication/">
+    <Project Path="Backlot.Authentication.Basic/Backlot.Authentication.Basic.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Infrastructure/Databases/">
+    <Project Path="Backlot.Services.LiteDB/Backlot.Services.LiteDB.csproj" />
+    <Project Path="Backlot.Services.RavenDB/Backlot.Services.RavenDb.csproj" />
+    <Project Path="Backlot.Services.SqlDb/Backlot.Services.SqlDb.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Infrastructure/FileSystems/">
+    <Project Path="Backlot.Services.Filesystem.BlobStorage/Backlot.Services.Filesystem.BlobStorage.csproj" />
+    <Project Path="Backlot.Services.Filesystem.Disk/Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Server/">
+    <Project Path="Backlot.Functions/Backlot.Functions.csproj" />
+    <Project Path="Backlot.Http.DependencyInjection.Autofac/Backlot.Http.DependencyInjection.Autofac.csproj" />
+    <Project Path="Backlot.Http/Backlot.Http.csproj" />
+    <Project Path="Backlot.WebApp/Backlot.WebApp.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/Server/Formatters/">
+    <Project Path="Backlot.Http.Media.Formatters.Csv/Backlot.Http.Media.Formatters.Csv.csproj" />
+    <Project Path="Backlot.Http.Media.Formatters.Html/Backlot.Http.Media.Formatters.Html.csproj" />
+  </Folder>
+  <Folder Name="/Backlot/UI/">
+    <Project Path="Backlot.Studio.Desktop/Backlot.Studio.Desktop.csproj" />
+    <Project Path="Backlot.Studio/Backlot.Studio.csproj" />
+  </Folder>
+  <Folder Name="/Demos/">
+    <Project Path="Backlot.Demo.Azure/Backlot.Demo.Azure.csproj" />
+    <Project Path="Backlot.Demo.Console/Backlot.Demo.Console.csproj" />
+    <Project Path="Backlot.Demo.Web/Backlot.Demo.Web.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".github/workflows/build-and-publish-backlot.yml" />
+    <File Path=".github/workflows/cleanup-nuget-packages.yml" />
+  </Folder>
+  <Folder Name="/Testing/">
+    <Project Path="Backlot.Testing.Defaults/Backlot.Testing.Defaults.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Backlot.Testing/Backlot.Testing.csproj" />
+  </Folder>
+</Solution>
