@@ -55,9 +55,7 @@
     <File Path=".github/workflows/cleanup-nuget-packages.yml" />
   </Folder>
   <Folder Name="/Testing/">
-    <Project Path="Backlot.Testing.Defaults/Backlot.Testing.Defaults.csproj">
-      <BuildType Solution="Development|*" Project="Debug" />
-    </Project>
+    <Project Path="Backlot.Testing.Defaults/Backlot.Testing.Defaults.csproj"/>
     <Project Path="Backlot.Testing/Backlot.Testing.csproj" />
   </Folder>
 </Solution>
