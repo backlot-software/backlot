@@ -1,7 +1,6 @@
 using Autofac;
 using Backlot.Core.Services;
 using Backlot.DependencyInjection.Autofac;
-using Microsoft.Extensions.Configuration;
 using IConfigurationManager = Backlot.Core.Services.IConfigurationManager;
 
 namespace Backlot.Testing.Defaults.Fakes;
