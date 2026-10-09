@@ -53,7 +53,12 @@ namespace Backlot.Functions
                 else
                 {
                     if (req.Query["uid"] == null || req.Query.Count > 1)
-                        throw new BadRequestException("The query string must contain only 'uid' when using roles other than director in GET requests.");
+                        throw new BadRequestException(
+                            "The query string must contain only 'uid' when using roles other than director in GET requests.");
+                    
+                    if(!typeof(IPersist).IsAssignableFrom(roleType))
+                        throw new BadRequestException(
+                            $"{roleType} is not a persistable roletype inheriting from IPersist. Make sure you use the correct roletype for your request.");
                     
                     if (!_roleRepository.TryGet(req.Query["uid"], roleType, out var roleOut))
                     {
@@ -84,7 +89,11 @@ namespace Backlot.Functions
             try
             {
                 if (req.Body.Length == 0)
-                    throw new BadRequestException("POST requests must contain a body.");
+                    throw new BadRequestException(
+                        "POST requests must contain a body. Note that a request sent without a " +
+                        "Content-Length header (chunked transfer encoding) reaches this worker with " +
+                        "an empty body: the Functions host does not forward a body of unknown length. " +
+                        "Buffer the content client-side so Content-Length is set.");
 
                 if (req.Query.Count > 0)
                     throw new BadRequestException("POST requests should not contain query strings.");

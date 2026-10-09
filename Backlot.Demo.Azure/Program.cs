@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Autofac;
 using Autofac.Core.Lifetime;
 using Autofac.Extensions.DependencyInjection;
-using Backlot.Authentication.BuiltIn;
-using Backlot.Authentication.BuiltIn.Services;
+// using Backlot.Authentication.BuiltIn;
+// using Backlot.Authentication.BuiltIn.Services;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Services;
 using Backlot.DependencyInjection.Autofac;
@@ -42,23 +42,25 @@ namespace Backlot.Demo.Azure
                     worker.UseMiddleware<FunctionsHttpMiddleware<AuthenticationInitializer>>();
                     worker.UseMiddleware<FunctionsHttpMiddleware<SerilogContextEnrichment>>();
                 })
-                //.BacklotAppConfiguration<MemoryRelationRepository, MemoryPersistedRoleRepository, DummyUnitOfWork> (
+                
                 .ConfigureBacklotWeb((configuration, builder) =>
                 {
                     var fs = new LocalDiskStorage();
                     var jsonSettingsManager = new JsonSettingsManager(configuration["Backlot.Environment"] ?? "local", fs);
                     var duplexSettingsManager = new DuplexConfigurationSettingsManager(configuration, jsonSettingsManager);
                     return new AzureDirector(fs, duplexSettingsManager, builder);
-                } )
-                //.ConfigureServices((_, collection) => { collection.AddLogging(lb => lb.AddSerilog(cfg => cfg.WriteTo.Seq("http://localhost:5341")));}) //step 4: logging is initialized
-                .ConfigureServices((ctx, collection) => { collection.AddLogging(lb => lb
-                    .AddSerilog(ctx.Configuration,
-                        cfg => cfg.WriteTo.Seq("http://localhost:5341"),
-                                //.AzureTableStorage(ctx.Configuration["Backlot.BlobConnectionString"]),
-                        level: Enum.TryParse(ctx.Configuration["Backlot.LogLevel"], out LogEventLevel l) ? l : LogEventLevel.Debug
-                        )
-                    );
                 })
+                
+                //.ConfigureServices((_, collection) => { collection.AddLogging(lb => lb.AddSerilog(cfg => cfg.WriteTo.Seq("http://localhost:5341")));})
+                
+                //step 4: logging is initialized
+                //.ConfigureServices((ctx, collection) => { collection.AddLogging(lb => lb
+                //    .AddSerilog(ctx.Configuration,
+                //        cfg => cfg.AzureTableStorage(ctx.Configuration["Backlot.BlobConnectionString"]),
+                //        level: Enum.TryParse(ctx.Configuration["Backlot.LogLevel"], out LogEventLevel l) ? l : LogEventLevel.Debug
+                //        )
+                //    );
+                //})
                 .Build();
 
             await host.RunAsync();

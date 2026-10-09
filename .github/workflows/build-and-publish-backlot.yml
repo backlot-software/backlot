@@ -103,19 +103,19 @@ jobs:
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
 
-      # Backlot.CI.slnf is Backlot.sln minus Backlot.Start. Backlot.Start consumes
+      # Backlot.CI.slnf is Backlot.slnx minus Backlot.Start. Backlot.Start consumes
       # the Backlot.* packages this pipeline produces, so building it here is a
       # chicken-and-egg problem: it can only restore versions that are already
       # published. It ships as template content and is never packed as a library.
       #
-      # The filter is generated from Backlot.sln on every run (and gitignored) so
+      # The filter is generated from Backlot.slnx on every run (and gitignored) so
       # it can never drift out of sync with the solution.
       - name: Generate CI solution filter
         run: |
-          dotnet sln Backlot.sln list \
+          dotnet sln Backlot.slnx list \
             | grep '\.csproj$' \
             | grep -v '^Backlot\.Start' \
-            | jq -Rs '{solution:{path:"Backlot.sln",projects:(split("\n")|map(select(length>0)))}}' \
+            | jq -Rs '{solution:{path:"Backlot.slnx",projects:(split("\n")|map(select(length>0)))}}' \
             > Backlot.CI.slnf
           cat Backlot.CI.slnf
 
@@ -140,6 +140,7 @@ jobs:
       # so it has no build output to reuse and cannot use --no-build).
       - name: Pack library projects with GeneratePackageOnBuild (excluding Backlot.Demo.*)
         run: |
+          set -euo pipefail
           mkdir -p nupkgs
           find . -name "*.csproj" \
             -not -path "*Backlot.Demo.*" \
@@ -154,6 +155,14 @@ jobs:
               /p:IncludeBuildOutput=true \
               --no-build
           done
+
+          # Backlot.WebApp declares a hard dependency on Backlot.Studio, so publishing the one
+          # without the other leaves every consumer with an unresolvable NU1102. The pack loop
+          # runs in a subshell, so assert the artifact exists rather than relying on set -e.
+          if ! ls nupkgs/Backlot.Studio.*.nupkg >/dev/null 2>&1; then
+            echo "::error::Backlot.Studio was not packed, but Backlot.WebApp depends on it."
+            exit 1
+          fi
 
       # The template compiles nothing — it only copies the Backlot.Start folder into
       # a content-only package — so restoring/building it costs nothing and never

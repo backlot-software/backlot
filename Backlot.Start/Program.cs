@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.BuildWebApp(hostBuilder =>
 {
     hostBuilder.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-    hostBuilder.ConfigureBacklotWeb((c, b) =>
+    hostBuilder.ConfigureBacklotWeb((_, b) =>
     {
         var fs = new LocalDiskStorage();
         return new WebDirector(
@@ -19,19 +19,6 @@ var app = builder.BuildWebApp(hostBuilder =>
             // or use; new DuplexConfigurationSettingsManager(context.Configuration, jsonSettingsManager);
             builder: b);
     });
-    // optional: hostBuilder.ConfigureServices((ctx, collection) =>
-    // {
-    //     collection.AddLogging(lb => lb
-    //         .AddSerilog(ctx.Configuration,
-    //             cfg => cfg.WriteTo.Seq("http://localhost:5341"),
-    //             //.AzureTableStorage(ctx.Configuration["Backlot.BlobConnectionString"]),
-    //             level: Enum.TryParse(ctx.Configuration["Backlot.LogLevel"], out LogEventLevel l)
-    //                 ? l
-    //                 : LogEventLevel.Debug
-    //         )
-    //     );
-    // });
-    
 });
 
 app.UseMiddleware<AspNetMiddleware<AutofacScopeExecutor>>();

@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@typespec/http": "^1.15.0",
+    "@typespec/openapi3": "^1.15.0"
+  }
+}

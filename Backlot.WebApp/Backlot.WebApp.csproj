@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <VersionPrefix>0.1.0</VersionPrefix>
+        <VersionPrefix>0.2.0</VersionPrefix>
         <VersionSuffix>
         </VersionSuffix>
         <Title>Backlot.WebApp</Title>
@@ -29,11 +29,7 @@
       <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
       <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
       <ProjectReference Include="..\Backlot.Http\Backlot.Http.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
-      <PackageReference Include="Scalar.AspNetCore" Version="2.14.14" />
+      <ProjectReference Include="..\Backlot.Studio\Backlot.Studio.csproj" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

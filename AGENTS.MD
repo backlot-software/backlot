@@ -17,6 +17,9 @@ dotnet test Backlot.Testing/Backlot.Testing.csproj --filter "FullyQualifiedName~
 # Run a demo app
 dotnet run --project Backlot.Demo.Web/Backlot.Demo.Web.csproj
 dotnet run --project Backlot.Demo.Console/Backlot.Demo.Console.csproj
+
+# Run the standalone Studio host against a running API (see its README for the two-terminal walkthrough)
+dotnet run --project Backlot.Demo.Studio/Backlot.Demo.Studio.csproj
 ```
 
 ### Build configurations
@@ -103,6 +106,24 @@ Never call `ServiceLocator.Configure()` in application code — it is set up by 
 
 Relations between `IUid` roles are stored separately in `IRelationRepository`. The `ScenarioBuilder` uses stored relations to auto-resolve missing constructor role parameters.
 
+### RoleRepository implementations
+
+A role repository stores and retrieves roles for one storage technology. It derives from `BasePersistedRoleRepository`, and `GetAll` translates a flat list of `Criteria` (field, condition `eq`/`ct`/`lt`/`gt`, value) plus paging and ordering into that technology's own query language.
+
+**Criteria group semantics** — every implementation has to produce the same boolean shape:
+
+- criteria are grouped by **field name**; one field name is always exactly one group;
+- inside a group, `lt` and `gt` are joined with **AND** (a range narrows: `LastModified > 1901 AND LastModified < 1998`);
+- inside a group, all other conditions are joined with **OR** (`Name eq 'John' OR Name ct 'Doe'`);
+- inside a group, the OR-ed part and the AND-ed range part are joined with **AND**;
+- between groups it is always **AND**.
+
+```
+(Name = 'John' OR Name ct 'Doe') AND (LastModified > 1901 AND LastModified < 1998)
+```
+
+Because `AND` binds stronger than `OR` in both RQL and SQL, each part needs brackets of its own whenever a single group holds both parts. Never lean on a query builder's default operator either: RavenDB, for one, falls back to `OrElse` when the previous clause was a `Search`, even across a closed subclause — so emit every operator explicitly.
+
 ---
 
 ## Testing
@@ -135,6 +156,7 @@ This wires up Autofac with in-memory repositories and calls `director.Incept()`.
 | Autofac DI director base | `Backlot.DependencyInjection.Autofac/` |
 | Test bootstrap | `Backlot.Testing/Initialize.cs` |
 | Web demo (reference implementation) | `Backlot.Demo.Web/` |
+| Standalone Studio-only host demo | `Backlot.Demo.Studio/` |
 
 ## Techstack
 

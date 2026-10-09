@@ -206,14 +206,24 @@ public class LitePersistedRoleRepository : BasePersistedRoleRepository
                     }
                 }
 
-                if (andExpressions.Any())
-                {
-                    orExpressions.Add(andExpressions.Count > 1 ? LDB.Query.And(andExpressions.ToArray()) : andExpressions[0]);
-                }
+                // a range narrows, so the lt and gt of one fieldname are And-ed together. every other
+                // condition of that same fieldname widens and is Or-ed. both parts are And-ed with
+                // each other, just like the groups of the different fieldnames are.
+                var groupExpressions = new List<LDB.BsonExpression>();
 
                 if (orExpressions.Any())
                 {
-                    var combinedGroupQuery = orExpressions.Count > 1 ? LDB.Query.Or(orExpressions.ToArray()) : orExpressions[0];
+                    groupExpressions.Add(orExpressions.Count > 1 ? LDB.Query.Or(orExpressions.ToArray()) : orExpressions[0]);
+                }
+
+                if (andExpressions.Any())
+                {
+                    groupExpressions.Add(andExpressions.Count > 1 ? LDB.Query.And(andExpressions.ToArray()) : andExpressions[0]);
+                }
+
+                if (groupExpressions.Any())
+                {
+                    var combinedGroupQuery = groupExpressions.Count > 1 ? LDB.Query.And(groupExpressions.ToArray()) : groupExpressions[0];
                     queryExp = LDB.Query.And(queryExp, combinedGroupQuery);
                 }
             }

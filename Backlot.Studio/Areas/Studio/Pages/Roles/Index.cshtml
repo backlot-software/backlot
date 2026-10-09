@@ -1,0 +1,473 @@
+@page "/roles/{RoleType?}"
+@model Backlot.Studio.Areas.Studio.Pages.Roles.IndexModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-secondary-900 mb-2">Roles - @Model.RoleType</h1>
+    </div>
+</div>
+
+<!-- Error message -->
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mb-6" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@Model.ErrorMessage</span>
+        <a asp-area="Studio" asp-page="/Roles/Index" class="font-medium ml-2">Retry</a>
+    </div>
+}
+
+<turbo-frame id="role-list" data-turbo-action="advance">
+    <!-- Search and filter bar -->
+    <div class="card mb-6 animate-fade-in">
+        <div class="card-body">
+            <!-- Search form -->
+            <form method="get" asp-area="Studio" asp-page="/Roles/Index" asp-route-RoleType="@Model.RoleType" class="flex flex-col gap-3">
+                <div class="flex flex-col md:flex-row items-center gap-3">
+                    <div class="relative flex-1 w-full">
+                        <input type="text"
+                               name="q"
+                               value="@Model.SearchQuery"
+                               class="form-input pe-10"
+                               placeholder="Search, f.e. Name=John Uid:00 shows all records where name equals John and Uid contains 00. Case sensitive for most database setups."
+                               aria-label="Search roles" />
+                        <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                    </div>
+                    <div class="flex gap-2">
+                        @* One calendar in a dropdown: the first day click sets From, the second
+                           sets Till. The picked values live in the hidden inputs below, which are
+                           empty when unset so the endpoint falls back to its own defaults. *@
+                        <div class="relative">
+                            <button type="button"
+                                    class="btn @(Model.HasDateRange ? "btn-secondary" : "btn-ghost")"
+                                    style="min-height:44px"
+                                    data-action="toggle-date-range"
+                                    aria-controls="date-range-picker"
+                                    aria-expanded="false"
+                                    title="Filter by date range">
+                                <i class="bi bi-calendar-range"></i>
+                                <span class="sr-only">Filter by date range</span>
+                            </button>
+                            <div id="date-range-picker"
+                                 class="hidden absolute right-0 z-50 mt-2 w-72 p-3 card"
+                                 role="dialog"
+                                 aria-label="Pick a date range"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="min-height:44px">
+                            <i class="bi bi-search"></i>
+                            <span>Search</span>
+                        </button>
+                        @if (Model.HasFilters)
+                        {
+                            <a asp-area="Studio" asp-page="/Roles/Index" class="btn btn-ghost" style="min-height:44px">
+                                <i class="bi bi-x-lg"></i>
+                                <span>Clear</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <input type="hidden" id="filter-from" name="from" value="@Model.FromInput" />
+                <input type="hidden" id="filter-till" name="till" value="@Model.TillInput" />
+
+                @* Collapsed summary of the picked range. Kept in sync by the picker script, which
+                   rebuilds these chips with the same markup — keep the two in step. *@
+                <div id="date-range-summary" class="@(Model.HasDateRange ? "" : "hidden ")flex flex-wrap items-center gap-2">
+                    @if (Model.From.HasValue)
+                    {
+                        <span class="badge badge-secondary gap-1">
+                            <span>From: @Model.FromDisplay</span>
+                            <button type="button" class="ms-1" data-action="clear-date" data-target="filter-from" aria-label="Remove from date">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </span>
+                    }
+                    @if (Model.Till.HasValue)
+                    {
+                        <span class="badge badge-secondary gap-1">
+                            <span>Till: @Model.TillDisplay</span>
+                            <button type="button" class="ms-1" data-action="clear-date" data-target="filter-till" aria-label="Remove till date">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </span>
+                    }
+                </div>
+            </form>
+            
+            <!-- Result count -->
+            @if (Model.RoleResult != null)
+            {
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-secondary-200">
+                    <small class="text-secondary-500">
+                        @if (Model.TotalCount == 0)
+                        {
+                            <text>No roles found.</text>
+                        }
+                        else
+                        {
+                            <text>Showing @Model.StartItem&ndash;@Model.EndItem of @Model.TotalCount roles</text>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+                            {
+                                <text> matching &ldquo;@Model.SearchQuery&rdquo;</text>
+                            }
+                            @Model.DateRangeText
+                        }
+                    </small>
+                    @*<div class="text-secondary-500">
+                        <span>Sort by: </span>
+                        <select class="bg-transparent border-none text-secondary-600 text-sm" style="min-height:44px">
+                            <option>Newest first</option>
+                            <option>Oldest first</option>
+                            <option>Name (A-Z)</option>
+                            <option>Name (Z-A)</option>
+                        </select>
+                    </div>*@
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.RoleResult != null && Model.TotalCount == 0)
+    {
+        <!-- Empty state -->
+        <div class="empty-state">
+            @if (Model.HasFilters)
+            {
+                <i class="bi bi-search"></i>
+                <h3>No roles match your search</h3>
+                <p>Try a different search term or date range, or <a asp-area="Studio" asp-page="/Roles/Index" class="text-primary-600 hover:text-primary-700 font-medium underline">Clear search</a> to see all roles.</p>
+            }
+            else
+            {
+                <i class="bi bi-people"></i>
+                <h3>No roles registered</h3>
+                <p>The Backlot API returned no persisted roles. Roles appear here after scenarios that create them have been executed.</p>
+            }
+        </div>
+    }
+    else if (Model.RoleResult != null && Model.TotalCount > 0)
+    {
+        <!-- Role list table -->
+        <div class="card animate-fade-in">
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="w-full text-sm font-sans" id="roles-table">
+                        <thead>
+                            <tr class="bg-secondary-50">
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Uid">Uid</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Name">Name</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="LastModified">Last Modified</th>
+                                <th class="text-left p-3 border-b font-semibold text-secondary-600" data-col="Type">Type</th>
+                                <th class="text-right p-3 border-b" data-col="Actions"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.RoleResult.Results)
+                            {
+                                var uid = IndexModel.GetField(row, "Uid");
+                                var skills = new List<string>();
+                                if (row.TryGetProperty("__Skills", out var skillsEl) && skillsEl.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var s in skillsEl.EnumerateArray())
+                                    {
+                                        var sv = s.ValueKind == JsonValueKind.String ? s.GetString() : s.ToString();
+                                        if (!string.IsNullOrWhiteSpace(sv) && Model.DefaultRoles.All(dr => dr != sv)) skills.Add(sv);
+                                    }
+                                }
+
+                                <tr class="hover:bg-secondary-50 border-b border-secondary-100 last:border-b-0">
+                                    <td class="p-3" data-col="Uid">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-ghost btn-icon"
+                                                    data-action="copy-uid"s
+                                                    data-detail-url="@uid"
+                                                    aria-label="Copy uid">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <span class="text-secondary-700 text-sm" title="@uid">@(uid.Length > 12 ? uid[..12] : uid)</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3" data-col="Name">
+                                        @{var name = IndexModel.GetField(row, "Name");}
+                                        @if (string.IsNullOrWhiteSpace(name))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-medium text-secondary-900">@name</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="LastModified">
+                                        @{var lastMod = IndexModel.GetField(row, "LastModified");}
+                                        @if (string.IsNullOrWhiteSpace(lastMod))
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-sm text-secondary-600">@lastMod</span>
+                                        }
+                                    </td>
+                                    <td class="p-3" data-col="Type">
+                                        @if (skills.Count == 0)
+                                        {
+                                            <span class="text-secondary-400">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach (var skill in skills)
+                                                {
+                                                    <a href="@Url.Page("/Roles/Index", new { RoleType = skill })" class="badge badge-primary hover:badge-primary-focus">
+                                                        @skill
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="p-3 text-right" data-col="Actions">
+                                        @* Plain (non-Turbo) navigation. This link lives inside the
+                                           #role-list <turbo-frame>, so breaking out to the detail page
+                                           depended on data-turbo-frame="_top"; combined with Turbo 8's
+                                           default hover-prefetch, that framed _top link intermittently
+                                           resolved against a cached frame-scoped response and bounced
+                                           back to the previous page (the dashboard) instead of the
+                                           detail page. data-turbo="false" makes the browser navigate
+                                           directly and reliably to the detail page every time. *@
+                                        <a href="@Url.Page("/Roles/Detail", new { RoleType = Model.RoleType, Uid = uid })"
+                                           class="btn btn-secondary"
+                                           data-turbo="false">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Role list pages" class="mt-6">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="flex flex-wrap items-center justify-center gap-1">
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage <= 1 ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage <= 1 ? "#" : Url.Page("/Roles/Index", new { RoleType = Model.RoleType, q = Model.SearchQuery, from = Model.FromRoute, till = Model.TillRoute, page = Model.CurrentPage - 1 }))"
+                                   aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="ml-1">Previous</span>
+                                </a>
+                            </li>
+                            @for (int p = 1; p <= Model.TotalPages; p++)
+                            {
+                                <li>
+                                    <a class="px-3 py-1.5 rounded-lg border @(p == Model.CurrentPage ? "bg-primary-600 text-white border-primary-600" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                       href="@Url.Page("/Roles/Index", new { RoleType = Model.RoleType, q = Model.SearchQuery, from = Model.FromRoute, till = Model.TillRoute, page = p })">@p</a>
+                                </li>
+                            }
+                            <li>
+                                <a class="px-3 py-1.5 rounded-lg border @(Model.CurrentPage >= Model.TotalPages ? "bg-secondary-100 text-secondary-400 cursor-not-allowed" : "bg-white hover:bg-secondary-50 text-primary-600 border-secondary-300 hover:border-primary-300")" 
+                                   href="@(Model.CurrentPage >= Model.TotalPages ? "#" : Url.Page("/Roles/Index", new { RoleType = Model.RoleType, q = Model.SearchQuery, from = Model.FromRoute, till = Model.TillRoute, page = Model.CurrentPage + 1 }))"
+                                   aria-label="Next">
+                                    <span class="mr-1">Next</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        }
+    }
+</turbo-frame>
+
+@* Single-calendar date range picker. The first day click sets From, the second sets Till
+   (picking an earlier day swaps them), and a third starts a new range. State lives entirely
+   in the #filter-from / #filter-till hidden inputs, so it survives Turbo Frame updates —
+   which is also why the handlers are bound once at document level, as below. *@
+<script>
+    if (!window.__dateRangePickerBound) {
+        window.__dateRangePickerBound = true;
+
+        const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+        const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const el = id => document.getElementById(id);
+        const panel = () => el('date-range-picker');
+        const toggle = () => document.querySelector('[data-action="toggle-date-range"]');
+
+        const pad = n => String(n).padStart(2, '0');
+        const key = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+
+        // Inputs hold "YYYY-MM-DDTHH:mm:ss"; the calendar only cares about the date part.
+        const dayOf = id => (el(id)?.value || '').slice(0, 10);
+
+        // From anchors at the start of its day, Till at the end, so picking one day covers it whole.
+        function setDay(id, day, endOfDay) {
+            const input = el(id);
+            if (input) input.value = day ? day + (endOfDay ? 'T23:59:59' : 'T00:00:00') : '';
+        }
+
+        // Must stay in step with the server-rendered chips in #date-range-summary.
+        function chip(label, day, target) {
+            return '<span class="badge badge-secondary gap-1">' +
+                       '<span>' + label + ': ' + day + '</span>' +
+                       '<button type="button" class="ms-1" data-action="clear-date" data-target="' + target +
+                       '" aria-label="Remove ' + label.toLowerCase() + ' date"><i class="bi bi-x-lg"></i></button>' +
+                   '</span>';
+        }
+
+        function sync() {
+            const from = dayOf('filter-from'), till = dayOf('filter-till');
+            const summary = el('date-range-summary');
+            if (summary) {
+                summary.innerHTML = (from ? chip('From', from, 'filter-from') : '') +
+                                    (till ? chip('Till', till, 'filter-till') : '');
+                summary.classList.toggle('hidden', !from && !till);
+            }
+            toggle()?.classList.toggle('btn-secondary', !!(from || till));
+            toggle()?.classList.toggle('btn-ghost', !(from || till));
+        }
+
+        function render(year, month) {
+            const p = panel();
+            if (!p) return;
+            p.dataset.year = year;
+            p.dataset.month = month;
+
+            const from = dayOf('filter-from'), till = dayOf('filter-till');
+            const lead = (new Date(Date.UTC(year, month, 1)).getUTCDay() + 6) % 7;  // Monday-first
+            const days = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+
+            let cells = '';
+            for (let i = 0; i < lead; i++) cells += '<span></span>';
+            for (let d = 1; d <= days; d++) {
+                const k = key(year, month, d);
+                const cls = (k === from || k === till) ? 'bg-primary-600 text-white'
+                          : (from && till && k > from && k < till) ? 'bg-primary-100 text-primary-700'
+                          : 'hover:bg-secondary-100';
+                cells += '<button type="button" data-cal-day="' + k + '" class="h-8 rounded text-sm ' + cls + '">' + d + '</button>';
+            }
+
+            p.innerHTML =
+                '<div class="flex items-center justify-between mb-2">' +
+                    '<button type="button" class="btn btn-ghost btn-icon" data-cal-nav="-1" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>' +
+                    '<span class="text-sm font-semibold text-secondary-700">' + MONTHS[month] + ' ' + year + '</span>' +
+                    '<button type="button" class="btn btn-ghost btn-icon" data-cal-nav="1" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>' +
+                '</div>' +
+                '<div class="grid grid-cols-7 gap-1 text-center text-xs text-secondary-400 mb-1">' +
+                    WEEKDAYS.map(w => '<span>' + w + '</span>').join('') +
+                '</div>' +
+                '<div class="grid grid-cols-7 gap-1 text-center">' + cells + '</div>' +
+                '<p class="mt-2 text-xs text-secondary-500">Click a day to set <strong>' +
+                    ((!from || till) ? 'From' : 'Till') + '</strong>.</p>';
+        }
+
+        function open() {
+            const p = panel();
+            if (!p) return;
+            const now = new Date();
+            const start = dayOf('filter-from') || key(now.getFullYear(), now.getMonth(), now.getDate());
+            render(Number(start.slice(0, 4)), Number(start.slice(5, 7)) - 1);
+            p.classList.remove('hidden');
+            toggle()?.setAttribute('aria-expanded', 'true');
+        }
+
+        function close() {
+            panel()?.classList.add('hidden');
+            toggle()?.setAttribute('aria-expanded', 'false');
+        }
+
+        const isOpen = () => panel() && !panel().classList.contains('hidden');
+
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('[data-action="toggle-date-range"]')) {
+                isOpen() ? close() : open();
+                return;
+            }
+
+            const clear = e.target.closest('[data-action="clear-date"]');
+            if (clear) {
+                setDay(clear.dataset.target, '');
+                sync();
+                if (isOpen()) render(Number(panel().dataset.year), Number(panel().dataset.month));
+                return;
+            }
+
+            const nav = e.target.closest('[data-cal-nav]');
+            if (nav) {
+                const shifted = new Date(Date.UTC(Number(panel().dataset.year),
+                                                  Number(panel().dataset.month) + Number(nav.dataset.calNav), 1));
+                render(shifted.getUTCFullYear(), shifted.getUTCMonth());
+                return;
+            }
+
+            const day = e.target.closest('[data-cal-day]');
+            if (day) {
+                const picked = day.dataset.calDay;
+                const from = dayOf('filter-from'), till = dayOf('filter-till');
+                if (!from || till) {
+                    setDay('filter-from', picked, false);   // first click, or restart after a full range
+                    setDay('filter-till', '');
+                } else if (picked < from) {
+                    setDay('filter-from', picked, false);   // picked backwards, so swap the ends
+                    setDay('filter-till', from, true);
+                } else {
+                    setDay('filter-till', picked, true);
+                }
+                sync();
+                render(Number(panel().dataset.year), Number(panel().dataset.month));
+                if (dayOf('filter-till')) close();          // range complete
+                return;
+            }
+
+            if (!e.target.closest('#date-range-picker')) close();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') close();
+        });
+    }
+</script>
+
+@* Copy the absolute detail-page URL to the clipboard. Bound once at document level so it
+   survives Turbo Frame updates that replace the table without a full navigation. *@
+<script>
+    if (!window.__copyDetailUrlBound) {
+        window.__copyDetailUrlBound = true;
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action="copy-uid"]');
+            if (!btn) return;
+
+            const path = btn.dataset.detailUrl;
+            if (!path) return;
+
+            const url = new URL(path, window.location.origin).href;
+            const icon = btn.querySelector('i');
+
+            navigator.clipboard.writeText(url).then(function () {
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-clipboard-check');
+                    setTimeout(function () {
+                        icon.classList.remove('bi-clipboard-check');
+                        icon.classList.add('bi-clipboard');
+                    }, 1500);
+                }
+            });
+        });
+    }
+</script>
