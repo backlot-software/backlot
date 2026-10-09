@@ -9,16 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backlot.Studio.Areas.Studio.Pages.Development;
 
 // Development — a chat window for designing an application out loud. The operator describes what
-// they want; Backlot.Services.AI answers with the next question and keeps a running list of the
-// roles and scenarios the conversation implies, shown as two panes beside the chat.
-//
-// The Mistral call itself happens server-side inside the API (scenario "create" on role
-// IConversation), so the API key never leaves the host — the same boundary every other Studio page
-// works within. Studio only proxies the turn and remembers the transcript.
+// they want; CodeGen's HandleMessage scenario routes the complete IChat history to the appropriate
+// agent. The provider call stays inside the API, so Studio only proxies the turn and keeps the
+// conversation in its server-side session.
 public class IndexModel : AuthenticatedPageModel
 {
-    private const string RoleName = "conversation";
-    private const string ScenarioName = "create";
+    private const string RoleName = "Chat";
+    private const string ScenarioName = "HandleMessage";
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -58,8 +55,8 @@ public class IndexModel : AuthenticatedPageModel
     public SendInput Input { get; set; } = new();
 
     // OnPostSendAsync — invoked via fetch() from the page. Plays one turn and returns the assistant's
-    // reply plus both updated name lists as JSON. Session is only written after the turn succeeds, so
-    // a failed call never leaves a half-finished exchange behind.
+    // reply and the message count as JSON. Session is only written after the turn succeeds, so a
+    // failed call never leaves a half-finished exchange behind.
     public async Task<IActionResult> OnPostSendAsync(CancellationToken ct)
     {
         var message = Input.Message?.Trim() ?? string.Empty;
@@ -75,33 +72,44 @@ public class IndexModel : AuthenticatedPageModel
 
         try
         {
-            var envelope = await _api.Play<Conversation, Conversation>(RoleName, ScenarioName, new Conversation
+            EnsureMessageHistory(state);
+            var messages = state.Messages
+                .Append(new DevelopmentMessage { Role = "user", Content = message })
+                .Select(entry => new ChatMessage { Role = entry.Role, Content = entry.Content })
+                .ToList();
+
+            var envelope = await _api.Play<Chat, string>(RoleName, ScenarioName, new Chat
             {
-                Message = message,
-                Roles = state.Roles.ToArray(),
-                Scenarios = state.Scenarios.ToArray()
+                Messages = messages
             }, ct);
 
             var reply = envelope?.Body;
             if (reply == null)
             {
-                return new JsonResult(new { error = "The AI service returned an empty answer." })
+                return new JsonResult(new { error = "The CodeGen service returned an empty answer." })
                 {
                     StatusCode = StatusCodes.Status502BadGateway
                 };
             }
 
+            if (string.IsNullOrWhiteSpace(reply))
+            {
+                return new JsonResult(new { error = "The CodeGen service returned an empty answer." })
+                {
+                    StatusCode = StatusCodes.Status502BadGateway
+                };
+            }
+
+            state.Messages.Add(new DevelopmentMessage { Role = "user", Content = message });
+            state.Messages.Add(new DevelopmentMessage { Role = "assistant", Content = reply });
             state.Turns.Add(new ChatTurn { FromUser = true, Text = message });
-            state.Turns.Add(new ChatTurn { FromUser = false, Text = reply.Message });
-            state.Roles = [.. reply.Roles ?? []];
-            state.Scenarios = [.. reply.Scenarios ?? []];
+            state.Turns.Add(new ChatTurn { FromUser = false, Text = reply });
             SaveState(state);
 
             return new JsonResult(new
             {
-                message = reply.Message,
-                roles = state.Roles,
-                scenarios = state.Scenarios
+                message = reply,
+                messageCount = state.Messages.Count
             });
         }
         catch (UnauthorizedAccessException)
@@ -117,7 +125,7 @@ public class IndexModel : AuthenticatedPageModel
         {
             // The API rejected the turn — a missing Mistral key and a malformed model reply both
             // arrive here as a 400 whose envelope Body is the operator-readable reason.
-            _logger.LogWarning(ex, "The create scenario rejected a Development turn");
+            _logger.LogWarning(ex, "The HandleMessage scenario rejected a Development turn");
             return new JsonResult(new { error = DescribeApiFailure(ex) });
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -152,6 +160,22 @@ public class IndexModel : AuthenticatedPageModel
         }
 
         return "The AI service could not answer this message.";
+    }
+
+    // Sessions created by the prior Studio conversation screen have a transcript but no API message
+    // history. Retain those useful exchanges when a user returns after this upgrade.
+    private static void EnsureMessageHistory(DevelopmentConversation state)
+    {
+        if (state.Messages.Count != 0) return;
+
+        state.Messages = state.Turns
+            .Skip(1) // Studio's own opening question is not part of CodeGen's conversation.
+            .Select(turn => new DevelopmentMessage
+            {
+                Role = turn.FromUser ? "user" : "assistant",
+                Content = turn.Text
+            })
+            .ToList();
     }
 
     private DevelopmentConversation? LoadState()

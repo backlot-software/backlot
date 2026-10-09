@@ -8,7 +8,7 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-secondary-900 mb-2">Development</h1>
-        <p class="text-sm text-secondary-500">Describe what you want to build. The roles and scenarios the conversation agrees on collect on the right.</p>
+        <p class="text-sm text-secondary-500">Discuss your project with CodeGen. The full conversation is sent to its <code>HandleMessage</code> scenario.</p>
     </div>
 </div>
 
@@ -59,43 +59,30 @@
         </div>
     </div>
 
-    <!-- The two "file" panes -->
+    <!-- CodeGen context, using Studio's existing card components -->
     <div class="flex flex-col gap-6">
         <div class="card self-start">
             <div class="card-header flex items-center justify-between">
-                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Roles</h2>
-                <span id="roles-count" class="badge">@Model.Chat.Roles.Count</span>
+                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Conversation</h2>
+                <span id="messages-count" class="badge">@Model.Chat.Messages.Count</span>
             </div>
-            <div class="card-body max-h-[35vh] overflow-y-auto custom-scrollbar">
-                <ul id="roles-pane" class="space-y-1 font-mono text-sm text-secondary-700 @(Model.Chat.Roles.Count == 0 ? "hidden" : "")">
-                    @foreach (var name in Model.Chat.Roles)
-                    {
-                        <li class="px-2 py-1 rounded hover:bg-secondary-100 truncate" title="@name">@name</li>
-                    }
-                </ul>
-                <div id="roles-empty" class="empty-state py-8 @(Model.Chat.Roles.Count == 0 ? "" : "hidden")">
-                    <i class="bi bi-person-badge"></i>
-                    <p>No roles yet.</p>
-                </div>
+            <div class="card-body text-sm text-secondary-600 space-y-3">
+                <p>Your messages are stored in this Studio session and posted as <code>IChat.Messages</code>.</p>
+                <p class="text-secondary-500">Messages in this session: <span id="messages-summary" class="font-medium text-secondary-900">@Model.Chat.Messages.Count</span></p>
             </div>
         </div>
 
         <div class="card self-start">
-            <div class="card-header flex items-center justify-between">
-                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Scenarios</h2>
-                <span id="scenarios-count" class="badge">@Model.Chat.Scenarios.Count</span>
+            <div class="card-header">
+                <h2 class="text-sm font-semibold text-secondary-500 uppercase tracking-wider">CodeGen routes</h2>
             </div>
-            <div class="card-body max-h-[35vh] overflow-y-auto custom-scrollbar">
-                <ul id="scenarios-pane" class="space-y-1 font-mono text-sm text-secondary-700 @(Model.Chat.Scenarios.Count == 0 ? "hidden" : "")">
-                    @foreach (var name in Model.Chat.Scenarios)
-                    {
-                        <li class="px-2 py-1 rounded hover:bg-secondary-100 truncate" title="@name">@name</li>
-                    }
+            <div class="card-body text-sm text-secondary-600 space-y-3">
+                <p><code>HandleMessage</code> chooses an agent from your latest request:</p>
+                <ul class="space-y-2">
+                    <li class="flex gap-2"><i class="bi bi-chat-dots text-primary-600"></i><span>Ask a general question for Q&amp;A.</span></li>
+                    <li class="flex gap-2"><i class="bi bi-people text-primary-600"></i><span>Include <code>extract roles</code> to use role extraction.</span></li>
+                    <li class="flex gap-2"><i class="bi bi-code-square text-primary-600"></i><span>Include <code>generate lowcode</code> to use low-code generation.</span></li>
                 </ul>
-                <div id="scenarios-empty" class="empty-state py-8 @(Model.Chat.Scenarios.Count == 0 ? "" : "hidden")">
-                    <i class="bi bi-play-circle"></i>
-                    <p>No scenarios yet.</p>
-                </div>
             </div>
         </div>
     </div>
@@ -113,34 +100,8 @@
             const errorBox = document.getElementById('chat-error');
             const errorText = document.getElementById('chat-error-text');
 
-            const panes = {
-                roles: {
-                    list: document.getElementById('roles-pane'),
-                    empty: document.getElementById('roles-empty'),
-                    count: document.getElementById('roles-count')
-                },
-                scenarios: {
-                    list: document.getElementById('scenarios-pane'),
-                    empty: document.getElementById('scenarios-empty'),
-                    count: document.getElementById('scenarios-count')
-                }
-            };
-
-            // --- Panes (first paint is server-rendered; this re-renders after each turn) ---
-            function renderPane(pane, names) {
-                pane.list.innerHTML = '';
-                (names || []).forEach(function (name) {
-                    const li = document.createElement('li');
-                    li.className = 'px-2 py-1 rounded hover:bg-secondary-100 truncate';
-                    li.title = name;
-                    li.textContent = name;
-                    pane.list.appendChild(li);
-                });
-                const count = (names || []).length;
-                pane.count.textContent = count;
-                pane.empty.classList.toggle('hidden', count !== 0);
-                pane.list.classList.toggle('hidden', count === 0);
-            }
+            const messagesCount = document.getElementById('messages-count');
+            const messagesSummary = document.getElementById('messages-summary');
 
             // --- Transcript -----------------------------------------------------------
             function appendTurn(text, fromUser) {
@@ -221,8 +182,8 @@
                     }
 
                     appendTurn(payload.message, false);
-                    renderPane(panes.roles, payload.roles);
-                    renderPane(panes.scenarios, payload.scenarios);
+                    messagesCount.textContent = payload.messageCount;
+                    messagesSummary.textContent = payload.messageCount;
                 } catch (err) {
                     optimistic.remove();
                     input.value = message;

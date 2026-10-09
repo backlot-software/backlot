@@ -2,8 +2,8 @@ namespace Backlot.Studio.Areas.Studio.Pages.ViewModels;
 
 /// <summary>
 /// The Development tool's conversation, held in the Studio session so it survives navigating to
-/// another page and back. The transcript is kept for display only — the create scenario's wire
-/// contract carries no history, so only the newest message plus the two name lists are ever sent.
+/// another page and back. CodeGen's <c>IChat</c> role expects the whole message history on every
+/// request, so the API-shaped messages are retained beside the display-friendly transcript.
 /// </summary>
 public class DevelopmentConversation
 {
@@ -14,8 +14,7 @@ public class DevelopmentConversation
     public const string OpeningQuestion = "Describe a scenario you like to create";
 
     public List<ChatTurn> Turns { get; set; } = [];
-    public List<string> Roles { get; set; } = [];
-    public List<string> Scenarios { get; set; } = [];
+    public List<DevelopmentMessage> Messages { get; set; } = [];
 
     public static DevelopmentConversation Opening() => new()
     {
@@ -29,4 +28,11 @@ public class ChatTurn
     public bool FromUser { get; set; }
 
     public string Text { get; set; } = string.Empty;
+}
+
+/// <summary>One message in the <c>IChat.Messages</c> request payload.</summary>
+public class DevelopmentMessage
+{
+    public string Role { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
 }
