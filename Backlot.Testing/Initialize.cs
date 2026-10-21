@@ -8,6 +8,7 @@ using Backlot.Core.Security;
 using Backlot.Core.Services;
 using Backlot.Services.Filesystem.LocalDiskStorage;
 using Backlot.Testing.Core;
+using Backlot.Testing.Shared.Stubs;
 using Microsoft.Extensions.Logging;
 
 namespace Backlot.Testing;

@@ -5,6 +5,7 @@ using Backlot.Core.Services;
 using Backlot.Defaults.Instructing;
 using Backlot.DependencyInjection.Autofac;
 using Backlot.Testing.Core;
+using Backlot.Testing.Shared.TestModels;
 
 namespace Backlot.Testing;
 
