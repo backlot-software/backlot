@@ -21,6 +21,10 @@
   <Folder Name="/Backlot/Infrastructure/" />
   <Folder Name="/Backlot/Infrastructure/Authentication/">
     <Project Path="Backlot.Authentication.Basic/Backlot.Authentication.Basic.csproj" />
+    <Project Path="Backlot.Authentication.Bearer/Backlot.Authentication.Bearer.csproj" />
+    <Project Path="Backlot.Authentication.BuiltIn/Backlot.Authentication.BuiltIn.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
   </Folder>
   <Folder Name="/Backlot/Infrastructure/Databases/">
     <Project Path="Backlot.Services.LiteDB/Backlot.Services.LiteDB.csproj" />
@@ -55,7 +59,7 @@
     <File Path=".github/workflows/cleanup-nuget-packages.yml" />
   </Folder>
   <Folder Name="/Testing/">
-    <Project Path="Backlot.Testing.Defaults/Backlot.Testing.Defaults.csproj"/>
+    <Project Path="Backlot.Testing.Defaults/Backlot.Testing.Defaults.csproj" />
     <Project Path="Backlot.Testing/Backlot.Testing.csproj" />
   </Folder>
 </Solution>
