@@ -4,7 +4,7 @@ namespace Backlot.Authentication.Bearer;
 
 /// <summary>
 /// The Implementation of the IUserContext for Bearer authentication.
-/// Access tokens are issued by this installation (internally or as a gateway to an external identity provider)
+/// Access tokens are issued by this installation (as a gateway to an external identity provider)
 /// and validated by the registered <see cref="ITokenStore"/>.
 /// </summary>
 public class BearerUserContext(ITokenStore tokenStore) : IUserContext

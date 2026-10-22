@@ -1,8 +1,7 @@
 # Backlot.Authentication.Bearer
 
-Bearer authentication where Backlot is always the token issuer. Backlot handles the login itself
-(internal, using `IUserRepository`), or acts as a **gateway** to an external OpenID Connect identity
-provider (Auth0, Entra ID, Keycloak, ...). Clients follow the same flow in both cases.
+Bearer authentication where Backlot is always the token issuer. Backlot acts as a **gateway** to an
+external OpenID Connect identity provider (Auth0, Entra ID, Keycloak, ...), which handles the login.
 
 ## Setup
 
@@ -16,9 +15,6 @@ public class WebDirector(...) : AutofacContainerDirector<..., BearerUserContext,
         base.Registration();
 
         Builder.RegisterType<JwtTokenStore>().As<ITokenStore>().SingleInstance();
-
-        // internal login only: the user store used by the Login scenario
-        Builder.RegisterType<UserFileRepository>().As<IUserRepository>().SingleInstance();
     }
 }
 ```
@@ -31,7 +27,7 @@ Settings (`Backlot.Authentication.Bearer.Settings.*`):
 | `AllowedRedirectUris` | Comma separated, exact match. |
 | `Issuer`, `Audience` | Defaults to `backlot`. |
 | `AccessTokenLifetimeMinutes`, `RefreshTokenLifetimeDays` | Defaults to 15 minutes and 14 days. |
-| `GatewayAuthority` | Set to enable the gateway, e.g. `https://tenant.eu.auth0.com/`. Empty means internal login. |
+| `GatewayAuthority` | Required, e.g. `https://tenant.eu.auth0.com/`. |
 | `GatewayClientId`, `GatewayClientSecret` | Client at the identity provider. The secret stays on the server. |
 | `GatewayCallbackUri` | Absolute url of the LoginPage, e.g. `https://api.example.com/api/role/director/loginpage`. Register it at the provider. |
 | `GatewayAudience`, `GatewayScopes` | Optional, defaults to scopes `openid profile email`. |
@@ -43,14 +39,42 @@ Settings (`Backlot.Authentication.Bearer.Settings.*`):
 2. Send the browser to
    `GET /api/role/director/loginpage?redirect_uri=..&state=..&code_challenge=..&code_challenge_method=S256`.
 3. The browser comes back at `redirect_uri?code=..&state=..`. Check `state`.
-4. `POST /api/role/tokenrequest/token` with
-   `{ "grantType": "authorization_code", "code": "..", "codeVerifier": "..", "redirectUri": ".." }`
+4. `POST /api/role/auth/access` with
+   `{ "code": "..", "codeVerifier": "..", "redirectUrl": ".." }`
    returns `{ accessToken, refreshToken, expiresIn, tokenType }`.
 5. Call scenarios with `Authorization: Bearer <accessToken>`.
-6. Refresh with `{ "grantType": "refresh_token", "refreshToken": ".." }` on the same endpoint.
+6. Refresh with `POST /api/role/refreshrequest/refresh` and `{ "refreshToken": ".." }`.
 7. Logout with `POST /api/role/revokerequest/revoke` and `{ "refreshToken": ".." }`.
 
 Authorization codes are signed, live 2 minutes and are bound to the redirect uri and the code challenge.
+
+### Request flow
+
+```mermaid
+flowchart TD
+    A([Client]) --> B["Create code_verifier, state and<br/>code_challenge = base64url(SHA256(code_verifier))"]
+    B --> C["POST /api/role/auth/authorize<br/>{ redirectUrl, state, codeChallenge }"]
+    C --> E["Send browser to Location<br/>(external identity provider)"]
+    E --> F["User logs in at the identity provider"]
+    F --> G["Provider redirects to GatewayCallbackUri<br/>?code=..&state=.."]
+    G --> H["POST /api/role/auth/callback<br/>{ code, state }"]
+    H --> J["Browser is sent to redirectUrl<br/>?code=..&state=.."]
+
+    J --> K{state matches?}
+    K -- no --> X([Abort])
+    K -- yes --> L["POST /api/role/auth/access<br/>{ code, codeVerifier, redirectUrl }"]
+    L --> M[/"{ accessToken, refreshToken, expiresIn, tokenType }"/]
+
+    M --> N["Call scenarios with<br/>Authorization: Bearer accessToken"]
+    N --> O{401?}
+    O -- no --> N
+    O -- yes --> P["POST /api/role/tokenrequest/refresh<br/>{ refreshToken }"]
+    P --> Q{new tokens?}
+    Q -- yes --> N
+    Q -- no --> B
+
+    N -. logout .-> R["POST /api/role/tokenrequest/revoke<br/>{ refreshToken }"]
+```
 
 ## Extending
 

@@ -7,8 +7,7 @@ using Backlot.Core.Services;
 namespace Backlot.Authentication.Bearer;
 
 /// <summary>
-/// Settings for Bearer authentication. When the Gateway* settings are empty, Backlot handles the login internally (IUserRepository).
-/// When they are set, Backlot is a gateway to the external identity provider and still issues its own tokens.
+/// Settings for Bearer authentication. Backlot is a gateway to the external identity provider and issues its own tokens.
 /// </summary>
 public class Settings
 {
@@ -30,7 +29,7 @@ public class Settings
     /// <summary>Comma separated list of redirect uris clients are allowed to use (exact match).</summary>
     [Configurable] public string AllowedRedirectUris { get; set; }
 
-    /// <summary>Authority of the external identity provider, e.g. https://tenant.eu.auth0.com/ . Empty = internal login.</summary>
+    /// <summary>Authority of the external identity provider, e.g. https://tenant.eu.auth0.com/ (required for Authorize and Callback).</summary>
     [Configurable] public string GatewayAuthority { get; set; }
 
     [Configurable] public string GatewayClientId { get; set; }
@@ -76,9 +75,6 @@ public sealed class BearerOptions
     public string GatewayCallbackUri { get; init; } = string.Empty;
     public string GatewayUserNameClaim { get; init; } = "email";
     public string GatewayGroupsClaim { get; init; } = "groups";
-
-    /// <summary>True when Backlot acts as a gateway to an external identity provider.</summary>
-    public bool IsGateway => !string.IsNullOrWhiteSpace(GatewayAuthority);
 
     public static BearerOptions FromConfiguration()
     {

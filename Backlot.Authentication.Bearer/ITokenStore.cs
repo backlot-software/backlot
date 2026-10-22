@@ -1,7 +1,7 @@
 namespace Backlot.Authentication.Bearer;
 
 /// <summary>
-/// Tokens returned to the client by the Token scenario.
+/// Tokens returned to the client by the Exchange and Refresh scenarios.
 /// </summary>
 public sealed record TokenSet(string AccessToken, string RefreshToken, int ExpiresIn, string TokenType = "Bearer");
 
@@ -15,7 +15,7 @@ public sealed record TokenUser(string UserName, string[] Groups, IDictionary<str
 /// ----
 /// The default <see cref="JwtTokenStore"/> is stateless (signed JWTs), which works on Azure Functions and behind load balancers.
 /// Register your own implementation (e.g. database or Redis backed) to manage tokens and refresh tokens yourself.
-/// No scenarios need to be implemented, the Token scenario and the BearerUserContext use this store.
+/// No scenarios need to be implemented, the Exchange and Refresh scenarios and the BearerUserContext use this store.
 /// </summary>
 public interface ITokenStore
 {

@@ -1,8 +1,7 @@
+﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Backlot.Authentication.Bearer.Roles;
 using Backlot.Core.Abstraction.Scenarios;
-using Backlot.Core.Security;
-using Backlot.Core.Services;
 using Backlot.Http;
 
 namespace Backlot.Authentication.Bearer.Scenarios;
@@ -11,9 +10,9 @@ namespace Backlot.Authentication.Bearer.Scenarios;
 /// Gateway login: exchanges the code of the external identity provider, maps the user
 /// and returns the location to redirect the browser to, with a Backlot authorization code.
 /// </summary>
-[Scenario(typeof(Callback), access: [Access.Open])]
-public class Callback(ICallbackRequest role)
-    : Scenario<Callback, ICallbackRequest, object>(role)
+[Scenario(typeof(Callback), access: [Core.Security.Access.Open])]
+public class Callback(IAuth role)
+    : Scenario<Callback, IAuth, object>(role)
 {
     // composition
     /// <summary>
@@ -25,11 +24,19 @@ public class Callback(ICallbackRequest role)
 
     protected override bool PersistAndRelate => false;
 
+    public override bool Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Role.Code))
+            ValidationResults.Add(new ValidationResult("Code is required.", [nameof(IAuth.Code)]));
+        if (string.IsNullOrWhiteSpace(Role.State))
+            ValidationResults.Add(new ValidationResult("State is required.", [nameof(IAuth.State)]));
+
+        return ValidationResults.Count == 0;
+    }
+
     protected override async Task<object> ExecAsync()
     {
         var options = BearerOptions.FromConfiguration();
-        if (!options.IsGateway)
-            throw new BadRequestException("No external identity provider configured.");
 
         var codes = new AuthorizationCodes(options);
         var request = await codes.ReadGatewayState(Role.State)

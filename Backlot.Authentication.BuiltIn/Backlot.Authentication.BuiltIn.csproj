@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Backlot.Authentication.Bearer\Backlot.Authentication.Bearer.csproj" />
+      <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
+      <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
+    </ItemGroup>
+
+</Project>

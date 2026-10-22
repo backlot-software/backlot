@@ -20,6 +20,10 @@ public sealed class OidcGateway(BearerOptions options)
 
     private Task<OpenIdConnectConfiguration> Discover()
     {
+        if (string.IsNullOrWhiteSpace(options.GatewayAuthority))
+            throw new InvalidOperationException(
+                $"{typeof(Settings).FullName}.{nameof(Settings.GatewayAuthority)} must be configured.");
+
         var authority = options.GatewayAuthority.TrimEnd('/');
         var manager = Configurations.GetOrAdd(authority, a => new ConfigurationManager<OpenIdConnectConfiguration>(
             $"{a}/.well-known/openid-configuration",
