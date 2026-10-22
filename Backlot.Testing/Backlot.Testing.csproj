@@ -19,6 +19,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Backlot.Authentication.Bearer\Backlot.Authentication.Bearer.csproj" />
     <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
     <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
     <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />

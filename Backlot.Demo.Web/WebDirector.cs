@@ -1,5 +1,6 @@
 using Autofac;
 using Backlot.Authentication.Basic;
+using Backlot.Authentication.Bearer;
 using Backlot.Core;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Security;
@@ -21,7 +22,7 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
             LiteRelationRepository, 
             LitePersistedRoleRepository,
             DummyUnitOfWork,
-            BasicUserContext, 
+            BearerUserContext, 
             CacheFactory>
         (fileSystem, configurationManager, builder)
 {
@@ -35,9 +36,14 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
             .InstancePerRequest();
         
         // the IUserRepository is used by BasicUserContext
+        
         Builder.RegisterType<UserFileRepository>()
             .As<IUserRepository>()
             .SingleInstance();
+        
+        Builder.RegisterType<JwtTokenStore>()
+            .As<ITokenStore>()
+            .InstancePerRequest();
     }
     
     

@@ -2,7 +2,14 @@
   "Container": {
     "defaultAssembly": "Backlot.Demo.Web"
   },
-  "Backlot": {
+  "Backlot": { 
+    "Authentication": {
+      "Bearer": {
+        "Settings": {
+          "SigningKey": "a-very-secret-signing-key-of-32-chars!"
+        }
+      }
+    },
     "Services": {
       "LiteDB":{
         "Settings" : {
