@@ -5,14 +5,14 @@
  | |_) / ___ \ |___| . \| |__| |_| || |_ 
  |____/_/   \_\____|_|\_\_____\___/ |_(_)                                                              
 ```
-# Backlot.Start
+# Starter kit
 
-Backlot.Start is a starter template for building web apis with Backlot.Web.
+This is a starterkit template for building web apis with Backlot.Web.
 If you like to use Backlot in other applications like a console application or your existing CMS installation. Start with using Backlot.Core and scaleup with the packages you need.
 
 ## NuGet feed
 
-The `Backlot.*` packages are hosted on Backlot's GitHub Packages feed. Final versions will be hosted on nuget.org in the future. The included `nuget.config` already points at Gh package feed, but the feed is private,
+The `Backlot.*` packages are hosted on Backlot's GitHub Packages feed. Final versions are hosted on nuget.org. The included `nuget.config` already points at Gh package feed, but the feed is private,
 so restore needs credentials once per machine — a GitHub PAT with the `read:packages`
 scope:
 
@@ -86,7 +86,7 @@ Since we use default Microsoft.Extensions.Logging you can configure logging the 
 ## Authentication
 
 The Backlot.Start is using Backlot.Authentication.Basic. We advice you to use a different authentication provider for production environments (like Auth0 or Authentication.BuiltIn).
-For Basic Authentication the usersandgroups.json need to contain a hashed version of a password. We also advice you to ignore this file in your .gitignore.
+For Basic Authentication the `usersandgroups.json` need to contain a hashed version of a password. We also advice you to ignore this file in your .gitignore.
 
 Example:
 
@@ -121,7 +121,7 @@ Example:
 Below a [NetPad](https://github.com/tareqimbasher/NetPad) script to calculate the hashed password and an authentication header. 
 ```csharp
 var pw = "changeme01";
-var user = "me@jeroenwijdeven.nl";
+var user = "admin@testmail.backlot.software";
 // ---
 var bytes = Encoding.UTF8.GetBytes(pw);
 var hash = SHA256.HashData(bytes);

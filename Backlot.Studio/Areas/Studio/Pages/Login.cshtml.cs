@@ -11,6 +11,9 @@ namespace Backlot.Studio.Areas.Studio.Pages;
 [AllowAnonymous]
 public class LoginModel : PageModel
 {
+    /// <summary>Reported through ModelState when <c>BacklotStudio:BaseUrl</c> is missing or malformed.</summary>
+    private const string NotConfiguredMessage = "BaseUrl not configured correctly on host";
+
     private readonly IBacklotApiClient _apiClient;
 
     public LoginModel(IBacklotApiClient apiClient)
@@ -26,6 +29,12 @@ public class LoginModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
+        if (!_apiClient.IsConfigured)
+        {
+            ModelState.AddModelError(string.Empty, NotConfiguredMessage);
+            return Page();
+        }
+
         // Authenticate explicitly: the Studio runs on its own scheme, which is never the host's
         // default, so HttpContext.User is not populated on this anonymous page.
         var existing = await HttpContext.AuthenticateAsync(BacklotStudioDefaults.AuthenticationScheme);
@@ -38,6 +47,12 @@ public class LoginModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        if (!_apiClient.IsConfigured)
+        {
+            ModelState.AddModelError(string.Empty, NotConfiguredMessage);
+            return Page();
+        }
+
         if (!ModelState.IsValid) return Page();
 
         // 1. Base64-encode "username:password" (stored WITHOUT "Basic " prefix)
