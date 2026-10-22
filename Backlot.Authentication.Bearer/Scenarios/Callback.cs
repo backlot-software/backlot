@@ -7,12 +7,13 @@ using Backlot.Http;
 namespace Backlot.Authentication.Bearer.Scenarios;
 
 /// <summary>
-/// Gateway login: exchanges the code of the external identity provider, maps the user
-/// and returns the location to redirect the browser to, with a Backlot authorization code.
+/// Handles the return from the identity provider.
+/// It is the second step: it exchanges the provider's code, maps the user and returns the location to redirect the browser to, with a Backlot authorization code for Access.
+/// Only for use with the Backlot Authentication Gateway flow.
 /// </summary>
 [Scenario(typeof(Callback), access: [Core.Security.Access.Open])]
-public class Callback(IAuth role)
-    : Scenario<Callback, IAuth, object>(role)
+public class Callback(IGateway role)
+    : Scenario<Callback, IGateway, object>(role)
 {
     // composition
     /// <summary>
@@ -27,9 +28,9 @@ public class Callback(IAuth role)
     public override bool Validate()
     {
         if (string.IsNullOrWhiteSpace(Role.Code))
-            ValidationResults.Add(new ValidationResult("Code is required.", [nameof(IAuth.Code)]));
+            ValidationResults.Add(new ValidationResult("Code is required.", [nameof(IGateway.Code)]));
         if (string.IsNullOrWhiteSpace(Role.State))
-            ValidationResults.Add(new ValidationResult("State is required.", [nameof(IAuth.State)]));
+            ValidationResults.Add(new ValidationResult("State is required.", [nameof(IGateway.State)]));
 
         return ValidationResults.Count == 0;
     }

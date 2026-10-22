@@ -9,7 +9,7 @@ namespace Backlot.Authentication.Bearer.Roles;
 /// 3. Access: Code, CodeVerifier and RedirectUrl are required.
 /// Each scenario validates the properties it needs.
 /// </summary>
-public interface IAuth : IRole
+public interface IGateway : IRole
 {
     /// <summary>
     /// Authorize: client url the browser is sent back to with ?code=..&amp;state=.. after login (must be in AllowedRedirectUris).

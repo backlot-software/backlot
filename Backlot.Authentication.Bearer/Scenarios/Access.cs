@@ -5,22 +5,24 @@ using Backlot.Core.Abstraction.Scenarios;
 namespace Backlot.Authentication.Bearer.Scenarios;
 
 /// <summary>
-/// Exchanges an authorization code (with PKCE code verifier) for a new token set.
+/// Issues the first tokens.
+/// It is the third step: it exchanges the Backlot authorization code from Callback (with PKCE code verifier) for an access and refresh token.
+/// Only for use with the Backlot Authentication Gateway flow.
 /// </summary>
 [Scenario(typeof(Access), access: [Core.Security.Access.Open])]
-public class Access(IAuth role, ITokenStore tokenStore)
-    : Scenario<Access, IAuth, TokenSet>(role)
+public class Access(IGateway role, ITokenStore tokenStore)
+    : Scenario<Access, IGateway, TokenSet>(role)
 {
     protected override bool PersistAndRelate => false;
 
     public override bool Validate()
     {
         if (string.IsNullOrWhiteSpace(Role.Code))
-            ValidationResults.Add(new ValidationResult("Code is required.", [nameof(IAuth.Code)]));
+            ValidationResults.Add(new ValidationResult("Code is required.", [nameof(IGateway.Code)]));
         if (string.IsNullOrWhiteSpace(Role.CodeVerifier))
-            ValidationResults.Add(new ValidationResult("CodeVerifier is required.", [nameof(IAuth.CodeVerifier)]));
+            ValidationResults.Add(new ValidationResult("CodeVerifier is required.", [nameof(IGateway.CodeVerifier)]));
         if (string.IsNullOrWhiteSpace(Role.RedirectUrl))
-            ValidationResults.Add(new ValidationResult("RedirectUrl is required.", [nameof(IAuth.RedirectUrl)]));
+            ValidationResults.Add(new ValidationResult("RedirectUrl is required.", [nameof(IGateway.RedirectUrl)]));
 
         return ValidationResults.Count == 0;
     }

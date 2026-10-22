@@ -7,8 +7,8 @@ namespace Backlot.Authentication.Bearer.Scenarios;
 /// Revokes a refresh token (logout). Whether this has effect depends on the registered ITokenStore.
 /// </summary>
 [Scenario(typeof(Revoke), access: [Core.Security.Access.Open])]
-public class Revoke(ITokenRequest role, ITokenStore tokenStore)
-    : Scenario<Revoke, ITokenRequest, bool>(role)
+public class Revoke(IRefreshToken role, ITokenStore tokenStore)
+    : Scenario<Revoke, IRefreshToken, bool>(role)
 {
     protected override bool PersistAndRelate => false;
 

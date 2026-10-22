@@ -7,8 +7,8 @@ namespace Backlot.Authentication.Bearer.Scenarios;
 /// Exchanges a refresh token for a new token set.
 /// </summary>
 [Scenario(typeof(Refresh), access: [Core.Security.Access.Open])]
-public class Refresh(ITokenRequest role, ITokenStore tokenStore)
-    : Scenario<Refresh, ITokenRequest, TokenSet>(role)
+public class Refresh(IRefreshToken role, ITokenStore tokenStore)
+    : Scenario<Refresh, IRefreshToken, TokenSet>(role)
 {
     protected override bool PersistAndRelate => false;
 

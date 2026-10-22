@@ -5,23 +5,24 @@ using Backlot.Core.Abstraction.Scenarios;
 namespace Backlot.Authentication.Bearer.Scenarios;
 
 /// <summary>
-/// Starts the authorization code flow, called by the LoginPage.
-/// Returns the location of the external identity provider to send the browser to.
+/// Starts the authorization code flow
+/// It is the first step: it returns the identity provider's login URL with the signed state.
+/// Only for use with the Backlot Authentication Gateway flow.
 /// </summary>
 [Scenario(typeof(Authorize), access: [Core.Security.Access.Open])]
-public class Authorize(IAuth role)
-    : Scenario<Authorize, IAuth, object>(role)
+public class Authorize(IGateway role)
+    : Scenario<Authorize, IGateway, object>(role)
 {
     protected override bool PersistAndRelate => false;
 
     public override bool Validate()
     {
         if (string.IsNullOrWhiteSpace(Role.RedirectUrl))
-            ValidationResults.Add(new ValidationResult("RedirectUrl is required.", [nameof(IAuth.RedirectUrl)]));
+            ValidationResults.Add(new ValidationResult("RedirectUrl is required.", [nameof(IGateway.RedirectUrl)]));
         if (string.IsNullOrWhiteSpace(Role.State))
-            ValidationResults.Add(new ValidationResult("State is required.", [nameof(IAuth.State)]));
+            ValidationResults.Add(new ValidationResult("State is required.", [nameof(IGateway.State)]));
         if (string.IsNullOrWhiteSpace(Role.CodeChallenge))
-            ValidationResults.Add(new ValidationResult("CodeChallenge is required.", [nameof(IAuth.CodeChallenge)]));
+            ValidationResults.Add(new ValidationResult("CodeChallenge is required.", [nameof(IGateway.CodeChallenge)]));
 
         return ValidationResults.Count == 0;
     }
