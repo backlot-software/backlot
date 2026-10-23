@@ -10,7 +10,7 @@ Only globally reusable components belong in this package. Feature-specific test 
 |---|---|
 | `FakeConfiguration` | Provides configuration values from an in-memory dictionary. |
 | `FakeStorage` | Provides an in-memory file system. |
-| `FakeUserContext` | Provides a configurable test user context. *(TODO)* |
+| `FakeUserContext` | Provides a configurable test user context. |
 | `FakeDefaultDirector` | Provides a base director that contributors can extend. |
 | `Initialize` | Creates and configures the Backlot test environment. |
 
@@ -25,18 +25,63 @@ The package currently provides default logging and caching registrations.
 
 *TODO: Add a short example of the final default setup.*
 
-## 3. Customization (Planned/TODO)
+## 3. Configuration and Customization (Planned/TODO)
 
 Contributors can customize the default environment when their tests require different behavior.
 
-- **Configuration:** Provide custom values through `FakeConfiguration`.
-- **User context:** Configure `FakeUserContext` or provide another `IUserContext`.
-- **Director:** Extend `FakeDefaultDirector` and override `Registration()` or `Incept()`.
-- **Services:** Register custom services through Autofac.
+- [**Configuration:**](#fakeconfiguration) Provide custom values through `FakeConfiguration`.
+- [**User context:**](#fakeusercontext) Configure `FakeUserContext` or provide another `IUserContext`.
+- [**Director:**](#custom-director-and-services) Extend `FakeDefaultDirector` and override `Registration()` or `Incept()`.
+- [**Services:**](#custom-director-and-services) Register custom services through Autofac.
 
-Call `base.Registration()` when a custom director must retain the default director registrations.
+### FakeConfiguration
 
-*TODO: Add a short example of a custom director and service override.*
+Uses an in-memory dictionary to provide configuration values.
+
+```csharp
+var config = new FakeConfiguration(
+    new Dictionary<string, string?>
+    {
+        ["MyFeature.Settings.Enabled"] = "true"
+    });
+```
+
+Missing settings return an empty string. `Update()` adds new settings.
+
+Some `IConfigurationManager` methods are not implemented. Use a custom `IConfigurationManager` when other behavior is required.
+
+### FakeUserContext
+
+Simulates a user without performing authentication.
+
+Default values:
+- Username: `UnitTestUser`
+- Authentication scheme: `Bearer`
+- Groups: `Everyone`, `Admin`
+- Authenticated: `true`
+- Claims: Empty
+
+Contributors can override these values:
+
+```csharp
+var user = new FakeUserContext
+{
+    UserName = "TestUser",
+    Groups = ["Everyone", "Manager"],
+    IsAuthenticated = true
+};
+```
+
+Use `FakeUserContext` for tests that require a predefined user. Use another `IUserContext`, such as `BuiltInUserContext`, when testing actual authentication behavior.
+
+### Custom Director and Services
+
+Extend `FakeDefaultDirector` to register feature-specific services or configure Backlot behavior.
+
+Call `base.Registration()` to retain default director registrations.
+
+*TODO: Add a custom director and service override example.*
+
 
 ## 4. Limitations
 
