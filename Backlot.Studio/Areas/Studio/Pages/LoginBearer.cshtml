@@ -1,0 +1,20 @@
+@page "/login/bearer"
+@model Backlot.Studio.Areas.Studio.Pages.LoginBearerModel
+@{
+    Layout = "_LoginLayout";
+    ViewData["Title"] = "Sign in — Backlot Studio";
+}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8 space-y-6">
+        <h2 class="text-2xl font-bold text-center text-gray-800">Sign in</h2>
+
+        <div asp-validation-summary="All" class="text-red-500 text-sm text-center"></div>
+
+        <a asp-area="Studio" asp-page="/LoginBearer" asp-page-handler="Start" asp-route-ReturnUrl="@Model.ReturnUrl"
+           data-turbo="false"
+           class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+            Sign in with identity provider
+        </a>
+    </div>
+</div>

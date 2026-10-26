@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Backlot.Core;
+using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Exceptions;
 using Backlot.Core.Services;
@@ -50,16 +51,27 @@ namespace Backlot.Functions
                 {
                     role = ServiceLocator.Get<IDirector>();
                 }
+                else if (!typeof(IPersist).IsAssignableFrom(roleType)) // when not an IPersist, load properties from querystring
+                {
+                    if(req.Query.Count == 0)
+                        throw new BadRequestException(
+                            $"Query string must contain properties for role type '{roleType}' which is not a persistable role, or use POST.");
+                    
+                    var dic = new Dictionary<string, string>();
+                    foreach (var key in req.Query.AllKeys)
+                    {
+                        var s = req.Query[key];
+                        if(key != null &&  s != null)
+                            dic[key] = s; // last value wins
+                    }
+                    role = dic.PresentsType(roleType);
+                }
                 else
                 {
                     if (req.Query["uid"] == null || req.Query.Count > 1)
                         throw new BadRequestException(
-                            "The query string must contain only 'uid' when using roles other than director in GET requests.");
-                    
-                    if(!typeof(IPersist).IsAssignableFrom(roleType))
-                        throw new BadRequestException(
-                            $"{roleType} is not a persistable roletype inheriting from IPersist. Make sure you use the correct roletype for your request.");
-                    
+                            "The query string must contain only 'uid' when using persisted roles in GET requests.");
+
                     if (!_roleRepository.TryGet(req.Query["uid"], roleType, out var roleOut))
                     {
                         throw new NotFoundException($"Role with uid '{req.Query["uid"]}' not found.");

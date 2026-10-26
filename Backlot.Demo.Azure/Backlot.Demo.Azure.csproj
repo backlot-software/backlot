@@ -50,7 +50,6 @@
 		<ProjectReference Include="..\Backlot.Http.Media.Formatters.Html\Backlot.Http.Media.Formatters.Html.csproj" />
 		<ProjectReference Include="..\Backlot.Functions\Backlot.Functions.csproj" />
 		<ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
-		<ProjectReference Include="..\Backlot.Services.Postmark\Backlot.Services.Postmark.csproj" />
 		<ProjectReference Include="..\Backlot.Services.RavenDB\Backlot.Services.RavenDb.csproj" />
 	</ItemGroup>
 	<ItemGroup>

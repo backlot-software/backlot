@@ -1,7 +1,8 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Backlot.Studio.Areas.Studio.Pages.ViewModels;
 using Backlot.Studio.Core;
+using Backlot.Studio.Implementation;
 using Backlot.Studio.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
@@ -224,14 +225,17 @@ public class IndexModel : AuthenticatedPageModel
     }
 
     // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body and
-    // optional Accept header. The Authorization line carries the same base64 credential the app
-    // uses for its own API requests, read from session ("BasicAuthHeader", stored without the "Basic "
-    // prefix by Login.cshtml.cs); missing session value → empty. The body block is omitted for GET
-    // requests (and empty bodies).
+    // optional Accept header. The Authorization line carries the same credential the app uses for
+    // its own API requests, read from session: the base64 Basic credential (Login.cshtml.cs) or the
+    // Bearer access token (LoginBearer.cshtml.cs); missing session value → empty. The body block is
+    // omitted for GET requests (and empty bodies).
     private string BuildHttpRequest(string method, string endpoint, string? body, string? accept = null)
     {
         var baseUrl = _api.BaseUrl?.ToString().TrimEnd('/') ?? string.Empty;
-        var authHeader = HttpContext?.Session.GetString("BasicAuthHeader") ?? string.Empty;
+        var scheme = HttpContext?.Session.GetString(BacklotStudioDefaults.AuthSchemeSessionKey) ?? AuthHeaderHandler.BasicScheme;
+        var authHeader = HttpContext?.Session.GetString(scheme == AuthHeaderHandler.BearerScheme
+            ? BacklotStudioDefaults.AccessTokenSessionKey
+            : BacklotStudioDefaults.BasicAuthSessionKey) ?? string.Empty;
         var path = endpoint.Trim().TrimStart('/');
         var verb = string.IsNullOrWhiteSpace(method) ? "GET" : method.Trim().ToUpperInvariant();
 
@@ -242,7 +246,7 @@ public class IndexModel : AuthenticatedPageModel
             sb.Append("Accept: ").Append(accept.Trim()).Append('\n');
         }
         sb.Append("Content-Type: application/json").Append('\n');
-        sb.Append("Authorization: Basic ").Append(authHeader).Append('\n');
+        sb.Append("Authorization: ").Append(scheme).Append(' ').Append(authHeader).Append('\n');
 
         if (verb != "GET" && !string.IsNullOrWhiteSpace(body))
         {

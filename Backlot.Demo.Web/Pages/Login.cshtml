@@ -1,0 +1,38 @@
+@page "/login"
+@model Backlot.Demo.Web.Pages.LoginModel
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo login</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+        pre { white-space: pre-wrap; word-break: break-all; background: #f4f4f5; padding: 8px; }
+        .error { color: #b91c1c; }
+    </style>
+</head>
+<body>
+<h1>Backlot demo login</h1>
+
+@if (Model.Error is not null)
+{
+    <p class="error">@Model.Error</p>
+}
+
+@if (Model.AccessToken is null)
+{
+    <p><a href="/login?handler=start">Sign in with the identity provider</a></p>
+}
+else
+{
+    <h2>Access token (use as Bearer)</h2>
+    <pre>@Model.AccessToken</pre>
+    <h2>Refresh token</h2>
+    <pre>@Model.RefreshToken</pre>
+    <h2>WhoAmI with the Bearer token</h2>
+    <pre>@Model.WhoAmI</pre>
+    <p><a href="/login">Sign in again</a></p>
+}
+</body>
+</html>
