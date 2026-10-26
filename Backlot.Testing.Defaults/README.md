@@ -1,37 +1,47 @@
 ﻿# Backlot.Testing.Defaults
 
-A reusable NuGet package that provides common testing infrastructure for Backlot projects. The package offers a simple default test environment. Contributors can use the provided components or customize them for their own tests.
-
-Only globally reusable components belong in this package. Feature-specific test models, scenarios, and helpers remain in their respective testing projects.
+A reusable NuGet package that provides common testing infrastructure for Backlot projects. The package offers a simple default test environment. You can use the provided components or customize them for your own tests.
 
 ## 1. Components
+Only globally reusable components belong in this package. Feature-specific test models, scenarios, and helpers remain in their respective testing projects.
 
 | Component | Purpose |
 |---|---|
-| `FakeConfiguration` | Provides configuration values from an in-memory dictionary. |
+| [`FakeConfiguration`](#fakeconfiguration) | Provides configuration values from an in-memory dictionary. |
 | `FakeStorage` | Provides an in-memory file system. |
-| `FakeUserContext` | Provides a configurable test user context. |
-| `FakeDefaultDirector` | Provides a base director that contributors can extend. |
+| [`FakeUserContext`](#fakeusercontext) | Provides a configurable test user context. |
+| `FakeDefaultDirector` | Provides a base director that can be extend. |
 | `Initialize` | Creates and configures the Backlot test environment. |
 
 ## 2. Getting Started
 
 The package uses Autofac to configure a test environment.
 
-- `Initialize.BuildApp()` creates the container and configures the service locator.
+- `Initialize.BuildApp()` builds the container and configures the Backlot service locator.
 - `Initialize.ConfigureBacklot()` registers default services and initializes the director.
 
 The package currently provides default logging and caching registrations.
 
-*TODO: Add a short example of the final default setup.*
+### Default Setup
 
-## 3. Configuration and Customization (Planned/TODO)
+Use the default setup when no custom services or configuration are required.
 
-Contributors can customize the default environment when their tests require different behavior.
+```csharp
+Initialize.BuildApp(builder =>
+    builder.ConfigureBacklot());
+```
+
+This setup uses `FakeDefaultDirector`, `FakeUserContext`, `FakeStorage` and `FakeConfiguration`. It also registers default logging and in-memory caching services.
+
+No custom director is required.
+
+## 3. Configuration and Customization
+
+You can customize the default environment when your tests require different behavior. You can provide configuration values, override services or create your own Director.
 
 - [**Configuration:**](#fakeconfiguration) Provide custom values through `FakeConfiguration`.
 - [**User context:**](#fakeusercontext) Configure `FakeUserContext` or provide another `IUserContext`.
-- [**Director:**](#custom-director-and-services) Extend `FakeDefaultDirector` and override `Registration()` or `Incept()`.
+- [**Director:**](#custom-director-and-services) Extend `FakeDefaultDirector` and override `Registration()` and/or `Incept()`.
 - [**Services:**](#custom-director-and-services) Register custom services through Autofac.
 
 ### FakeConfiguration
@@ -61,7 +71,7 @@ Default values:
 - Authenticated: `true`
 - Claims: Empty
 
-Contributors can override these values:
+You can override and configure these values:
 
 ```csharp
 var user = new FakeUserContext
@@ -72,24 +82,79 @@ var user = new FakeUserContext
 };
 ```
 
-Use `FakeUserContext` for tests that require a predefined user. Use another `IUserContext`, such as `BuiltInUserContext`, when testing actual authentication behavior.
+Use `FakeUserContext` for tests that require a predefined user. Use another `IUserContext` when testing actual authentication behavior.
 
-### Custom Director and Services
+### Custom Director
 
 Extend `FakeDefaultDirector` to register feature-specific services or configure Backlot behavior.
 
+```csharp
+public class CustomTestDirector(
+    IFileSystem fileSystem,
+    IConfigurationManager configuration,
+    ContainerBuilder builder)
+    : FakeDefaultDirector(fileSystem, configuration, builder)
+{
+    public override void Registration()
+    {
+        base.Registration();
+
+        // Register feature-specific services here.
+    }
+}
+```
+
 Call `base.Registration()` to retain default director registrations.
+Register feature-specific services in the custom Director's `Registration()` method.
 
-*TODO: Add a custom director and service override example.*
+**Initialize the custom Director**:
 
+```csharp
+Initialize.BuildApp(builder =>
+    builder.ConfigureBacklot(
+        (config, b) => new CustomTestDirector(
+            new FakeStorage(), config, b)));
+```
+**The custom Director receives**:
+
+- **`IFileSystem`:** Handles file operations. The example uses `FakeStorage`, but you can provide another implementation.
+- **`IConfigurationManager`:** Provides configuration values. `FakeConfiguration` is used by default.
+- **`ContainerBuilder`:** Allows the Director to register services.
+
+### Service Overrides
+
+Use `configureContainer` for additional registrations or overrides:
+
+```csharp
+Initialize.BuildApp(builder =>
+    builder.ConfigureBacklot(
+        configureContainer: b =>
+        {
+            b.RegisterInstance(new FakeUserContext
+            {
+                UserName = "Manager"
+            }).As<IUserContext>();
+        }));
+```
+
+Default logging and caching services are always registered.
+
+Registrations are applied in this order:
+
+1. Default logging and caching services.
+2. Director registrations and initialization.
+3. Additional `configureContainer` registrations.
+
+For custom Directors, prefer `director.Registration()` for feature-specific services. Use `configureContainer` for additional test-specific overrides.
 
 ## 4. Limitations
 
 The package provides basic test implementations, not complete replacements for production services.
 
 - Fake services do not necessarily reproduce production behavior.
-- `FakeUserContext` will not perform real authentication.
-- Project-specific test components are not included.
+- `FakeConfiguration` does not implement every IConfigurationManager operation.
+- `FakeUserContext` does not perform real authentication.
+- Repositories or project-specific test components are not provided by default.
 
 Use a custom implementation when a test requires behavior that the package does not provide.
 
@@ -102,6 +167,4 @@ When adding or changing a component:
 1. Keep its default behavior simple and predictable.
 2. Allow configuration when necessary.
 3. Document its usage, behavior, and limitations.
-4. Validate the component before releasing a new package version.
-
-*TODO: Add package build and release instructions.*
+4. Add tests for default behavior and potential customization.
