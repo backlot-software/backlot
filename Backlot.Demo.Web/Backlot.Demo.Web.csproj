@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="local.jsonsettings.json">
+      <None Include="_local.jsonsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
         <None Include="usersandgroups.json" Condition="Exists('usersandgroups.json')">
