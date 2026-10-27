@@ -1,4 +1,4 @@
-using Backlot.Studio.Core.Models.Request;
+﻿using Backlot.Studio.Core.Models.Request;
 using Backlot.Studio.Core.Models.Response;
 
 namespace Backlot.Studio.Core;
@@ -12,6 +12,9 @@ public interface IBacklotApiClient
     bool IsConfigured { get; }
     
     Task<bool> IsAuthenticated();
+
+    /// <summary>The authentication scheme of the Backlot API: "Basic" or "Bearer" (AuthInfo scenario).</summary>
+    Task<string> AuthScheme();
     Task<object?> WhoAmI();
 
     Task<ApiEnvelope<StatusBody>?> Status();

@@ -4,6 +4,7 @@ using Backlot.Core;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Security;
 using Backlot.Core.Services;
+using Backlot.Defaults.Instructing;
 using Backlot.Defaults.Scenarios.Authentication;
 using Backlot.Defaults.Services;
 using Backlot.DependencyInjection.Autofac;
@@ -45,6 +46,8 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
 
         // AssignInstructorFor<IFormula>(Instructors.AliasInitializer);
 
+        AssignInstructorFor<IRole>(Instructors.CaseInsensitiveInitializer); // this one f.e. is required when using Bearer gateways for authentication.
+        
         // Try to avoid calling the db by using the EncryptedPermissionInitialization. This allows clients to send a valid encrypted version of the permission.
         AssignInstructorFor<IPersist>(PermissionInitialization.EncryptedPermissionInitialization, 997);
         // Set DbAccessInitialization as default for for all roles that are persisted and are not already set by EncryptedPermissionInitialization.

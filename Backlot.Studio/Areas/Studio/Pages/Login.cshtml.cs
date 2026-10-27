@@ -1,6 +1,7 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Backlot.Studio.Core;
+using Backlot.Studio.Implementation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,18 @@ public class LoginModel : PageModel
         var existing = await HttpContext.AuthenticateAsync(BacklotStudioDefaults.AuthenticationScheme);
         if (existing.Succeeded)
             return LocalRedirect(ReturnUrl ?? DashboardUrl);
+
+        // This page is for Basic authentication; a Bearer API signs in with its identity provider.
+        try
+        {
+            if (await _apiClient.AuthScheme() == AuthHeaderHandler.BearerScheme)
+                return RedirectToPage("/LoginBearer", new { ReturnUrl });
+        }
+        catch
+        {
+            ModelState.AddModelError(string.Empty, "Could not reach the Backlot API. Try again.");
+        }
+
         return Page();
     }
 
@@ -59,7 +72,8 @@ public class LoginModel : PageModel
         var raw = $"{Input.Username}:{Input.Password}";
         var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(raw));
 
-        // 2. Temporarily store so BasicAuthHandler can inject it on the validation call
+        // 2. Temporarily store so AuthHeaderHandler can inject it on the validation call
+        HttpContext.Session.SetString(BacklotStudioDefaults.AuthSchemeSessionKey, AuthHeaderHandler.BasicScheme);
         HttpContext.Session.SetString(BacklotStudioDefaults.BasicAuthSessionKey, encoded);
         bool isValid;
         try

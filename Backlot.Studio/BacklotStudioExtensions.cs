@@ -65,14 +65,14 @@ public static class BacklotStudioExtensions
         services.AddDistributedMemoryCache();
         services.AddSession();
         services.AddHttpContextAccessor();
-        services.AddTransient<BasicAuthHandler>();
+        services.AddTransient<AuthHeaderHandler>();
 
         // BaseAddress stays null when BaseUrl is not configured: BacklotApiClient then reports itself
         // as unconfigured (and throws on use) instead of the whole page failing to be constructed,
         // which is what lets the login page render its alert.
         services.AddHttpClient<IBacklotApiClient, BacklotApiClient>(client =>
                 client.BaseAddress = baseUri)
-            .AddHttpMessageHandler<BasicAuthHandler>();
+            .AddHttpMessageHandler<AuthHeaderHandler>();
 
         AddStudioAuthentication(services, options);
         AddStudioRazorPages(services, options);
@@ -178,6 +178,7 @@ public static class BacklotStudioExtensions
             razorPages.Conventions.AuthorizeAreaFolder(
                 BacklotStudioDefaults.AreaName, "/", BacklotStudioDefaults.AuthorizationPolicy);
             razorPages.Conventions.AllowAnonymousToAreaPage(BacklotStudioDefaults.AreaName, "/Login");
+            razorPages.Conventions.AllowAnonymousToAreaPage(BacklotStudioDefaults.AreaName, "/LoginBearer");
 
             // Every Studio page declares an absolute route (@page "/roles/{RoleType?}"), which is
             // rewritten here to sit under the mount path. Conventions run when the page routes are

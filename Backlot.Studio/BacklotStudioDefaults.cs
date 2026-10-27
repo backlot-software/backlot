@@ -1,4 +1,4 @@
-namespace Backlot.Studio;
+﻿namespace Backlot.Studio;
 
 /// <summary>
 /// Names Backlot Studio claims inside a host application. Every one of them is deliberately
@@ -24,4 +24,16 @@ public static class BacklotStudioDefaults
 
     /// <summary>Session key holding the base64 basic-auth credential forwarded to the Backlot API.</summary>
     internal const string BasicAuthSessionKey = "BasicAuthHeader";
+
+    /// <summary>Session key holding the scheme ("Basic" or "Bearer") used towards the Backlot API.</summary>
+    internal const string AuthSchemeSessionKey = "AuthScheme";
+
+    /// <summary>Session key holding the Bearer access token forwarded to the Backlot API.</summary>
+    internal const string AccessTokenSessionKey = "AccessToken";
+
+    /// <summary>Session key holding the Bearer refresh token, used to renew the access token.</summary>
+    internal const string RefreshTokenSessionKey = "RefreshToken";
+
+    /// <summary>Session key holding the PKCE code verifier and state while signing in with the identity provider.</summary>
+    internal const string LoginFlowSessionKey = "LoginFlow";
 }

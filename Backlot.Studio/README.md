@@ -81,3 +81,16 @@ registers its own cookie scheme (`BacklotStudioDefaults.AuthenticationScheme`), 
 authorization policy scoped to the `Studio` area, cookies scoped to the mount path, and serves its
 embedded `wwwroot` from `{prefix}/assets`. Mounting the Studio does not change how the host's
 existing endpoints behave.
+
+### Signing in
+
+The login page follows the scheme the Backlot API reports through its `AuthInfo` scenario:
+
+- **Basic**: `{prefix}/login` asks for username and password and sends them with every API call.
+- **Bearer**: `{prefix}/login` forwards to `{prefix}/login/bearer`, which signs in through the identity
+  provider using the Backlot.Authentication.Bearer additional package. The access and refresh tokens are kept
+  in the Studio session; an expired access token is refreshed automatically. 
+
+For more information how to setup Backlot.Authentication.Bearer, check its documentation.
+- For Backlot Studio Desktop the allowed redirect URIs need to include `http://127.0.0.1/studio/login/bearer?handler=Done` (any port).
+- For a hosted Studio the allowed redirect URIs need to include `https://<host>/studio/login/bearer?handler=Done` (where `<host>` is the host name of the web application, which can be (but is not required to be) the same as Backlot API).

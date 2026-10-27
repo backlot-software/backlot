@@ -4,6 +4,7 @@ using Backlot.Core;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Security;
 using Backlot.Core.Services;
+using Backlot.Defaults.Instructing;
 using Backlot.Defaults.Scenarios.Authentication;
 using Backlot.Defaults.Services;
 using Backlot.DependencyInjection.Autofac;
@@ -25,6 +26,7 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
             CacheFactory>
         (fileSystem, configurationManager, builder)
 {
+
     
     public override void Registration()
     {
@@ -35,6 +37,7 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
             .InstancePerRequest();
         
         // the IUserRepository is used by BasicUserContext
+        
         Builder.RegisterType<UserFileRepository>()
             .As<IUserRepository>()
             .SingleInstance();
@@ -50,7 +53,7 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
         // 2) -- Backlot instructors
         
         // AssignInstructorFor<IFormula>(Instructors.AliasInitializer);
-        
+        AssignInstructorFor<IRole>(Instructors.CaseInsensitiveInitializer);
         // Try to avoid calling the db by using the EncryptedPermissionInitialization. This allows clients to send a valid encrypted version of the permission.
         AssignInstructorFor<IPersist>(PermissionInitialization.EncryptedPermissionInitialization, 997);
         // Set DbAccessInitialization as default for for all roles that are persisted and are not already set by EncryptedPermissionInitialization.
@@ -73,7 +76,7 @@ public class WebDirector(IFileSystem fileSystem, IConfigurationManager configura
                     return settings;
                 }
 
-                return JObject.Parse(string.Empty);
+                throw new UnauthorizedAccessException($"{UserContext.Current.UserName} is not an known user, make sure {nameof(IUserRepository.TryGetUser)} returns this user.");
             };
         });
 
