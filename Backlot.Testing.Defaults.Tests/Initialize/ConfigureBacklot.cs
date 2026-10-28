@@ -30,6 +30,11 @@ public class ConfigureBacklot
         
     }
     
+    private class TestSettings
+    {
+        public string SigningKey { get; set; } = string.Empty;
+    }
+    
     [Test]
     public void ConfigureBacklot_DefaultSetup_RegistersDefaultServices()
     {
@@ -145,5 +150,27 @@ public class ConfigureBacklot
             Assert.That(container.Resolve<IMemoryCache>(), Is.Not.Null);
             Assert.That(container.Resolve<ILogger<ConfigureBacklot>>(), Is.Not.Null);
         });
+    }
+
+    [Test]
+    public void ConfigureBacklot_CustomConfigurationThroughSettingsParameter_UsesProvidedValues()
+    {
+        // Arrange
+        var builder = new ContainerBuilder();
+        
+        var customConfiguration = new Dictionary<string, string?>
+        {
+            [$"{typeof(TestSettings).FullName}.{nameof(TestSettings.SigningKey)}"] = "test-signing-key"
+        };
+        
+        // Act
+        builder.ConfigureBacklot(settings: customConfiguration);
+        var container = builder.Build();
+        
+        var configuration =  container.Resolve<IConfigurationManager>();
+        var customValue = configuration.Get<TestSettings>(x => x.SigningKey);
+
+        // Assert
+        Assert.That(customValue, Is.EqualTo("test-signing-key"));
     }
 }

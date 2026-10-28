@@ -15,7 +15,7 @@ public class FakeDefaultDirector(IFileSystem fileSystem,
     
     public override void Registration()
     {
-        Builder.RegisterType<FakeUserContext>().As<IUserContext>();
+        Builder.RegisterType<FakeUserContext>().As<IUserContext>().InstancePerLifetimeScope();
     }
 
     public override void Incept()
