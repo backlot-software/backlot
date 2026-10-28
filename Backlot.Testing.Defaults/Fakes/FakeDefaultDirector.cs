@@ -1,4 +1,5 @@
 using Autofac;
+using Backlot.Core.Security;
 using Backlot.Core.Services;
 using Backlot.DependencyInjection.Autofac;
 using IConfigurationManager = Backlot.Core.Services.IConfigurationManager;
@@ -14,7 +15,7 @@ public class FakeDefaultDirector(IFileSystem fileSystem,
     
     public override void Registration()
     {
-        // todo: fake user; Builder.RegisterType<BuiltInUserContext>().As<IUserContext>();
+        Builder.RegisterType<FakeUserContext>().As<IUserContext>().InstancePerLifetimeScope();
     }
 
     public override void Incept()
