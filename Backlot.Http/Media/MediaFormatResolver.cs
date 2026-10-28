@@ -41,7 +41,17 @@ namespace Backlot.Http.Media
                 // when exceptions
                 return await GetExceptionResponseData(request, ex, logger, stopwatch);
             }
-            
+
+            if (returnObj is RedirectResponse redirect) // support for redirect results.
+            {
+                return new ResponseData
+                {
+                    Content = string.Empty,
+                    StatusCode = HttpStatusCode.Found,
+                    Headers = { ["Location"] = redirect.Location }
+                };
+            }
+
             var mediaFormatter = GetMediaFormatter(request);
                 return await mediaFormatter.GetResponse(request, returnObj, stopwatch, statusCode);
         }

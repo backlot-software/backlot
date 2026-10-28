@@ -132,12 +132,12 @@ public static class Instructors
             // only for proxied roles
             proxy.Referrers = () =>
             {
-                var fields = typeof(T).GetFieldInfo();
+                var fields = role.GetType().GetFieldInfo(false).Select(f => f.Name).ToList();
                 var actorProperties = role.ActorProperties();
 
                 // Case sensitivy checks.
                 var result = new Dictionary<string, string>();
-                foreach (var fieldName in fields.Select(f => f.Name)) 
+                foreach (var fieldName in fields) 
                 {
                     var alias = actorProperties.FirstOrDefault(a =>
                         !a.Contains(fieldName) // check if it not cantains an case sensitive equal variant 
