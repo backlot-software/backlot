@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Backlot.Studio.Core;
 using Backlot.Studio.Core.Models;
 using Backlot.Studio.Core.Models.Request;
@@ -116,6 +116,13 @@ public class BacklotApiClient : IBacklotApiClient
         return envelope?.Body ?? false;
     }
 
+    // AuthScheme — called from Login.cshtml.cs to pick the login page (Basic or Bearer)
+    public async Task<string> AuthScheme()
+    {
+        var envelope = await Play<AuthInfoBody>("authinfo");
+        return envelope.Body?.Scheme ?? string.Empty;
+    }
+
     // WhoAmIAsync — called server-side from authenticated PageModels
     public async Task<object> WhoAmI()
     {
@@ -137,7 +144,7 @@ public class BacklotApiClient : IBacklotApiClient
     // pipeline for the Client tester page. Deliberately does NOT call EnsureSuccessAsync: the raw
     // status, reason and body are returned for every non-401 outcome so the operator can inspect
     // the response regardless of success. (401 still throws UnAuthorizedException from
-    // BasicAuthHandler, which the caller translates into a re-login.) The path is used relative to
+    // AuthHeaderHandler, which the caller translates into a re-login.) The path is used relative to
     // BaseAddress; a leading slash is tolerated. A JSON body is attached only for methods that
     // carry one.
     public Task<RawApiResponse> SendRawAsync(string method, string path, string? body, CancellationToken ct)

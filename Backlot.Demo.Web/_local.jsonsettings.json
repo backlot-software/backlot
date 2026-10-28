@@ -1,0 +1,28 @@
+
+// This is an example file. DO NOT CHANGE. create a copy named local.jsonsettings.json and fill in the values
+{
+  "Container": {
+    "defaultAssembly": "Backlot.Demo.Web"
+  },
+  "Backlot": {
+    "Authentication": {
+      "Bearer": {
+        "Settings": {
+          "SigningKey": "<your own secret of at least 32 characters>",
+          "AllowedRedirectUris": "https://localhost:7221/login?handler=done,https://localhost:7221/studio/login/bearer?handler=done,http://127.0.0.1/studio/login/bearer?handler=done",
+          "GatewayAuthority": "https://<host>.eu.auth0.com/",
+          "GatewayClientId": "<client-id>",
+          "GatewayClientSecret": "<client-secret>",
+          "GatewayCallbackUri": "https://localhost:7221/api/role/gateway/callback"
+        }
+      }
+    },
+    "Services": {
+      "LiteDB":{
+        "Settings" : {
+          "ConnectionString": "mydata.db"
+        }
+      }
+    }
+  }
+}
