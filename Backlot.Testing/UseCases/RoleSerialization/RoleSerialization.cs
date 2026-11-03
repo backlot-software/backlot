@@ -1,8 +1,13 @@
-﻿using Backlot.Core.Abstraction.Actors;
+﻿using Autofac;
+using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
+using Backlot.Core.Security;
 using Backlot.Core.Services;
 using Backlot.Services.Filesystem.LocalDiskStorage;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
@@ -18,19 +23,32 @@ namespace Backlot.Testing.UseCases.RoleSerialization;
 /// </summary>
 public class RoleSerialization
 {
-    // TODO: Move alias-specific test initialization to a shared helper
-    // in the planned Backlot.Testing.Defaults NuGet package.
-    // Also review how to avoid duplicate Initialize.Setup() calls.
-    [SetUp]
-    public void Setup()
+    private static void DefaultSetup()
     {
-        Initialize.Setup((builder) => new AliasDirector(new LocalDiskStorage(), Substitute.For<IConfigurationManager>(), builder));
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
+    }
+    
+    private static void AliasSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.Register(_ => new EncryptionService("1234567890ABCDEF"))
+                        .As<IEncryptionService>()
+                        .SingleInstance();
+                }));
     }
     
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForPersistenceAndPresentedAgain_ThenAliasValueIsPreserved()
     {
         // Arrange
+        AliasSetup();
+        
         var origin = new FormulaDifferentAliasName()
         {
             Uid = "860C5B53",
@@ -56,6 +74,8 @@ public class RoleSerialization
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForInteractionAndPresentedAgain_ThenAliasValueIsPreserved()
     {
         // Arrange
+        AliasSetup();
+        
         var origin = new FormulaDifferentAliasName()
         {
             Uid = "860C5B53",
@@ -81,6 +101,8 @@ public class RoleSerialization
     public void GivenJsonRole_WhenPresentedAsDifferentRolesAndSerialized_ThenAllOriginalSkillsAndAddedSkillsArePreserved()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = "{\"Name\":\"Test Order\", \"Number1\":1,\"Number2\":2,\"Operation\": \"sum\"}";
         
         // Act
@@ -106,6 +128,7 @@ public class RoleSerialization
     public void GivenTwoJProxiesWhereTheLeadingJsonContainsANullValueForAProperty_WhenTheJProxiesAreMergedAndSerializedForPersistence_TheNullValueAndAdditionalPropertiesArePreserved()
     {
         // Arrange
+        DefaultSetup();
         
         // var for this json {"Number1":1,"Number2":2,"Operation":"sum"}
         var webJson = "{\"Number1\":1,\"Number2\":2,\"Operation\":null}";
