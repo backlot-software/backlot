@@ -20,7 +20,7 @@ public class Play
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Testing.Initialize.Setup();
     }
     
     private static int Occurrences(string haystack, string needle)

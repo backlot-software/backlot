@@ -114,7 +114,12 @@ Use `FakeUserContext` for tests that require a predefined user. Use another `IUs
 
 ### Custom Director
 
-Extend `FakeDefaultDirector` when a test needs feature-specific services or initialization behavior.
+Extend `FakeDefaultDirector` when a test needs feature-specific services or Backlot-specific initialization behavior.
+
+A Director provides two methods for customization:
+
+- **Registration()**: Registers services and dependencies in the Autofac container, such as repositories, fakes, mocks, or other feature-specific services. 
+- **Incept()**: Configures Backlot behavior, such as role instructors, expression engines, watchers, and scenario compositions.
 
 ```csharp
 public class CustomTestDirector(
@@ -128,6 +133,12 @@ public class CustomTestDirector(
         base.Registration();
 
         // Register feature-specific services here.
+    }
+    
+    public override void Incept()
+    {
+        // examples; AssignInstructorFor<IPermission>(Instructors.AliasInitializer);
+        // examples; AssignInstructorFor<IPermission>(PermissionInitialization.AllAccessInitialization);
     }
 }
 ```
