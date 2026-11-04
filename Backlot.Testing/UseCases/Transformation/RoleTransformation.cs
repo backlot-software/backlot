@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Autofac;
 using Backlot.Core;
@@ -8,6 +9,9 @@ using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Abstraction.Roles;
 using Backlot.Core.Services;
 using Backlot.Defaults.Roles;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using NSubstitute;
 using Newtonsoft.Json.Linq;
@@ -96,22 +100,25 @@ public class RoleTransformation
     }
     
     // not [setup] attribute, because the setup differs per test.
-    public void Setup(Func<IEnumerable<Revision>> revisions)
+    private static void Setup(Func<IEnumerable<Revision>> revisions)
     {
-        Initialize.Setup(registerRepos: builder =>
-        {
-            builder.Register(_ =>
-            {
-                var repo = Substitute.For<IPersistedRoleRepository>();
-                
-                repo.GetRevisions<IPersist>(Arg.Any<string>())
+        var repo = Substitute.For<IPersistedRoleRepository>();
+        repo.GetRevisions<IPersist>(Arg.Any<string>())
                     .Returns(_ => revisions());
+        
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.RegisterInstance(repo)
+                        .As<IPersistedRoleRepository>();
 
-                return repo;
-            }).As<IPersistedRoleRepository>();
-            
-            builder.RegisterType<MemoryRelationRepository>().As<IRelationRepository>();
-        });
+                    b.Register(_ => new ChecksumBuilder(
+                            MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
     }
 
     #endregion

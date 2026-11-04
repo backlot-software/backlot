@@ -34,6 +34,14 @@ public class RoleSerialization
         Defaults.Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b)));
+    }
+    
+    private static void AliasEncryptionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
                 configureContainer: b =>
                 {
@@ -74,7 +82,7 @@ public class RoleSerialization
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForInteractionAndPresentedAgain_ThenAliasValueIsPreserved()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = new FormulaDifferentAliasName()
         {

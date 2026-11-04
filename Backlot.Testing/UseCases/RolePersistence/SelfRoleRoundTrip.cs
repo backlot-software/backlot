@@ -1,7 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Services;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.Scenarios;
 using Backlot.Testing.Shared.TestModels;
 using NUnit.Framework;
@@ -19,7 +25,23 @@ public class SelfRoleRoundTrip
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.RegisterType<MemoryPersistedRoleRepository>()
+                        .As<IPersistedRoleRepository>();
+
+                    b.RegisterType<MemoryRelationRepository>()
+                        .As<IRelationRepository>();
+                    
+                    b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
+        // Ensure the repository starts empty.
+        ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
     
     [Test]

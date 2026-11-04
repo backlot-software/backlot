@@ -45,6 +45,14 @@ public class ToJson
         Defaults.Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b)));
+    }
+    
+    private static void AliasEncryptionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
                 configureContainer: b =>
                 {
@@ -236,7 +244,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {
@@ -264,7 +272,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasMarkedPropertyWithoutAnAliasName_NormalFieldNameUsedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {
@@ -292,7 +300,7 @@ public class ToJson
     public void ToJson_WithTypedActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = new FormulaAlias
         {
@@ -320,7 +328,7 @@ public class ToJson
     public void ToJson_WithTypedActorUsingAnAliasMarkedPropertyWithoutAnAliasName_ActorNameUsedRoleDefinedNameIgnoredInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = new Formula()
         {
@@ -347,7 +355,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasDefinedPropertyUsingFieldInfoAlias_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {
