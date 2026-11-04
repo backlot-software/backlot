@@ -20,7 +20,8 @@ public class Play
     [SetUp]
     public void Setup()
     {
-        Testing.Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
     }
     
     private static int Occurrences(string haystack, string needle)
