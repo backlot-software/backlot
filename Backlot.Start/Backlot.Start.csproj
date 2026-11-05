@@ -49,15 +49,15 @@
 
     <ItemGroup>
         <!-- Backlot framework packages (Backlot GitHub NuGet feed — see nuget.config) -->
-        <PackageReference Include="Backlot.Core" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Defaults" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Authentication.Basic" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Http" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Services.LiteDB" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="$(BacklotVersion)" />
-        <PackageReference Include="Backlot.WebApp" Version="$(BacklotVersion)" />
+        <PackageReference Include="Backlot.Core" Version="0.2.1" />
+        <PackageReference Include="Backlot.Defaults" Version="0.2.1" />
+        <PackageReference Include="Backlot.Authentication.Basic" Version="0.2.1" />
+        <PackageReference Include="Backlot.DependencyInjection.Autofac" Version="0.2.1" />
+        <PackageReference Include="Backlot.Http" Version="0.2.1" />
+        <PackageReference Include="Backlot.Http.DependencyInjection.Autofac" Version="0.2.1" />
+        <PackageReference Include="Backlot.Services.LiteDB" Version="0.2.1" />
+        <PackageReference Include="Backlot.Services.Filesystem.LocalDiskStorage" Version="0.2.1" />
+        <PackageReference Include="Backlot.WebApp" Version="0.2.1" />
     </ItemGroup>
 
     <ItemGroup>

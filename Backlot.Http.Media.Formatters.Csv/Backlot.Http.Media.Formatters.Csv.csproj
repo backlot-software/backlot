@@ -21,7 +21,7 @@
     <VersionSuffix>beta</VersionSuffix>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="CsvHelper" Version="34.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\bl.png">
