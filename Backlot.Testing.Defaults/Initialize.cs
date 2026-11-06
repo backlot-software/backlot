@@ -52,10 +52,16 @@ public static class Initialize
     /// Configures a Backlot test environment with custom director
     /// Registers default services and applies custom registrations
     /// </summary>
+    /// <remarks>
+    /// Registrations are applied in this order:
+    /// 1. Default logging and caching services.
+    /// 2. Director registrations and initialization.
+    /// 3. configureContainer registrations.
+    /// </remarks>
     /// <param name="builder">The AutoFac container builder.</param>
     /// <param name="createDirector">Create your own custom test director. Director must receive an IFileSystem implementation.
     /// Can use FakeStorage for in-memory file operations.</param>
-    /// <param name="configureContainer">Some defaults are always registered first. Optional additional service registrations or overrides.
+    /// <param name="configureContainer">/// Optional service registrations or overrides. Applied after the default and director registrations.
     /// Prefer using the custom Director's Registration() method for feature-specific service registrations.</param>
     /// <param name="configuration">Optional custom configuration manager, uses FakeConfiguration by default.</param>
     /// <typeparam name="TDirector">The custom test director type</typeparam>
