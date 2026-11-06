@@ -2,7 +2,14 @@ using Backlot.Core.Services;
 
 namespace Backlot.Testing.Defaults.Fakes;
 
-
+/// <summary>
+/// Provides an in-memory IFileSystem implementation for testing.
+/// Stores file contents without accessing the physical file system.
+/// </summary>
+/// <remarks>
+/// Each instance maintains its own file storage.
+/// UpdateFileAsync() creates or replaces file content.
+/// </remarks>
 public class FakeStorage : IFileSystem
 {
     private readonly Lock _lock = new();
