@@ -5,6 +5,19 @@ using Backlot.Core.Services;
 
 namespace Backlot.Testing.Defaults.Fakes;
 
+/// <summary>
+/// Provides an in-memory IConfigurationManager for testing.
+/// Stores configuration values as key-value pairs.
+/// </summary>
+/// <remarks>
+/// Configuration keys use the full settings type name,
+/// optional named settings, and property name.
+///
+/// Missing values return an empty string.
+/// Update() adds values but does not replace existing keys.
+///
+/// Some IConfigurationManager operations are not implemented.
+/// </remarks>
 public class FakeConfiguration(IDictionary<string, string?> source) : IConfigurationManager
 {
     public Task Delete(IConfigurationInfo configuration)
