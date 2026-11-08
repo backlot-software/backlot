@@ -17,6 +17,7 @@
     <Project Path="Backlot.Core/Backlot.Core.csproj" />
     <Project Path="Backlot.Defaults/Backlot.Defaults.csproj" />
     <Project Path="Backlot.DependencyInjection.Autofac/Backlot.DependencyInjection.Autofac.csproj" />
+    <Project Path="Backlot.Scheduling/Backlot.Scheduling.csproj" />
   </Folder>
   <Folder Name="/Backlot/Infrastructure/" />
   <Folder Name="/Backlot/Infrastructure/Authentication/">

@@ -29,15 +29,35 @@ namespace Backlot.Core.Abstraction.Scenarios
         IScenario
         where TRole : IRole
     {
+        /// <summary>
+        /// When start execution.
+        /// </summary>
         public event AsyncEventHandler<EventArgs> Playing;
+        
+        /// <summary>
+        /// When executed and before persisting.
+        /// </summary>
+        public event AsyncEventHandler<EventArgs> Played;
+        
+        /// <summary>
+        /// On end execution and after persisting.
+        /// </summary>
         public event AsyncEventHandler<EventArgs> Ending;
 
+        /// <summary>
+        /// Fired -- all even listener.
+        /// </summary>
         public event AsyncEventHandler<ScenarioEventArgs> Fired;
 
         /// <summary>
         /// Fired before anything. Fired is always fired and before any validation and or permission check.
         /// </summary>
         public event AsyncEventHandler<EventArgs> Before;
+        
+        /// <summary>
+        /// Fired after an exception occured.
+        /// </summary>
+        public event AsyncEventHandler<ExceptionEventArgs> Error;
         
         /// <summary>
         /// Fired after everything went succesfully, not fired when validation fails.
@@ -171,70 +191,96 @@ namespace Backlot.Core.Abstraction.Scenarios
         {
             if(Before != null) 
                 await Before.Invoke(this, null); //special event not attached to generic fire event
-                
-            if (!Role.CanExecute()) // check if the role can execute this scenario
+            try
             {
-                throw new PermissionControlException(
-                    $"Main role '{Role.RoleType().GetRoleName()}' does not have sufficient permissions to execute this scenario.");
-            }
-            
-            // all supporting roles need to be "readable" at least.
-            foreach (var role in ((IScenario)this).Roles)
-            {
-                if (!role.CanRead())
+                if (!Role.CanExecute()) // check if the role can execute this scenario
                 {
                     throw new PermissionControlException(
-                        $"Supporting role '{role.RoleType().GetRoleName()}' does not have sufficient permissions to be read by the current user.");
+                        $"Main role '{Role.RoleType().GetRoleName()}' does not have sufficient permissions to execute this scenario.");
                 }
-            }
-            
-            if (Validate())
-            {
-                Logger.LogInformation("Validation finished while, {Role} will start playing {@Reference}, within '{Clss}.{Fn}'",
-                    Role.GetFriendlyReference(),
-                    Reference,
-                    GetType().Name,
-                    nameof(Start));
-                
-                await OnPlaying(); // Call play event
 
-                Logger.LogInformation("Start exeucting while, {Role} is playing {@Reference}, within '{Clss}.{Fn}'",
-                    Role.GetFriendlyReference(),
-                    Reference,
-                    GetType().Name, 
-                    nameof(Start));
-
-                ResultValue = await ExecAsync();
-
-                if(PersistAndRelate)
-                    await ExecPersistAndRelate();
-
-                if (ResultValue is IRole roleResult && !roleResult.CanRead())
+                // all supporting roles need to be "readable" at least.
+                foreach (var role in ((IScenario)this).Roles)
                 {
-                    ResultValue = default; // clear result
-                    //todo: log warning or throw exception based on configuration
+                    if (!role.CanRead())
+                    {
+                        throw new PermissionControlException(
+                            $"Supporting role '{role.RoleType().GetRoleName()}' does not have sufficient permissions to be read by the current user.");
+                    }
                 }
 
-                await OnEnding(); // call ended event
+                if (Validate())
+                {
+                    Logger.LogInformation(
+                        "Validation finished while, {Role} will start playing {@Reference}, within '{Clss}.{Fn}'",
+                        Role.GetFriendlyReference(),
+                        Reference,
+                        GetType().Name,
+                        nameof(Start));
+
+                    await OnPlaying(); // Call play event
+
+                    Logger.LogInformation("Start exeucting while, {Role} is playing {@Reference}, within '{Clss}.{Fn}'",
+                        Role.GetFriendlyReference(),
+                        Reference,
+                        GetType().Name,
+                        nameof(Start));
+
+                    try
+                    {
+                        ResultValue = await ExecAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Error != null)
+                            await Error.Invoke(this, new ExceptionEventArgs { Exception = ex, Exec = true });
+                        throw;
+                    }
+
+                    await OnPlayed(); // Call play event
+
+                    if (PersistAndRelate)
+                        await ExecPersistAndRelate();
+
+                    if (ResultValue is IRole roleResult && !roleResult.CanRead())
+                    {
+                        ResultValue = default; // clear result
+                        //todo: log warning or throw exception based on configuration
+                    }
+
+                    await OnEnding(); // call ended event
+                }
+                else
+                {
+                    var msg =
+                        $"Can not start because it doesn't match executing criteria. Please check {Reference.Name}.{nameof(ValidationResults)}.";
+                    Logger.LogInformation(
+                        "Exception '{ExcType}' will be thrown '{ExcMessage}', while playing {@Reference} with {Role}, within '{Clss}.{Fn}'.'",
+                        nameof(ValidationException),
+                        msg,
+                        Reference,
+                        Role.GetFriendlyReference(),
+                        GetType().Name,
+                        nameof(Start));
+
+                    // validation exception thrown, use either .Validate() before playing the scenario, or fix criteria.
+                    throw new ValidationException(ValidationResults, msg);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var msg = $"Can not start because it doesn't match executing criteria. Please check {Reference.Name}.{nameof(ValidationResults)}.";
-                Logger.LogInformation("Exception '{ExcType}' will be thrown '{ExcMessage}', while playing {@Reference} with {Role}, within '{Clss}.{Fn}'.'", 
-                    nameof(ValidationException),
-                    msg,
-                    Reference,
-                    Role.GetFriendlyReference(),
-                    GetType().Name, 
-                    nameof(Start));
-                
-                // validation exception thrown, use either .Validate() before playing the scenario, or fix criteria.
-                throw new ValidationException(ValidationResults, msg);
+                if (Error != null)
+                    await Error.Invoke(this, new ExceptionEventArgs { Exception = ex, Exec = false});
+
+                throw;
             }
-            
-            if(After != null)
-                await After.Invoke(this, null); //special event not attached to generic fire event
-                
+            finally
+            {
+
+                if (After != null)
+                    await After.Invoke(this, null); //special event not attached to generic fire event
+            }
+
             Logger.LogInformation("Finished playing {@Reference} with {Role}, within '{Clss}.{Fn}'",
                 Reference,
                 Role.GetFriendlyReference(),
@@ -368,6 +414,11 @@ namespace Backlot.Core.Abstraction.Scenarios
         private async Task OnPlaying()
         {
             await FireAsync(Playing, nameof(Playing));
+        }
+        
+        private async Task OnPlayed()
+        {
+            await FireAsync(Played, nameof(Played));
         }
 
         private async Task OnEnding()

@@ -23,6 +23,12 @@ namespace Backlot.Core.Abstraction.Scenarios
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type">Scenario this attribute is applied to</param>
+        /// <param name="tags">Tags associated with the scenario</param>
+        /// <param name="access">Users and/or groups with access</param>
         public ScenarioAttribute(Type type, string[] tags = null, string[] access = null) 
         {
             var typedScenarioType = type.GetAllInterfaces()

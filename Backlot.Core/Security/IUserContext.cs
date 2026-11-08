@@ -24,6 +24,11 @@ public interface IUserContext
     public Task Intialize(string token);
     
     public string UserName { get; }
+    
+    /// <summary>
+    /// Full view of the claims the provider has for the user.
+    /// Do not use this property directly, use the <see cref="Groups"> and <see cref="IsInGroup"/> method instead.
+    /// </summary>
     public IDictionary<string, string> Claims { get; }
     public string[] Groups { get; }
     public bool IsInGroup(string groupname);
