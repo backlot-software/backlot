@@ -24,7 +24,7 @@ namespace Backlot.Core.Abstraction.Scenarios
         }
 
         /// <summary>
-        /// 
+        /// Define ScenarioInfo for the corresponding scenario.
         /// </summary>
         /// <param name="type">Scenario this attribute is applied to</param>
         /// <param name="tags">Tags associated with the scenario</param>

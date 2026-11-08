@@ -25,16 +25,6 @@ builder.Services.AddScheduler<AutofacScopedPlayer>();
 
 ## The job record (`IJob`)
 
-| Property | |
-|---|---|
-| `Scenario` | Required. The scenario to play, `{scenario}.{named}` for named configurations. JobScenarios only! |
-| `Cron` | Required. Five fields (minute precision) or six fields (with seconds). Macros like `@daily` work too, see [Cronos](https://github.com/HangfireIO/Cronos). |
-| `TimeZone` | IANA or Windows time zone id that the cron expression uses. UTC when empty. |
-| `Enabled` | The scheduler only plays enabled jobs. Disabled jobs can still be played manually. |
-| `NextRun` | The next moment the job is due. The scheduler updates it after each successful run. |
-| `LastRun` | When the last successful run finished. |
-| `LastStatus` | `Running`, `Succeeded` or `Failed`. |
-
 You can extend `IJob` to pass parameters to the scheduled scenario:
 
 ```csharp
