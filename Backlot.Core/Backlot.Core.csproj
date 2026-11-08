@@ -28,6 +28,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
   <ItemGroup>
+    <!-- the scheduler is the only one allowed to create the SuperAdminUserContext -->
+    <InternalsVisibleTo Include="Backlot.Testing" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\bl.png">
       <Pack>True</Pack>
       <PackagePath>

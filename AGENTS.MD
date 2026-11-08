@@ -43,6 +43,7 @@ Key role markers:
 - `IUid` — role has a unique ID; relations between `IUid` roles are stored automatically
 - `IPermission` — role carries read/write/execute permission flags, checked before scenario execution
 - `IDirector` — the special singleton "director" role used as the main role for scenarios that have no natural actor
+- `IScheduler` — special `IPersist` role playing its `Scenario` on a cron schedule as its `RunAs` user; scheduled scenarios use it (or a role extending it) as main role, `Scenario<TScenario, IScheduler, TResult>`. Played by `Backlot.Scheduling`, see its README for the permissions
 
 ### Scenarios (`Scenario<TRole, TResult>`)
 Classes implementing **what the code actually does**. Each scenario has exactly one main role (`TRole`) and returns a result (`TResult`). Inherit from `Scenario<TRole, TResult>` and override `Exec()` (sync) or `ExecAsync()` (async).
@@ -154,6 +155,7 @@ This wires up Autofac with in-memory repositories and calls `director.Incept()`.
 | ASP.NET host & routing | `Backlot.WebApp/ApplicationBuilding.cs` |
 | HTTP middleware | `Backlot.Http/Middleware/` |
 | Autofac DI director base | `Backlot.DependencyInjection.Autofac/` |
+| Scheduled scenarios (runner, hosted service) | `Backlot.Scheduling/` |
 | Test bootstrap | `Backlot.Testing/Initialize.cs` |
 | Web demo (reference implementation) | `Backlot.Demo.Web/` |
 | Standalone Studio-only host demo | `Backlot.Demo.Studio/` |

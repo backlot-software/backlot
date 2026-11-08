@@ -47,6 +47,11 @@ namespace Backlot.Core
         event AsyncEventHandler<EventArgs> Before;
         
         /// <summary>
+        /// Event fired after an exception occured.
+        /// </summary>
+        event AsyncEventHandler<ExceptionEventArgs> Error;
+        
+        /// <summary>
         /// Event fired after anything else is executed. When an exception occurs nothing happens after.
         /// Used commiting / closing scope.
         /// Not allowed to be executed async in its own thread, it needs to be awaited

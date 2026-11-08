@@ -86,7 +86,7 @@ public abstract class Scenario<TScenario, TRole, TResult> : Scenario<TRole, TRes
 /// </summary>
 /// <typeparam name="TScenario"></typeparam>
 /// <typeparam name="TResult"></typeparam>
-public class DirectorScenario<TScenario, TResult> : Scenario<IDirector, TResult>
+public abstract class DirectorScenario<TScenario, TResult> : Scenario<IDirector, TResult>
     where TScenario : IScenario<IDirector, TResult>
 {
     /// <summary>
