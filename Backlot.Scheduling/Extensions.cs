@@ -18,7 +18,7 @@ public static class Extensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var tick = interval ?? TimeSpan.FromMinutes(2); // Add this as a setting for the future.
+        var tick = interval ?? TimeSpan.FromMinutes(2); // 2 is default.
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(tick, TimeSpan.Zero, nameof(interval));
 
         if (runHostedService)
