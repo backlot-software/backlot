@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 
@@ -10,22 +9,6 @@ public interface ICard : IPersist
     string CardCode { get; set; }
     string CustomerName { get; set; }
 }
-
-public class CardSelf : ICard
-{
-    string? IPermission.__Permission
-    {
-        get;
-        set;
-    }
-    
-    public string Uid { get; set;  }
-    public string Name => "SelfCard";
-    public DateTimeOffset? LastModified { get; set; }
-    public string CardCode { get; set; }
-    public string CustomerName { get; set; }
-}
-
 
 /// <summary>
 /// Initialize card uid when not "mapped"
