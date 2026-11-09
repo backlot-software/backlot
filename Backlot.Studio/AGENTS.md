@@ -94,3 +94,9 @@ Backlot.Studio is a .NET Razor Class Library (RCL) that serves as the management
 - Microsoft Learn (IHttpClientFactory, DelegatingHandlers) — typed client + auth handler pattern — HIGH
 - turbo.hotwired.dev handbook — Turbo Drive/Frames CDN install — MEDIUM
 - Backlot `AGENTS.md` — constraints, auth model, API endpoints — HIGH
+
+## Documentation Guidelines
+
+- Use Markdown for formatting.
+- Include links to authoritative sources.
+- Do not add property explanations in MD files, add those in code comments summaries.
