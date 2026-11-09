@@ -133,6 +133,7 @@ public static class PermissionControlExtensions
     public static PermissionLevel CurrentUserPermissionLevel(this IRole role)
     {
         var user = UserContext.Current;
+        
         var permission = role.Permission();
 
         if (!permission.GroupLevels.Any() && !permission.UserLevels.Any())

@@ -75,7 +75,7 @@ public class SameUidRoleUpdates
         
         // Act & Assert
         await Dummy.Play(proxied);
-        var exception = Assert.ThrowsAsync<ArgumentException>(() => Dummy.Play(presented));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => Dummy.Play(presented));
         
         Assert.That(exception?.Message, Does.Contain("You are using a mix of origin types."));
     }

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <VersionSuffix>
     </VersionSuffix>
     <Title>Backlot.Core</Title>
@@ -26,6 +26,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- the scheduler is the only one allowed to create the SuperAdminUserContext -->
+    <InternalsVisibleTo Include="Backlot.Testing" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\bl.png">

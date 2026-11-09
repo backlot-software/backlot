@@ -3,10 +3,15 @@ using Backlot.Demo.Web;
 using Backlot.Http;
 using Backlot.Http.DependencyInjection.Autofac;
 using Backlot.Http.Middleware;
+using Backlot.Scheduling;
 using Backlot.Services.Filesystem.LocalDiskStorage;
 using Backlot.WebApp;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Plays all due IScheduler records, see Scenarios/Heartbeat.cs
+builder.Services.AddScheduler<AutofacScopedPlayer>(
+    interval:  TimeSpan.FromSeconds(1)); // default = 2 minutes, advicable to keep this as long as your use-case can accept.
 
 // Backlot Studio is mounted by BuildWebApp; it is configured through the "BacklotStudio" section of
 // appsettings.json. There is no separate Studio process.
