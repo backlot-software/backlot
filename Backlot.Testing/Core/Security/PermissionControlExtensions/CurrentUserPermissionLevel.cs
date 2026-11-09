@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Backlot.Core.Abstraction.Actors;
+﻿using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Security;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
 using Backlot.Testing.Shared.Directors;
-using Backlot.Testing.Shared.Stubs;
 using Backlot.Testing.Shared.TestModels;
 using NUnit.Framework;
 
@@ -102,7 +99,7 @@ public class CurrentUserPermissionLevel
             .SetMask(PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Admin, PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Open, PermissionLevel.None)
-            .SetUser(UserCtx.UserNameStatic, PermissionLevel.Read));
+            .SetUser(UserContext.Current.UserName, PermissionLevel.Read));
 
         // Act
         var result = role.CurrentUserPermissionLevel();

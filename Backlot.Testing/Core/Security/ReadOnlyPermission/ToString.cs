@@ -1,5 +1,5 @@
 ﻿using Backlot.Core.Security;
-using Backlot.Testing.Shared.Stubs;
+using Backlot.Testing.Defaults.Fakes;
 using NUnit.Framework;
 
 namespace Backlot.Testing.Core.Security.ReadOnlyPermission;
@@ -55,15 +55,17 @@ public class ToString
     public void ToString_ExplicitUserPermissionSet_ReturnsExpectedPattern()
     {
         // Arrange
+        var userName = new FakeUserContext().UserName;
+        
         var permission = Permission.Create(PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Admin, PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Open, PermissionLevel.None)
-            .SetUser(UserCtx.UserNameStatic, PermissionLevel.Read);
+            .SetUser(userName, PermissionLevel.Read);
         
         // Act
         var result = permission.ToString();
         
         // Assert
-        Assert.That(result, Is.EqualTo($"m::7,g:*:0,g:Admin:7,u:{UserCtx.UserNameStatic}:4"));
+        Assert.That(result, Is.EqualTo($"m::7,g:*:0,g:Admin:7,u:{userName}:4"));
     }
 }
