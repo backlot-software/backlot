@@ -12,17 +12,6 @@ public class Formula
     public string Uid { get; set; } = null!;
 }
 
-public class FormulaDifferentAliasName
-{
-    public string Op { get; set; } = null!;
-    public int? Number1 { get; set; }
-    public int? Number2 { get; set; }
-
-    public string Name => "Example";
-
-    public string Uid { get; set; } = null!;
-}
-
 public class FormulaPermission
 {
     public string HelloWorld => "HelloWorld";

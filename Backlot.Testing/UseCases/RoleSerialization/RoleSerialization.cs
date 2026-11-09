@@ -3,14 +3,11 @@ using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
 using Backlot.Core.Security;
-using Backlot.Core.Services;
-using Backlot.Services.Filesystem.LocalDiskStorage;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
 using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -25,7 +22,7 @@ public class RoleSerialization
 {
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
     
@@ -39,7 +36,7 @@ public class RoleSerialization
     
     private static void AliasEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
@@ -57,7 +54,7 @@ public class RoleSerialization
         // Arrange
         AliasSetup();
         
-        var origin = new FormulaDifferentAliasName()
+        var origin = new FormulaAlias()
         {
             Uid = "860C5B53",
             Number1 = 7,
@@ -84,7 +81,7 @@ public class RoleSerialization
         // Arrange
         AliasEncryptionSetup();
         
-        var origin = new FormulaDifferentAliasName()
+        var origin = new FormulaAlias()
         {
             Uid = "860C5B53",
             Number1 = 7,
