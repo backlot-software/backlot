@@ -39,9 +39,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
       <PackageReference Include="SqlKata" Version="4.0.1" />
       <PackageReference Include="SqlKata.Execution" Version="4.0.1" />
+      <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+      <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.14" />
     </ItemGroup>
 
 </Project>
