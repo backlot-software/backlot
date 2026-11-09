@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Backlot.Core;
 using Backlot.Core.Json.Serialization.Newtonsoft;
+using CsvHelper;
 
 namespace Backlot.Http.Media.Formatters.Csv
 {
@@ -32,27 +31,23 @@ namespace Backlot.Http.Media.Formatters.Csv
             {
                 records.Add(FlattenJson.Execute(serializedJToken));
             }
-
-            await using var writer = new StringWriter();
-            await using var csv = new CsvHelper.CsvWriter(writer, CultureInfo.InvariantCulture);
-            
-            //create header
             var headers = records.OrderByDescending(r => r.Count()).SelectMany(itm => itm.Keys).Distinct().ToList();
-            headers.ForEach(itm => csv.WriteField(itm));
-            await csv.NextRecordAsync();
+            
+            await using var writer = new StringWriter();
+            await using var csv = CsvWriter.Create(writer, CsvWriterOptions.Default);
+
+            foreach (var header in headers)
+                csv.WriteField(header);
+            await csv.EndRecordAsync();
 
             foreach (var row in records)
             {
                 foreach (var header in headers)
-                {
-                    if (row.TryGetValue(header, out var value))
-                        csv.WriteField(value);
-                    else
-                        csv.WriteField(string.Empty);
-                }
-
-                await csv.NextRecordAsync();
+                    csv.WriteField(row.TryGetValue(header, out var value) ? value : string.Empty);
+                await csv.EndRecordAsync();
             }
+
+            await csv.FlushAsync(); // vóór ToString(), anders risico op afgekapt resultaat
             
             var response = new ResponseData
             {

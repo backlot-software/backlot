@@ -10,12 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Backlot.Authentication.Basic\Backlot.Authentication.Basic.csproj" />
-      <ProjectReference Include="..\Backlot.Authentication.Bearer\Backlot.Authentication.Bearer.csproj" />
       <ProjectReference Include="..\Backlot.Core\Backlot.Core.csproj" />
       <ProjectReference Include="..\Backlot.Defaults\Backlot.Defaults.csproj" />
       <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
