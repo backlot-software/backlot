@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
@@ -18,17 +19,17 @@ namespace Backlot.Testing.Core.Json.Json;
 /// </summary>
 public class ToJson
 {
-    #region Backlot Test Environment Setup Methods
+    #region Backlot Test Environment Setup
 
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder => 
+        Initialize.BuildApp(builder => 
             builder.ConfigureBacklot());
     }
 
     private static void PermissionEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -42,7 +43,7 @@ public class ToJson
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -50,7 +51,7 @@ public class ToJson
     
     private static void AliasEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
@@ -410,4 +411,30 @@ public class ToJson
             Assert.That(jsnParsed["Uid"], Is.Not.Null);
         });
     }
+
+    #region Test Models
+
+    public class FormulaCalculatedField
+    {
+        public string HelloWorld => "HelloWorld";
+        public string Operation { get; set; } = null!;
+        public int? Number1 { get; set; }
+        public int? Number2 { get; set; }
+        public int? Number3 { get; set; }
+
+        public string Name => "Example which can presents it self as an IFormula Role";
+
+        public string Uid { get; set; } = null!;
+    }
+    
+    /// <summary>
+    /// Representing a test role using another role as a property
+    /// </summary>
+    public interface IOrder : IRole
+    {
+        public string Name { get; set; }
+        public IMoney Total { get; set; }
+    }
+
+    #endregion
 }

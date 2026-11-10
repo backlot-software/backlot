@@ -20,17 +20,17 @@ namespace Backlot.Testing.Core.Abstraction.Actors.Acting;
 
 public class Presents
 {
-    #region Backlot Test Environment Setup Methods
+    #region Backlot Test Environment Setup
     
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
 
     private static void PermissionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
@@ -38,7 +38,7 @@ public class Presents
 
     private static void PersonSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PersonDirector(
                     new FakeStorage(), config, b)));
@@ -46,7 +46,7 @@ public class Presents
     
     private static void CardSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new CardDirector(
                     new FakeStorage(), config, b)));
@@ -54,7 +54,7 @@ public class Presents
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -380,10 +380,7 @@ public class Presents
     }
 
     #region Fixture Specific Custom Directors
-
-    // TODO: Review these fixture-specific directors and their test models
-    // during the Shared/TestModels cleanup.
-    // Preserve the alias and custom UID initialization test coverage.
+    
     private class PersonDirector(
         IFileSystem fileSystem,
         IConfigurationManager configuration,
@@ -408,6 +405,68 @@ public class Presents
         }
     }
     
+    #endregion
+
+    #region Test Models
+
+    public interface ICard : IPersist
+    {
+        string CardCode { get; set; }
+        string CustomerName { get; set; }
+    }
+
+    /// <summary>
+    /// Initialize card uid when not "mapped"
+    /// </summary>
+    public static class CardInitialization
+    {
+        public static ICard Initialize(ICard card, object actor)
+        {
+            if (card is IProxiedRole proxy && !string.IsNullOrWhiteSpace(card.CardCode))
+            {
+                proxy.Referrers = () => new Dictionary<string, string>
+                {
+                    {nameof(ICard.Uid), nameof(ICard.CardCode)},
+                };
+            }
+        
+            // no need to check uid for other type of objects, because it's a required property
+
+
+            return card;
+        }
+    }
+    
+    [FieldInfoAlias(nameof(Uid), ["BSN AN"])]
+    public interface IPerson : IPersist
+    {
+    }
+    
+    public class FormulaPermission
+    {
+        public string HelloWorld => "HelloWorld";
+        public string Operation { get; set; } = null!;
+        public int? Number1 { get; set; }
+        public int? Number2 { get; set; }
+
+        public string Name => "Example which can presents it self as an IFormula Role";
+
+        public string Uid { get; set; } = null!;
+    
+        public string __Permission { get; set; }
+    }
+    
+    /// <summary>
+    /// As IFormula but types of the number1 and number2 property are changed.
+    /// </summary>
+    public interface IFormulaTypeChanged : IPersist
+    {
+        string Operation { get; set; }
+
+        string Number1 { get; set; }
+        string Number2 { get; set; }
+    }
+
     #endregion
     
 }

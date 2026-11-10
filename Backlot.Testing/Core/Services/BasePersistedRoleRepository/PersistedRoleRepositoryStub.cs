@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Backlot.Core;
 using Backlot.Core.Security;
-using Backlot.Core.Services;
 
-namespace Backlot.Testing.Shared.Stubs
+namespace Backlot.Testing.Core.Services.BasePersistedRoleRepository
 {
-    internal class PersistedRoleRepositoryStub : BasePersistedRoleRepository
+    internal class PersistedRoleRepositoryStub : Backlot.Core.Services.BasePersistedRoleRepository
     {
         public bool SetPersisted { get; set; }
         public int StoreCallCount { get; private set; }

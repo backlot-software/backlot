@@ -26,10 +26,13 @@ namespace Backlot.Testing.UseCases.RolePersistence;
 /// </summary>
 public class SameUidRoleUpdates
 {
+
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -47,6 +50,8 @@ public class SameUidRoleUpdates
         // Ensure the repository starts empty.
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
+
+    #endregion
     
     [Test]
     public async Task  GivenDifferentProxiedAndSelfRolesActorsReferringToSameUid_WhenPlayedTwice_ThenThrowsArgumentExceptionDuringMerge()
@@ -239,4 +244,17 @@ public class SameUidRoleUpdates
             Assert.That(persisted.Operation, Is.EqualTo("sum"));
         });
     }
+
+    #region Test Models
+
+    /// <summary>
+    /// Incomplete object which can be presented as an IFormula
+    /// </summary>
+    public class FormulaIncomplete
+    {
+        public int Number1 { get; set; }
+        public string Uid { get; set; } = null!;
+    }
+
+    #endregion
 }

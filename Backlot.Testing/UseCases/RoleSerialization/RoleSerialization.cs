@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
@@ -20,6 +21,8 @@ namespace Backlot.Testing.UseCases.RoleSerialization;
 /// </summary>
 public class RoleSerialization
 {
+    #region Backlot Test Environment Setup
+
     private static void DefaultSetup()
     {
         Initialize.BuildApp(builder =>
@@ -47,6 +50,8 @@ public class RoleSerialization
                         .SingleInstance();
                 }));
     }
+
+    #endregion
     
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForPersistenceAndPresentedAgain_ThenAliasValueIsPreserved()
@@ -155,4 +160,16 @@ public class RoleSerialization
             Assert.That(result["Operation"]?.Value<string>() , Is.Null);
         });
     }
+
+    #region Test Models
+
+    /// <summary>
+    /// Representing a test role using another role as a property
+    /// </summary>
+    public interface IPersistedOrder : IPersist
+    {
+        public IMoney Total { get; set; }
+    }
+
+    #endregion
 }

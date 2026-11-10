@@ -9,7 +9,6 @@ using Backlot.Core.Security;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
 using Backlot.Testing.Shared.Directors;
-using Backlot.Testing.Shared.Stubs;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -22,10 +21,11 @@ namespace Backlot.Testing.Core.Services.BasePersistedRoleRepository;
 /// </summary>
 public class Persist
 {
-    
+    #region Backlot Test Environment Setup
+
     private static void PermissionChecksumSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -38,11 +38,13 @@ public class Persist
     
     private static void PermissionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
 
     [Test]
     public void Persist_RoleWithNonePermissionSet_ThrowsPermissionControlException()

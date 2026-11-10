@@ -20,28 +20,7 @@ public interface IFormula : INumberBase, IPersist
     [Calculated] int? Number3 { get; set; }
 }
 
-/// <summary>
-/// As IFormula but types of the number1 and number2 property are changed.
-/// </summary>
-public interface IFormulaTypeChanged : IPersist
-{
-    string Operation { get; set; }
-
-    string Number1 { get; set; }
-    string Number2 { get; set; }
-}
-
 public interface IFormulaGroup : IPersist
 {
     IEnumerable<IFormula> Formulas { get; set; }
-}
-
-public interface IFormulaGroupTyped : IPersist
-{
-    IEnumerable<Formula> Formulas { get; set; }
-}
-
-public interface IFormulaGroupSelf : IPersist
-{
-    IEnumerable<FormulaSelf> Formulas { get; set; }
 }

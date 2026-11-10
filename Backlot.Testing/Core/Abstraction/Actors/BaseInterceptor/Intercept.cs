@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Testing.Defaults;
@@ -16,19 +18,23 @@ namespace Backlot.Testing.Core.Abstraction.Actors.BaseInterceptor;
 /// </summary>
 public class Intercept
 {
+    #region Backlot Test Environment Setup
+
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
 
     [Test]
     public void Intercept_WithJSONActor_ActorAndProxiedValuesAreInSync()
@@ -235,4 +241,18 @@ public class Intercept
             Assert.That(role.Number3, Is.EqualTo(99));
         });
     }
+
+    #region Test Models
+
+    public interface IFormulaGroupTyped : IPersist
+    {
+        IEnumerable<Formula> Formulas { get; set; }
+    }
+
+    public interface IFormulaGroupSelf : IPersist
+    {
+        IEnumerable<FormulaSelf> Formulas { get; set; }
+    }
+
+    #endregion
 }
