@@ -22,61 +22,16 @@ namespace Backlot.Testing.UseCases.ComplexActor;
 /// </summary>
 public class ComplexActorPresentation
 {
-    private static string _strjsn = @"{
-      ""OtherContacts"": [
-        {
-          ""FirstName"": ""Jane Doe"",
-          ""DateOfBirth"": ""1985-06-15T00:00:00"",
-          ""EmailAddress"": ""jane.doe@backlot.ws"",
-          ""PhoneNumber"": ""555-123-4567""
-        },
-        {
-          ""FirstName"": ""John Smith"",
-          ""DateOfBirth"": ""1978-11-03T00:00:00"",
-          ""EmailAddress"": ""john.smith@backlot.ws"",
-          ""PhoneNumber"": ""555-987-6543""
-        }
-      ],
-      ""RequestProductType"": ""Flexible"",
-      ""RequestFollowUp"": 2,
-      ""Name"": ""Alice Johnson"",
-      ""DateOfBirth"": ""1990-04-22T00:00:00"",
-      ""ShippingAddress"": {
-        ""Street"": ""123 Main St"",
-        ""City"": ""Springfield"",
-        ""State"": ""IL"",
-        ""ZipCode"": ""62704"",
-        ""Country"": ""USA""
-      },
-      ""Me"": {
-        ""FirstName"": ""Alice Johnson"",
-        ""DateOfBirth"": ""1990-04-22T00:00:00"",
-        ""EmailAddress"": ""alice.johnson@backlot.ws"",
-        ""PhoneNumber"": ""555-555-5555""
-      },
-      ""PrimaryContact"": {
-        ""FirstName"": ""Bob Johnson"",
-        ""DateOfBirth"": ""1988-08-12T00:00:00"",
-        ""EmailAddress"": ""bob.johnson@backlot.ws"",
-        ""PhoneNumber"": ""555-111-2222""
-      },
-      ""__Construct"": ""Backlot.Testing.UseCases.ComplexActor.Roles.CustomerRegistrationSelf, Backlot.Testing"",
-      ""__Skills"": [
-        ""CustomerRegistration"",
-        ""Persist"",
-        ""Permission"",
-        ""Role"",
-        ""Uid""
-      ]
-    }";
-    
+  #region Backlot Test Environment Setup
 
-    [SetUp]
-    public void Setup()
-    {
-        Defaults.Initialize.BuildApp(builder => 
-          builder.ConfigureBacklot());
-    }
+  [SetUp]
+  public void Setup()
+  {
+    Initialize.BuildApp(builder => 
+      builder.ConfigureBacklot());
+  }
+
+  #endregion
     
     [Test]
     public void GivenComplexJsonActor_WhenPresentedWithConstruct_ThenPresentedAsSelf()
@@ -175,4 +130,56 @@ public class ComplexActorPresentation
         Assert.That(role.OtherContacts.Count(), Is.EqualTo(2));
       });
     }
+
+    #region Test Data
+
+    private static string _strjsn = @"{
+      ""OtherContacts"": [
+        {
+          ""FirstName"": ""Jane Doe"",
+          ""DateOfBirth"": ""1985-06-15T00:00:00"",
+          ""EmailAddress"": ""jane.doe@backlot.ws"",
+          ""PhoneNumber"": ""555-123-4567""
+        },
+        {
+          ""FirstName"": ""John Smith"",
+          ""DateOfBirth"": ""1978-11-03T00:00:00"",
+          ""EmailAddress"": ""john.smith@backlot.ws"",
+          ""PhoneNumber"": ""555-987-6543""
+        }
+      ],
+      ""RequestProductType"": ""Flexible"",
+      ""RequestFollowUp"": 2,
+      ""Name"": ""Alice Johnson"",
+      ""DateOfBirth"": ""1990-04-22T00:00:00"",
+      ""ShippingAddress"": {
+        ""Street"": ""123 Main St"",
+        ""City"": ""Springfield"",
+        ""State"": ""IL"",
+        ""ZipCode"": ""62704"",
+        ""Country"": ""USA""
+      },
+      ""Me"": {
+        ""FirstName"": ""Alice Johnson"",
+        ""DateOfBirth"": ""1990-04-22T00:00:00"",
+        ""EmailAddress"": ""alice.johnson@backlot.ws"",
+        ""PhoneNumber"": ""555-555-5555""
+      },
+      ""PrimaryContact"": {
+        ""FirstName"": ""Bob Johnson"",
+        ""DateOfBirth"": ""1988-08-12T00:00:00"",
+        ""EmailAddress"": ""bob.johnson@backlot.ws"",
+        ""PhoneNumber"": ""555-111-2222""
+      },
+      ""__Construct"": ""Backlot.Testing.UseCases.ComplexActor.Roles.CustomerRegistrationSelf, Backlot.Testing"",
+      ""__Skills"": [
+        ""CustomerRegistration"",
+        ""Persist"",
+        ""Permission"",
+        ""Role"",
+        ""Uid""
+      ]
+    }";
+
+    #endregion
 }
