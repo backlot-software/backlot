@@ -1,11 +1,13 @@
-﻿using Backlot.Core.Abstraction.Actors;
+﻿using Autofac;
+using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
-using Backlot.Core.Services;
-using Backlot.Services.Filesystem.LocalDiskStorage;
+using Backlot.Core.Security;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Backlot.Testing.Core.Json.Json;
@@ -16,24 +18,58 @@ namespace Backlot.Testing.Core.Json.Json;
 /// </summary>
 public class ToJson
 {
-    [SetUp]
-    public void Setup()
+    #region Backlot Test Environment Setup Methods
+
+    private static void DefaultSetup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder => 
+            builder.ConfigureBacklot());
+    }
+
+    private static void PermissionEncryptionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.Register(_ => new EncryptionService("1234567890ABCDEF"))
+                        .As<IEncryptionService>()
+                        .SingleInstance();
+                }));
     }
     
-    // TODO: Move alias-specific test initialization to a shared helper
-    // in the planned Backlot.Testing.Defaults NuGet package.
-    // Also review how to avoid duplicate Initialize.Setup() calls.
     private static void AliasSetup()
     {
-        Initialize.Setup((builder) => new AliasDirector(new LocalDiskStorage(), Substitute.For<IConfigurationManager>(), builder));
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b)));
     }
+    
+    private static void AliasEncryptionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.Register(_ => new EncryptionService("1234567890ABCDEF"))
+                        .As<IEncryptionService>()
+                        .SingleInstance();
+                }));
+    }
+
+    #endregion
     
     [Test]
     public void ToJson_WithJSONActorAndSerializedForPersistence_CalculatedFieldNotSerialized()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Number1 = 7,
@@ -56,6 +92,8 @@ public class ToJson
     public void ToJson_WithJSONActorAndSerializedForInteraction_CalculatedFieldSerialized()
     {
         // Arrange
+        PermissionEncryptionSetup();
+        
         var origin = JObject.FromObject(new
         {
             Number1 = 7,
@@ -76,6 +114,8 @@ public class ToJson
     public void ToJson_WithTypedActorWithUpdatedCalculatedFieldAndSerializeForInteraction_CalculatedFieldSerialized()
     {
         // Arrange
+        PermissionEncryptionSetup();
+        
         var origin = new FormulaCalculatedField()
         {
 
@@ -100,6 +140,8 @@ public class ToJson
     public void ToJson_WithTypedActorWithCalculatedFieldOriginallyGivenAndSerializeForInteraction_CalculatedFieldIsNotSerialized()
     {
         // Arrange
+        PermissionEncryptionSetup();
+        
         var origin = new FormulaCalculatedField()
         {
 
@@ -122,6 +164,8 @@ public class ToJson
     public void ToJson_WithJSONActorWithANoneFilledChildRoleWhichIsAddedDuringExecution_ChildRoleIsCreatedUnderTheHoodAndSerializedWithTheChangedValues()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Name = "unittest",
@@ -149,6 +193,8 @@ public class ToJson
     public void ToJson_WithJSONActorHavingNullValueWhichIsSetByCodeAndUpdatedWithNewValue_NewValueSerialized()
     {
         // Arrange
+        PermissionEncryptionSetup();
+        
         // var for this json {"Number1":1,"Number2":2,"Operation":"sum"}
         var origin = "{\"Number1\":1,\"Number2\":2,\"Operation\":null}";
         var role = origin.Presents<IFormula>();
@@ -167,6 +213,8 @@ public class ToJson
     public void ToJson_WithJSONActorWhereAPropertyValueIsChangedToNullAndSerializedForPersistence_TheNullValueIsRespectedAfterSerialization()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Number1 = 1,
@@ -196,7 +244,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {
@@ -224,7 +272,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasMarkedPropertyWithoutAnAliasName_NormalFieldNameUsedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {
@@ -252,7 +300,7 @@ public class ToJson
     public void ToJson_WithTypedActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = new FormulaAlias
         {
@@ -280,7 +328,7 @@ public class ToJson
     public void ToJson_WithTypedActorUsingAnAliasMarkedPropertyWithoutAnAliasName_ActorNameUsedRoleDefinedNameIgnoredInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = new Formula()
         {
@@ -307,7 +355,7 @@ public class ToJson
     public void ToJson_WithJSONActorUsingAnAliasDefinedPropertyUsingFieldInfoAlias_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
         // Arrange
-        AliasSetup();
+        AliasEncryptionSetup();
         
         var origin = JObject.FromObject(new
         {

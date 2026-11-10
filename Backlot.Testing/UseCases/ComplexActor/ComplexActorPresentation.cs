@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
+using Backlot.Testing.Defaults;
 using Backlot.Testing.UseCases.ComplexActor.Roles;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -73,7 +74,8 @@ public class ComplexActorPresentation
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder => 
+          builder.ConfigureBacklot());
     }
     
     [Test]

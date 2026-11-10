@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Backlot.Core.Abstraction.Actors;
+using Backlot.Testing.Defaults;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -12,7 +13,8 @@ public class CombineActor
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
     }
     
     [Test]
@@ -47,7 +49,7 @@ public class CombineActor
             Assert.That(newRole.CardCode, Is.EqualTo("ITALY-455-ROME"));
             
             //check for CustomField.
-            Assert.That(((newRole as IProxiedRole).Actor as IDictionary<string, object>), Does.ContainKey("CustomField"));
+            Assert.That(((newRole as IProxiedRole)?.Actor as IDictionary<string, object>), Does.ContainKey("CustomField"));
         });
     }
     
@@ -83,7 +85,7 @@ public class CombineActor
             Assert.That(newRole.CardCode, Is.EqualTo("ITALY-455-ROME"));
             
             //check for CustomField.
-            Assert.That(((newRole as IProxiedRole).Actor as JContainer), Does.ContainKey("CustomField"));
+            Assert.That(((newRole as IProxiedRole)?.Actor as JContainer), Does.ContainKey("CustomField"));
         });
     }
 }

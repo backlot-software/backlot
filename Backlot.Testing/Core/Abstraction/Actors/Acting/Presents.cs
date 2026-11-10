@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using Autofac;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Security;
 using Backlot.Core.Services;
-using Backlot.Services.Filesystem.LocalDiskStorage;
+using Backlot.Defaults.Instructing;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -17,19 +20,47 @@ namespace Backlot.Testing.Core.Abstraction.Actors.Acting;
 
 public class Presents
 {
-    [SetUp]
-    public void Setup()
+    #region Backlot Test Environment Setup Methods
+    
+    private static void DefaultSetup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
     }
 
-    // TODO: Move alias-specific test initialization to a shared helper
-    // in the planned Backlot.Testing.Defaults NuGet package.
-    // Also review how to avoid duplicate Initialize.Setup() calls.
+    private static void PermissionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b)));
+    }
+
+    private static void PersonSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PersonDirector(
+                    new FakeStorage(), config, b)));
+    }
+    
+    private static void CardSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new CardDirector(
+                    new FakeStorage(), config, b)));
+    }
+    
     private static void AliasSetup()
     {
-        Initialize.Setup((builder) => new AliasDirector(new LocalDiskStorage(), Substitute.For<IConfigurationManager>(), builder));
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b)));
     }
+
+    #endregion
     
     [Test]
     public void Presents_WithActorNotHavingAUidAndARoleAliasReferringToAnExpressionEngine_UidIsCalculatedBasedOnExpressionEngine()
@@ -60,6 +91,8 @@ public class Presents
         //NOTE: However when proxied, a role has it's actor inside which can be casted to the original, see; Intercepting_WithTypedActor_ActorAndProxiedValuesAreInSync
 
         // Arrange
+        DefaultSetup();
+        
         var initial = new Formula()
         {
             Uid = "023d02600ded",
@@ -89,6 +122,8 @@ public class Presents
     public void Presents_DictionaryActorWithNoneMatchingUid_NotMatchingUidIsResolvedFromAlias()
     {
         // Arrange
+        PersonSetup();
+        
         var dictionary = new Dictionary<string, object>
         {
             { "BSN AN", "12355" },
@@ -106,6 +141,8 @@ public class Presents
     public void Presents_TypedActorWithDifferentPropertyTypes_DifferentTypesAreConvertedToWhatTheRoleDefines()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = new Formula()
         {
             Number1 = 7,
@@ -128,6 +165,8 @@ public class Presents
     public void Presents_AnonymousActor_ReturnsProxyWithAccessibleProperties()
     {
         // Arrange
+        DefaultSetup();
+        
         var initial = new
         {
             Uid = "023d02600ded",
@@ -157,6 +196,8 @@ public class Presents
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenUidIsFilledUidIsPreserved()
     {
         // Arrange
+        DefaultSetup();
+        
         // When created from the UI an item is created a custom generated Uid is used (no connection with the remote system yet).
         var newItem = JObject.FromObject(new
         {
@@ -179,6 +220,8 @@ public class Presents
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenCardCodeIsFilledUidIsCardCode()
     {
         // Arrange
+        CardSetup();
+        
         // When returned from the remote api the unique identifier of the external system is returned (CardCode in this case).
         var existingItem = JObject.FromObject(new
         {
@@ -237,7 +280,6 @@ public class Presents
     [Test]
     public void Presents_ExpandoObjectActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
     {
-        AliasSetup();
         // Arrange
         AliasSetup();
         
@@ -286,6 +328,8 @@ public class Presents
     public void Presents_TypedObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {
         // Arrange
+        PermissionSetup();
+        
         var typed = new FormulaPermission
         {
             Uid = "023d02600ded",
@@ -311,6 +355,8 @@ public class Presents
     public void Presents_AnonymousObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {
         // Arrange
+        PermissionSetup();
+        
         var anonymousObject = new
         {
             Uid = "023d02600ded",
@@ -332,5 +378,36 @@ public class Presents
             Assert.That(role.Permission().ToString(), Is.EqualTo("m::7")); // default permission is set.
         });
     }
+
+    #region Fixture Specific Custom Directors
+
+    // TODO: Review these fixture-specific directors and their test models
+    // during the Shared/TestModels cleanup.
+    // Preserve the alias and custom UID initialization test coverage.
+    private class PersonDirector(
+        IFileSystem fileSystem,
+        IConfigurationManager configuration,
+        ContainerBuilder builder)
+        : FakeDefaultDirector(fileSystem, configuration, builder)
+    {
+        public override void Incept()
+        {
+            AssignInstructorFor<IPerson>(Instructors.AliasInitializer);
+        }
+    }
+    
+    private class CardDirector(
+        IFileSystem fileSystem,
+        IConfigurationManager configuration,
+        ContainerBuilder builder)
+        : FakeDefaultDirector(fileSystem, configuration, builder)
+    {
+        public override void Incept()
+        {
+            AssignInstructorFor<ICard>(CardInitialization.Initialize);
+        }
+    }
+    
+    #endregion
     
 }

@@ -1,11 +1,11 @@
 using System.Linq;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
-using Backlot.Core.Services;
-using Backlot.Services.Filesystem.LocalDiskStorage;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -16,24 +16,26 @@ namespace Backlot.Testing.Core.Abstraction.Actors.BaseInterceptor;
 /// </summary>
 public class Intercept
 {
-    [SetUp]
-    public void Setup()
+    private static void DefaultSetup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
     }
     
-    // TODO: Move alias-specific test initialization to a shared helper
-    // in the planned Backlot.Testing.Defaults NuGet package.
-    // Also review how to avoid duplicate Initialize.Setup() calls.
     private static void AliasSetup()
     {
-        Initialize.Setup((builder) => new AliasDirector(new LocalDiskStorage(), Substitute.For<IConfigurationManager>(), builder));
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new AliasDirector(
+                    new FakeStorage(), config, b)));
     }
 
     [Test]
     public void Intercept_WithJSONActor_ActorAndProxiedValuesAreInSync()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -72,6 +74,8 @@ public class Intercept
     public void Intercept_WithJSONNestedRoleACTOR_ActorAndProxiedValuesAreInSync()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Uid = "5DEB1636",
@@ -115,6 +119,8 @@ public class Intercept
     public void Intercept_WithJSONNestedTypedACTOR_ActorAndProxiedValuesAreInSync()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Uid = "5DEB1636",
@@ -158,6 +164,8 @@ public class Intercept
     public void Intercept_WithJSONNestedSelfActor_ActorAndProxiedValuesAreInSync()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Uid = "5DEB1636",
