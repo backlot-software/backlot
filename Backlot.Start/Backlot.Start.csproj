@@ -41,10 +41,10 @@
 
     <ItemGroup>
         <!-- This includes the file in the actual .nupkg package -->
-        <Content Include="README.MD">
+        <None Include="README.md">
             <Pack>true</Pack>
             <PackagePath>\</PackagePath>
-        </Content>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
