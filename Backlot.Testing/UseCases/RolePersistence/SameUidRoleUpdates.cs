@@ -53,6 +53,9 @@ public class SameUidRoleUpdates
 
     #endregion
     
+    /// <summary>
+    /// Verifies playing self and proxied actors with the same UID is rejected when their origin types conflict.
+    /// </summary>
     [Test]
     public async Task  GivenDifferentProxiedAndSelfRolesActorsReferringToSameUid_WhenPlayedTwice_ThenThrowsArgumentExceptionDuringMerge()
     {
@@ -85,6 +88,9 @@ public class SameUidRoleUpdates
         Assert.That(exception?.Message, Does.Contain("You are using a mix of origin types."));
     }
     
+    /// <summary>
+    /// Verifies updates from separate JSON actors with the same UID merge while preserving unchanged properties.
+    /// </summary>
     [Test]
     public async Task  GivenDifferentJsonActorsReferringToSameUid_WhenPlayedTwice_ThenObjectPropertiesAreMerged()
     {
@@ -124,6 +130,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies proxied actors of different types with the same UID merge their available properties.
+    /// </summary>
     [Test]
     public async Task GivenProxiedRolesWithDifferentActorTypesReferringToSameUid_WhenPlayedTwice_ThenMergeProperties()
     {
@@ -163,6 +172,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies updated values from typed actors with the same UID are merged and persisted.
+    /// </summary>
     [Test]
     public async Task GivenTypedActorsReferringToSameUid_WhenPlayedTwice_ObjectsAreMergedAndUpdatedValuesPersisted()
     {
@@ -204,6 +216,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies updates from typed self actors with the same UID persist while retaining unchanged values.
+    /// </summary>
     [Test]
     public async Task GivenTypedSelfActorsReferringToSameUid_WhenPlayedTwice_ObjectsAreUpdatedAndValuesPersisted()
     {

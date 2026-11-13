@@ -22,6 +22,13 @@ public class Presents
 {
     #region Backlot Test Environment Setup
     
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
+    
     private static void DefaultSetup()
     {
         Initialize.BuildApp(builder =>
@@ -62,6 +69,9 @@ public class Presents
 
     #endregion
     
+    /// <summary>
+    /// Verifies an expression engine derives a UID for an actor without one when its role is presented.
+    /// </summary>
     [Test]
     public void Presents_WithActorNotHavingAUidAndARoleAliasReferringToAnExpressionEngine_UidIsCalculatedBasedOnExpressionEngine()
     {
@@ -84,6 +94,9 @@ public class Presents
         Assert.That(role.Uid, Is.EqualTo("12_sumexample!"));
     }
     
+    /// <summary>
+    /// Verifies one actor can be presented as different roles, each exposed through a proxy with accessible properties.
+    /// </summary>
     [Test]
     public void Presents_OneActorPresentedTwiceAsDifferentRoles_ActsAsAnIJProxy()
     {
@@ -118,6 +131,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a dictionary key aliased to the UID property supplies the presented person's UID.
+    /// </summary>
     [Test]
     public void Presents_DictionaryActorWithNoneMatchingUid_NotMatchingUidIsResolvedFromAlias()
     {
@@ -137,6 +153,9 @@ public class Presents
         Assert.That(person.Uid, Is.EqualTo("12355"));
     }
     
+    /// <summary>
+    /// Verifies actor property values are converted to the property types declared by the presented role.
+    /// </summary>
     [Test]
     public void Presents_TypedActorWithDifferentPropertyTypes_DifferentTypesAreConvertedToWhatTheRoleDefines()
     {
@@ -161,6 +180,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies an anonymous actor is proxied while retaining its actor and exposing role properties.
+    /// </summary>
     [Test]
     public void Presents_AnonymousActor_ReturnsProxyWithAccessibleProperties()
     {
@@ -192,6 +214,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a supplied JSON UID is preserved when the external card code is absent.
+    /// </summary>
     [Test]
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenUidIsFilledUidIsPreserved()
     {
@@ -216,6 +241,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a card code from a JSON actor is used as the card role's UID.
+    /// </summary>
     [Test]
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenCardCodeIsFilledUidIsCardCode()
     {
@@ -240,6 +268,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a property with an aliased name on an anonymous actor maps to the role property.
+    /// </summary>
     [Test]
     public void Presents_AnonymousActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
     {
@@ -258,6 +289,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
 
+    /// <summary>
+    /// Verifies a dictionary entry with an aliased name maps to the corresponding role property.
+    /// </summary>
     [Test]
     public void
         Presents_DictionaryActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
@@ -277,6 +311,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
 
+    /// <summary>
+    /// Verifies an ExpandoObject property with an aliased name maps to the corresponding role property.
+    /// </summary>
     [Test]
     public void Presents_ExpandoObjectActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
     {
@@ -294,6 +331,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
     
+    /// <summary>
+    /// Verifies an aliased property in nested JSON role data is used when presenting the parent role.
+    /// </summary>
     [Test]
     public void Presents_WithJSONNestedRoleActorWhichNeedsAliassing_AliasValueIsUsedForRoleProperty()
     {
@@ -324,6 +364,9 @@ public class Presents
         Assert.That(role.Formulas.First().Operation, Is.EqualTo("sum")); // "Op" alias is used for "Operation" value.
     }
     
+    /// <summary>
+    /// Verifies an actor's permission field is ignored and the role receives the default permission.
+    /// </summary>
     [Test]
     public void Presents_TypedObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {
@@ -351,6 +394,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies an anonymous actor's permission field is ignored and the role receives the default permission.
+    /// </summary>
     [Test]
     public void Presents_AnonymousObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {

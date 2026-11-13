@@ -10,13 +10,20 @@ namespace Backlot.Testing.Core.Abstraction.Actors.BaseInterceptor;
 
 public class CombineActor
 {
+    # region Backlot Test Environement Setup
+    
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
     
+    # endregion
+    
+    /// <summary>
+    /// Verifies combining JSON into a dictionary preserves existing values and adds missing properties.
+    /// </summary>
     [Test]
     public void CombineActor_CombineJsonWithDictionary_NoneExistingPropertiesFromJsonObjectAreAddedToDictionary()
     {
@@ -53,6 +60,9 @@ public class CombineActor
         });
     }
     
+    /// <summary>
+    /// Verifies combining a dictionary into JSON preserves existing values and adds missing properties.
+    /// </summary>
     [Test]
     public void CombineActor_CombineDictionaryWithJson_NoneExistingPropertiesFromDictionaryAreAddedToJsonObject()
     {

@@ -23,10 +23,12 @@ namespace Backlot.Testing.UseCases.RolePersistence;
 /// </summary>
 public class AnonymousActorRoundTrip
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -44,7 +46,12 @@ public class AnonymousActorRoundTrip
         // Ensure the repository starts empty.
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies an anonymous actor persists and reloads as a JSON-backed role with its properties intact.
+    /// </summary>
     [Test]
     public async Task GivenAnonymousActor_WhenPersistedAndRetrieved_ThenJsonBackedRoleRetainsProperties()
     {

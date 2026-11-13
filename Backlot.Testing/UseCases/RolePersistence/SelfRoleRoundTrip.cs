@@ -22,10 +22,12 @@ namespace Backlot.Testing.UseCases.RolePersistence;
 /// </summary>
 public class SelfRoleRoundTrip
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -43,7 +45,12 @@ public class SelfRoleRoundTrip
         // Ensure the repository starts empty.
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies a persisted self role reloads with its concrete type intact and without a proxy.
+    /// </summary>
     [Test]
     public async Task GivenSelfRole_WhenPresentedPersistedAndRetrievedFromRepo_ThenRoleIsNotProxiedAndTypeIsPreserved()
     {

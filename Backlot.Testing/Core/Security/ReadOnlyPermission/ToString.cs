@@ -6,6 +6,9 @@ namespace Backlot.Testing.Core.Security.ReadOnlyPermission;
 
 public class ToString
 {
+    /// <summary>
+    /// Verifies permission serialization includes the mask and groups in the expected order and format.
+    /// </summary>
     [Test]
     public void ToString_GroupHasHigherLevelThanMask_ReturnsExpectedPattern()
     {
@@ -21,6 +24,9 @@ public class ToString
         Assert.That(result, Is.EqualTo("m::0,g:*:5,g:Admin:7"));
     }
     
+    /// <summary>
+    /// Verifies permission serialization represents the wildcard group level and admin group level correctly.
+    /// </summary>
     [Test]
     public void ToString_WildcardHasHigherLevelThanGroup_ReturnsExpectedPattern()
     {
@@ -36,6 +42,9 @@ public class ToString
         Assert.That(result, Is.EqualTo("m::7,g:*:5,g:Admin:0"));
     }
     
+    /// <summary>
+    /// Verifies permission serialization includes multiple groups with their respective levels.
+    /// </summary>
     [Test]
     public void ToString_TwoGroupsWithDifferentLevels_ReturnsExpectedPattern()
     {
@@ -51,6 +60,9 @@ public class ToString
         Assert.That(result, Is.EqualTo("m::7,g:Admin:7,g:Everyone:5"));
     }
     
+    /// <summary>
+    /// Verifies permission serialization includes an explicitly assigned user's permission.
+    /// </summary>
     [Test]
     public void ToString_ExplicitUserPermissionSet_ReturnsExpectedPattern()
     {

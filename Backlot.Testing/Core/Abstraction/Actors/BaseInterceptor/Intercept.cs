@@ -19,6 +19,13 @@ namespace Backlot.Testing.Core.Abstraction.Actors.BaseInterceptor;
 public class Intercept
 {
     #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
 
     private static void DefaultSetup()
     {
@@ -36,6 +43,9 @@ public class Intercept
 
     #endregion
 
+    /// <summary>
+    /// Verifies changes to a role backed by JSON are reflected in its proxy actor, not the original JSON.
+    /// </summary>
     [Test]
     public void Intercept_WithJSONActor_ActorAndProxiedValuesAreInSync()
     {
@@ -76,6 +86,9 @@ public class Intercept
         });
     }
     
+    /// <summary>
+    /// Verifies changes to a nested role backed by JSON are reflected in the proxy actor, not the original JSON.
+    /// </summary>
     [Test]
     public void Intercept_WithJSONNestedRoleACTOR_ActorAndProxiedValuesAreInSync()
     {
@@ -121,6 +134,9 @@ public class Intercept
         });
     }
     
+    /// <summary>
+    /// Verifies changes to a nested typed actor backed by JSON stay synchronized with the proxy actor.
+    /// </summary>
     [Test]
     public void Intercept_WithJSONNestedTypedACTOR_ActorAndProxiedValuesAreInSync()
     {
@@ -166,6 +182,9 @@ public class Intercept
         });
     }
     
+    /// <summary>
+    /// Verifies changes to a nested self actor backed by JSON stay synchronized with the proxy actor.
+    /// </summary>
     [Test]
     public void Intercept_WithJSONNestedSelfActor_ActorAndProxiedValuesAreInSync()
     {
@@ -211,6 +230,9 @@ public class Intercept
         });
     }
     
+    /// <summary>
+    /// Verifies writes through aliased role properties update the proxy actor while leaving the source JSON unchanged.
+    /// </summary>
     [Test]
     public void Intercept_WithJSONActorUsingAliasses_AliasIsUpdatedInRoleAndDeepClonedOrigin()
     {

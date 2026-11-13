@@ -22,6 +22,13 @@ namespace Backlot.Testing.UseCases.RoleSerialization;
 public class RoleSerialization
 {
     #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
 
     private static void DefaultSetup()
     {
@@ -31,7 +38,7 @@ public class RoleSerialization
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -53,6 +60,9 @@ public class RoleSerialization
 
     #endregion
     
+    /// <summary>
+    /// Verifies an aliased typed actor property survives persistence serialization and re-presentation.
+    /// </summary>
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForPersistenceAndPresentedAgain_ThenAliasValueIsPreserved()
     {
@@ -80,6 +90,9 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies an aliased typed actor property survives interaction serialization and re-presentation.
+    /// </summary>
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForInteractionAndPresentedAgain_ThenAliasValueIsPreserved()
     {
@@ -107,6 +120,9 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies serialization across different presented roles preserves their original and added skills.
+    /// </summary>
     [Test]
     public void GivenJsonRole_WhenPresentedAsDifferentRolesAndSerialized_ThenAllOriginalSkillsAndAddedSkillsArePreserved()
     {
@@ -134,6 +150,9 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies merging JSON proxies preserves an explicit null and additional properties during persistence serialization.
+    /// </summary>
     [Test]
     public void GivenTwoJProxiesWhereTheLeadingJsonContainsANullValueForAProperty_WhenTheJProxiesAreMergedAndSerializedForPersistence_TheNullValueAndAdditionalPropertiesArePreserved()
     {

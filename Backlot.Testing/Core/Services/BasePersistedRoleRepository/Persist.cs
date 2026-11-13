@@ -22,6 +22,13 @@ namespace Backlot.Testing.Core.Services.BasePersistedRoleRepository;
 public class Persist
 {
     #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
 
     private static void PermissionChecksumSetup()
     {
@@ -46,6 +53,9 @@ public class Persist
 
     #endregion
 
+    /// <summary>
+    /// Verifies a role with no permissions cannot be persisted and is not stored.
+    /// </summary>
     [Test]
     public void Persist_RoleWithNonePermissionSet_ThrowsPermissionControlException()
     {
@@ -71,6 +81,9 @@ public class Persist
         Assert.That(repo.StoreCallCount, Is.EqualTo(0));
     }
     
+    /// <summary>
+    /// Verifies a nonzero permission mask without a matching user or group permission prevents persistence.
+    /// </summary>
     [Test]
     public void Persist_MaskPermissionLevelTo7ButNoUserOrGroupWithThatPermission_ThrowsPermissionControlException()
     {
@@ -98,6 +111,9 @@ public class Persist
         Assert.That(repo.StoreCallCount, Is.EqualTo(0));
     }
     
+    /// <summary>
+    /// Verifies a role with a user granted permission can be persisted.
+    /// </summary>
     [Test]
     public async Task Persist_MaskPermissionLevel7AndAtLeastOneUserSetWithALevelHigherThan0_RoleIsStored()
     {
@@ -126,6 +142,9 @@ public class Persist
         Assert.That(repo.StoreCallCount, Is.EqualTo(1));
     }
 
+    /// <summary>
+    /// Verifies updating a writable role merges changed and unchanged properties and stores the result.
+    /// </summary>
     [Test]
     public async Task Persist_UpdateWritableObject_MergesUpdatedAndExistingProperties()
     {
@@ -180,6 +199,9 @@ public class Persist
         });
     }
 
+    /// <summary>
+    /// Verifies updating a read-only persisted role throws a permission exception without storing it.
+    /// </summary>
     [Test]
     public void Persist_UpdateReadOnlyObject_ThrowsPermissionControlException()
     {
@@ -222,6 +244,9 @@ public class Persist
         Assert.That(repo.StoreCallCount, Is.EqualTo(0));
     }
 
+    /// <summary>
+    /// Verifies a new writable role is stored and returned by persistence.
+    /// </summary>
     [Test]
     public async Task Persist_StoreNewWriteableObject_StoresAndReturnsObject()
     {
@@ -254,6 +279,9 @@ public class Persist
         });
     }
 
+    /// <summary>
+    /// Verifies persisting an unchanged stored role returns it without storing it again.
+    /// </summary>
     [Test]
     public async Task Persist_UnchangedPersistedObject_ReturnsWithoutStoringAgain()
     {

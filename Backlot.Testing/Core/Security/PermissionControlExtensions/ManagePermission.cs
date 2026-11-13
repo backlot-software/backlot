@@ -1,5 +1,4 @@
-﻿using Backlot.Core;
-using Backlot.Core.Abstraction.Actors;
+﻿using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Security;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
@@ -11,15 +10,22 @@ namespace Backlot.Testing.Core.Security.PermissionControlExtensions;
 
 public class ManagePermission
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies changing the permission mask updates the permission of a presented anonymous actor.
+    /// </summary>
     [Test]
     public void ManagePermission_AnonymousObjectWithDefaultPermission_PermissionIsEqualToChangedMaskLevel()
     {

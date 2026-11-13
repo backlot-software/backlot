@@ -13,15 +13,17 @@ using NUnit.Framework;
 namespace Backlot.Testing.Core.Abstraction.Roles.RoleExtensions;
 
 /// <summary>
-/// Tests to test if checksum calculation for roles (and or merged roles) works correctly
+/// Tests to verify if checksum calculation for roles (and or merged roles) works correctly
 /// Checksums can be used to check role object equality
 /// </summary>
 public class GetChecksum
 {
+    # region Backlot Test Environment Setup
+    
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -32,6 +34,11 @@ public class GetChecksum
             }));
     }
     
+    # endregion
+    
+    /// <summary>
+    /// Verifies self roles with identical property values produce the same checksum.
+    /// </summary>
     [Test]
     public void GetChecksum_SelfRolesWithTheSamePropertyValues_ReturnsSameChecksum()
     {
@@ -62,6 +69,9 @@ public class GetChecksum
         Assert.That(chkOrigin, Is.EqualTo(chkMergedTheSame));
     }
     
+    /// <summary>
+    /// Verifies self roles with different property values produce different checksums.
+    /// </summary>
     [Test]
     public void GetChecksum_SelfRolesWithDifferentPropertyValues_ReturnsDifferentChecksum()
     {
@@ -90,6 +100,9 @@ public class GetChecksum
         Assert.That(chkOrigin,  Is.Not.EqualTo(chkNotTheSame));
     }
     
+    /// <summary>
+    /// Verifies merging matching JSON role data produces the same checksum as the complete role.
+    /// </summary>
     [Test]
     public void GetChecksum_MergedJsonActorsWithTheSamePropertyValues_ReturnSameChecksum()
     {
@@ -120,6 +133,9 @@ public class GetChecksum
         Assert.That(chkOrigin, Is.EqualTo(chkMergedTheSame));
     }
     
+    /// <summary>
+    /// Verifies merging JSON role data with different property values produces a different checksum.
+    /// </summary>
     [Test]
     public void GetChecksum_MergedJsonActorsWithDifferentPropertyValues_ReturnsDifferentChecksum()
     {
@@ -150,6 +166,9 @@ public class GetChecksum
         Assert.That(chkOrigin, Is.Not.EqualTo(chkUpdate));
     }
     
+    /// <summary>
+    /// Verifies typed actors with identical property values produce the same checksum across presented roles.
+    /// </summary>
     [Test]
     public void GetChecksum_TypedActorRoleWithTheSamePropertyValues_ReturnsSameChecksum()
     {
@@ -181,6 +200,9 @@ public class GetChecksum
         Assert.That(chkOrigin, Is.EqualTo(chkMergedTheSame));
     }
     
+    /// <summary>
+    /// Verifies typed actors with different property values produce different checksums.
+    /// </summary>
     [Test]
     public void GetChecksum_TypedActorRoleWithDifferentPropertyValues_ReturnsDifferentChecksum()
     {

@@ -31,38 +31,52 @@ namespace Backlot.Testing.UseCases.NullAllowedScenarios;
 /// </summary>
 public class OptionalRoleScenario
 {
-    private static void Setup()
+    #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
+
+    private static void DefaultSetup()
+    {
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
 
     private static void PermissionAndRepositorySetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
                 configureContainer: b =>
-            {
-                b.RegisterType<MemoryPersistedRoleRepository>()
-                    .As<IPersistedRoleRepository>();
+                {
+                    b.RegisterType<MemoryPersistedRoleRepository>()
+                        .As<IPersistedRoleRepository>();
 
-                b.RegisterType<MemoryRelationRepository>()
-                    .As<IRelationRepository>();
+                    b.RegisterType<MemoryRelationRepository>()
+                        .As<IRelationRepository>();
                 
-                b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
-                    .As<IChecksumBuilder>();
-            }));
+                    b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
         // Ensure the repository starts empty.
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
 
+    #endregion
+
+    /// <summary>
+    /// Verifies playing a scenario with a missing required role throws an argument exception.
+    /// </summary>
     [Test]
     public void GivenMissingRole_WhenScenarioWithoutNullAllowedIsPlayed_ThenArgumentExceptionIsThrown()
     {
         // Arrange
-        Setup();
+        DefaultSetup();
         
         var cardCode = new
         {
@@ -78,6 +92,9 @@ public class OptionalRoleScenario
         });
     }
     
+    /// <summary>
+    /// Verifies a scenario configured with a null-allowed role executes when a role is missing.
+    /// </summary>
     [Test]
     public async Task GivenMissingRole_WhenScenarioWithNullAllowedIsPlayed_ThenScenarioExecutes()
     {
@@ -98,6 +115,9 @@ public class OptionalRoleScenario
         Assert.That(result, Is.True);
     }
     
+    /// <summary>
+    /// Verifies a missing role is resolved from a persisted relation so the scenario can execute.
+    /// </summary>
     [Test]
     public async Task GivenPersistedRelatedRoles_WhenScenarioWithoutNullAllowedIsPlayed_ThenRelatedRoleIsResolvedAndScenarioExecutes()
     {

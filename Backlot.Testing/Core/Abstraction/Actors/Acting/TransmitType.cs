@@ -9,13 +9,20 @@ namespace Backlot.Testing.Core.Abstraction.Actors.Acting;
 
 public class TransmitType
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies transmitting by role type copies only fields supported by the destination role.
+    /// </summary>
     [Test]
     public void TransmitType_APersistableRoleTransmittedToANonePersistableRole_OnlyFieldsFromTheDestinationTypeAreUsedInTheResult()
     {

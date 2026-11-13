@@ -10,15 +10,22 @@ namespace Backlot.Testing.Core.Security.PermissionControlExtensions;
 
 public class CanWrite
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
 
+    #endregion
+
+    /// <summary>
+    /// Verifies a user with read-write permission in the admin group can write.
+    /// </summary>
     [Test]
     public void CanWrite_CurrentUserWithAdminReadWritePermission_CurrentUserCanWrite()
     {

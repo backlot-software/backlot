@@ -33,6 +33,9 @@ public class ComplexActorPresentation
 
   #endregion
     
+    /// <summary>
+    /// Verifies complex JSON with valid construction metadata is presented as the self type with nested properties intact.
+    /// </summary>
     [Test]
     public void GivenComplexJsonActor_WhenPresentedWithConstruct_ThenPresentedAsSelf()
     {
@@ -64,6 +67,9 @@ public class ComplexActorPresentation
         });
     }
     
+    /// <summary>
+    /// Verifies complex JSON without construction metadata is presented as a JSON proxy or self type with properties intact.
+    /// </summary>
     [Test]
     public void GivenComplexJsonActor_WhenPresentedWithoutConstruct_ThenPresentedUsingJsonInterceptorReturningProxyAndSelf()
     {
