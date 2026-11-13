@@ -91,7 +91,7 @@ internal static class Db
                         serializer.ContractResolver = Serializer.ContractResolver;
                         serializer.TypeNameHandling = Serializer.TypeNameHandling;
 
-                        foreach (var converter in Serializer.Converters)
+                        foreach (var converter in Serializer.Converters.Where(c => c.CanWrite)) // RavenDB's CachingJsonConverter ignores CanWrite, while not allowed to be added to .Converters any way, this check is here for safety reasons.
                         {
                             serializer.Converters.Add(converter);
                         }
@@ -101,7 +101,7 @@ internal static class Db
                         //TODO: 29/10/2025 - because contract resolver was never set, this is kept away from now, but ideally this should be set, consider to do so.
                         serializer.TypeNameHandling = DeSerializer.TypeNameHandling;
                         
-                        foreach (var converter in DeSerializer.Converters)
+                        foreach (var converter in DeSerializer.Converters.Where(c => c.CanRead))
                         {
                             serializer.Converters.Add(converter);
                         }
