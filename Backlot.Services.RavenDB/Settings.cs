@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Backlot.Core.Abstraction.Configuration;
+using Backlot.Core.DependencyInjection;
+using Backlot.Core.Services;
 
 namespace Backlot.Services.RavenDb;
 
@@ -23,7 +25,7 @@ public class Settings
     /// </summary>
     [Configurable]
     public string X509Certificate2 { get; set; }
-    
+
     /// <summary>
     /// Shortest substring ("contains") search the role index supports. Default: 3.
     /// Search terms shorter than this fall back to a prefix (starts-with) match instead
@@ -33,7 +35,7 @@ public class Settings
     /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
     /// </summary>
     [Configurable]
-    public string NGramMinGram { get; set; }
+    public string NGramMinGram { get; set; } = "3";
 
     /// <summary>
     /// Longest indexed substring fragment for "contains" searches. Default: 6.
@@ -44,6 +46,46 @@ public class Settings
     /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
     /// </summary>
     [Configurable]
-    public string NGramMaxGram { get; set; }
+    public string NGramMaxGram { get; set; } = "6";
+
+    /// <summary>
+    /// Maximum number of characters of a string value that is indexed. Default: 1024.
+    /// Longer values are truncated before indexing, so "contains" only finds text within the
+    /// first characters and "equals" compares the truncated values. Large texts (e.g. markdown)
+    /// otherwise overflow the ngram analyzer buffer of the Corax search engine and fail indexing.
+    /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
+    /// </summary>
+    [Configurable]
+    public string IndexMaxFieldLength { get; set; } = "1024";
+
+    /// <summary>
+    /// Comma separated list of document fields that are never indexed, e.g. "Content,Body".
+    /// Matched case sensitive against the json field name. Criteria on an excluded field match nothing,
+    /// and ordering on it has no effect.
+    /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
+    /// </summary>
+    [Configurable]
+    public string IndexExcludedFields { get; set; }
+
+}
+
+/// <summary>
+/// Get shared settings.
+/// </summary>
+internal static class IndexConfig
+{
+    internal static int NGramMinGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram));
     
+    internal static int NGramMaxGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram));
+
+    internal static int IndexMaxFieldLength => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexMaxFieldLength));
+
+    internal static IEnumerable<string> IndexExcludedFields
+    {
+        get
+        {
+            var fields = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexExcludedFields) ?? string.Empty;
+            return string.IsNullOrWhiteSpace(fields) ? Enumerable.Empty<string>() : fields.Split(',');
+        }
+    }
 }
