@@ -118,10 +118,9 @@ public class Json
         // Create the "child" role
         role.Total = Acting.New<IMoney>();
         // Change properties of the "Child" role
-        role.Total.Value = (decimal)100.10;
+        role.Total.Value = 100.10m;
         
         var jsn = Backlot.Core.Json.Json.ToJson(role, Strategy.SerializeForInteraction);
-        TestContext.WriteLine(jsn);
         #endregion
 
         // Check if both, original actor and added child role properties are serialized.
