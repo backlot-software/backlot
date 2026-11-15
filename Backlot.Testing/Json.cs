@@ -121,6 +121,7 @@ public class Json
         role.Total.Value = (decimal)100.10;
         
         var jsn = Backlot.Core.Json.Json.ToJson(role, Strategy.SerializeForInteraction);
+        TestContext.WriteLine(jsn);
         #endregion
 
         // Check if both, original actor and added child role properties are serialized.
