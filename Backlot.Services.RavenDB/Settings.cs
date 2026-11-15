@@ -70,22 +70,39 @@ public class Settings
 }
 
 /// <summary>
-/// Get shared settings.
+/// Get shared settings -- for indexbuilding settings must be part of the Index Creation Task
 /// </summary>
-internal static class IndexConfig
+public partial class Roles_BySkillAndReadPermission
 {
-    internal static int NGramMinGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram) ?? "3");
+    internal static int NGramMinGram {
+        get
+        {
+            var val = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram);
+            return Convert.ToInt32(!string.IsNullOrEmpty(val) ? val : "3");
+        }
+    }
+    internal static int NGramMaxGram {
+        get
+        {
+            var val = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram);
+            return Convert.ToInt32(!string.IsNullOrEmpty(val) ? val : "6");
+        }
+    }
     
-    internal static int NGramMaxGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram) ?? "6");
-
-    internal static int IndexMaxFieldLength => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexMaxFieldLength) ?? "1024");
-
-    internal static IEnumerable<string> IndexExcludedFields
+    internal static int IndexMaxFieldLength {
+        get
+        {
+            var val = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexMaxFieldLength);
+            return Convert.ToInt32(!string.IsNullOrEmpty(val) ? val : "6");
+        }
+    }
+    
+    internal static string IndexExcludedFields
     {
         get
         {
-            var fields = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexExcludedFields) ?? string.Empty;
-            return string.IsNullOrWhiteSpace(fields) ? Enumerable.Empty<string>() : fields.Split(',');
+            var val = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexExcludedFields);
+            return $"{val},"; // make sure every fieldname (also single values, do end with a , seperator. This to make a RavenDb compatible indoex (which doesn't support enumerables in this case.)
         }
     }
 }

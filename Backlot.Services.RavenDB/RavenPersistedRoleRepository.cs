@@ -49,19 +49,19 @@ namespace Backlot.Services.RavenDb
 
             foreach (var word in words)
             {
-                if (word.Length < IndexConfig.NGramMinGram)
+                if (word.Length < Roles_BySkillAndReadPermission.NGramMinGram)
                     continue; // no indexed ngram is this short.
 
-                if (word.Length <= IndexConfig.NGramMaxGram)
+                if (word.Length <= Roles_BySkillAndReadPermission.NGramMaxGram)
                 {
                     terms.Add(word);
                     continue;
                 }
 
                 // too long to be an indexed ngram, so slide a NGramMaxGram sized window over the word.
-                for (var i = 0; i + IndexConfig.NGramMaxGram <= word.Length; i++)
+                for (var i = 0; i + Roles_BySkillAndReadPermission.NGramMaxGram <= word.Length; i++)
                 {
-                    terms.Add(word.Substring(i, IndexConfig.NGramMaxGram));
+                    terms.Add(word.Substring(i, Roles_BySkillAndReadPermission.NGramMaxGram));
                 }
             }
 
@@ -347,8 +347,8 @@ namespace Backlot.Services.RavenDb
                 case ConditionEnum.eq: // 1 - equal
                 default:
                     // long strings are indexed truncated, so compare against the same truncated value.
-                    if (itm.Value is string eqValue && eqValue.Length > IndexConfig.IndexMaxFieldLength)
-                        return query.WhereEquals(fieldName, eqValue.Substring(0, IndexConfig.IndexMaxFieldLength));
+                    if (itm.Value is string eqValue && eqValue.Length > Roles_BySkillAndReadPermission.IndexMaxFieldLength)
+                        return query.WhereEquals(fieldName, eqValue.Substring(0, Roles_BySkillAndReadPermission.IndexMaxFieldLength));
                     
                     return query.WhereEquals(fieldName, itm.Value);
             }

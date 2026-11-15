@@ -9,7 +9,7 @@ using Raven.Client.Documents.Indexes;
 namespace Backlot.Services.RavenDb;
 
 // ReSharper disable once InconsistentNaming : RavenDb naming convention.
-public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist>
+public partial class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist>
 {
     // ReSharper disable once InconsistentNaming : different naming convention.
     public static string _IndexName => "Roles/BySkillAndReadPermission";
@@ -31,9 +31,16 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
         // GroupsCanRead and LastModified are not Search fields, so their exact term matching
         // (WhereEquals / ContainsAny / range) keeps working unchanged.
         Configuration["Indexing.Analyzers.Search.Default"] = "NGramAnalyzer";
-        Configuration["Indexing.Analyzers.NGram.MinGram"] = IndexConfig.NGramMinGram.ToString();
-        Configuration["Indexing.Analyzers.NGram.MaxGram"] = IndexConfig.NGramMaxGram.ToString();
+        Configuration["Indexing.Analyzers.NGram.MinGram"] = NGramMinGram.ToString();
+        Configuration["Indexing.Analyzers.NGram.MaxGram"] = NGramMaxGram.ToString();
 
+        // locals, so the map captures the values: ravendb serializes the map to c# source and runs
+        // it on the server, where a reference to a static member of this class does not compile.
+        // large strings are truncated to maxLength, otherwise the ngram analyzer output overflows
+        // the Corax analyzer buffer ("The output byte buffer is too small") and the document is skipped.
+        int maxLength = IndexMaxFieldLength;
+        string excluded = IndexExcludedFields;
+        
         Map = roles => from role in roles
             let metadata = MetadataFor(role)
             let jsn = AsJson(role)
@@ -62,11 +69,11 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
                                   || kvp.Value is Int16 || kvp.Value is Int32 || kvp.Value is Int64
                                   || kvp.Value is Decimal || kvp.Value is Double
                                   || kvp.Value is IConvertible) // check if value is a number or a string. IConvertible is used by backlot server for sparrow types such as strings.
-                    .Where(kvp => !IndexConfig.IndexExcludedFields.Contains(kvp.Key))
+                    .Where(kvp => !excluded.Contains($"{kvp.Key},"))
                     // only strings are truncated, numbers and booleans keep their type for lt / gt.
                     .Select(kvp => CreateField($"_{kvp.Key}",
-                        Convert.GetTypeCode(kvp.Value) == TypeCode.String && kvp.Value.ToString().Length > IndexConfig.IndexMaxFieldLength
-                            ? (object)kvp.Value.ToString().Substring(0, IndexConfig.IndexMaxFieldLength)
+                        Convert.GetTypeCode(kvp.Value) == TypeCode.String && kvp.Value.ToString().Length > maxLength
+                            ? (object)kvp.Value.ToString().Substring(0, maxLength)
                             : kvp.Value,
                         new CreateFieldOptions
                     {
@@ -84,10 +91,10 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
                         // do not rewrite this as !(kvp.Value is ValueType) either: ravendb serializes
                         // the map to c# source and drops the parenthesis, which no longer compiles.
                         .Where(kvp => Convert.GetTypeCode(kvp.Value) == TypeCode.String)
-                        .Where(kvp => !IndexConfig.IndexExcludedFields.Contains(kvp.Key))
+                        .Where(kvp => !excluded.Contains($"{kvp.Key},"))
                         .Select(kvp => CreateField($"_{kvp.Key}{NGramSuffix}",
-                            kvp.Value.ToString().Length > IndexConfig.IndexMaxFieldLength
-                                ? kvp.Value.ToString().Substring(0, IndexConfig.IndexMaxFieldLength)
+                            kvp.Value.ToString().Length > maxLength
+                                ? kvp.Value.ToString().Substring(0, maxLength)
                                 : kvp.Value.ToString(),
                             new CreateFieldOptions
                         {
