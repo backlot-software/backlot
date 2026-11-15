@@ -35,7 +35,7 @@ public class Settings
     /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
     /// </summary>
     [Configurable]
-    public string NGramMinGram { get; set; } = "3";
+    public string NGramMinGram { get; set; }
 
     /// <summary>
     /// Longest indexed substring fragment for "contains" searches. Default: 6.
@@ -46,7 +46,7 @@ public class Settings
     /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
     /// </summary>
     [Configurable]
-    public string NGramMaxGram { get; set; } = "6";
+    public string NGramMaxGram { get; set; }
 
     /// <summary>
     /// Maximum number of characters of a string value that is indexed. Default: 1024.
@@ -56,7 +56,7 @@ public class Settings
     /// Changing this value requires the Roles/BySkillAndReadPermission index to rebuild.
     /// </summary>
     [Configurable]
-    public string IndexMaxFieldLength { get; set; } = "1024";
+    public string IndexMaxFieldLength { get; set; }
 
     /// <summary>
     /// Comma separated list of document fields that are never indexed, e.g. "Content,Body".
@@ -74,11 +74,11 @@ public class Settings
 /// </summary>
 internal static class IndexConfig
 {
-    internal static int NGramMinGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram));
+    internal static int NGramMinGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram) ?? "3");
     
-    internal static int NGramMaxGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram));
+    internal static int NGramMaxGram => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram) ?? "6");
 
-    internal static int IndexMaxFieldLength => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexMaxFieldLength));
+    internal static int IndexMaxFieldLength => Convert.ToInt32(ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.IndexMaxFieldLength) ?? "1024");
 
     internal static IEnumerable<string> IndexExcludedFields
     {
