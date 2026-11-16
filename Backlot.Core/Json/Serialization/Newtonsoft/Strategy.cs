@@ -153,7 +153,7 @@ public static class Strategy
         
         serializer.Converters.Add(new NumbersConverter());
         serializer.Converters.Add(new SenarioReferenceConverter());
-        serializer.Converters.Add(new RoleReferenceConverter());
+        // serialize is for writeJson not for read so adding; serializer.Converters.Add(new RoleReferenceConverter()); doesn't make any sense.
 
         return serializer;
     }

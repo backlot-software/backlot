@@ -1,14 +1,15 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Backlot.Core;
-using Backlot.Core.DependencyInjection;
 using Backlot.Core.Json;
-using Backlot.Core.Services;
 using Raven.Client.Documents.Indexes;
 
 namespace Backlot.Services.RavenDb;
 
 // ReSharper disable once InconsistentNaming : RavenDb naming convention.
-public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist>
+public partial class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist>
 {
     // ReSharper disable once InconsistentNaming : different naming convention.
     public static string _IndexName => "Roles/BySkillAndReadPermission";
@@ -21,36 +22,6 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
     /// fieldname, so user supplied criteria can never address a twin field directly.
     /// </summary>
     internal const string NGramSuffix = "~";
-    
-    private static int? _nGramMinGram;
-
-    internal static int NGramMinGram
-    {
-        get
-        {
-            if (_nGramMinGram != null) return _nGramMinGram.Value;
-            
-            var min = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMinGram);
-            _nGramMinGram = !string.IsNullOrWhiteSpace(min) ? int.Parse(min) : 3;
-
-            return _nGramMinGram.Value;
-        }
-    }
-    
-    private static int? _nGramMaxGram;
-
-    internal static int NGramMaxGram
-    {
-        get
-        {
-            if (_nGramMaxGram != null) return _nGramMaxGram.Value;
-            
-            var max = ServiceLocator.Get<IConfigurationManager>().Get<Settings>(s => s.NGramMaxGram);
-            _nGramMaxGram = !string.IsNullOrWhiteSpace(max) ? int.Parse(max) : 6;
-
-            return _nGramMaxGram.Value;
-        }
-    }
 
     public Roles_BySkillAndReadPermission()
     {
@@ -63,6 +34,13 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
         Configuration["Indexing.Analyzers.NGram.MinGram"] = NGramMinGram.ToString();
         Configuration["Indexing.Analyzers.NGram.MaxGram"] = NGramMaxGram.ToString();
 
+        // locals, so the map captures the values: ravendb serializes the map to c# source and runs
+        // it on the server, where a reference to a static member of this class does not compile.
+        // large strings are truncated to maxLength, otherwise the ngram analyzer output overflows
+        // the Corax analyzer buffer ("The output byte buffer is too small") and the document is skipped.
+        int maxLength = IndexMaxFieldLength;
+        string excluded = IndexExcludedFields;
+        
         Map = roles => from role in roles
             let metadata = MetadataFor(role)
             let jsn = AsJson(role)
@@ -91,7 +69,13 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
                                   || kvp.Value is Int16 || kvp.Value is Int32 || kvp.Value is Int64
                                   || kvp.Value is Decimal || kvp.Value is Double
                                   || kvp.Value is IConvertible) // check if value is a number or a string. IConvertible is used by backlot server for sparrow types such as strings.
-                    .Select(kvp => CreateField($"_{kvp.Key}", kvp.Value, new CreateFieldOptions
+                    .Where(kvp => !excluded.Contains($"{kvp.Key},"))
+                    // only strings are truncated, numbers and booleans keep their type for lt / gt.
+                    .Select(kvp => CreateField($"_{kvp.Key}",
+                        Convert.GetTypeCode(kvp.Value) == TypeCode.String && kvp.Value.ToString().Length > maxLength
+                            ? (object)kvp.Value.ToString().Substring(0, maxLength)
+                            : kvp.Value,
+                        new CreateFieldOptions
                     {
                         // see: https://ravendb.net/docs/article-page/6.0/csharp/indexes/storing-data-in-index seve disk space
                         Storage = FieldStorage.No,
@@ -107,13 +91,32 @@ public class Roles_BySkillAndReadPermission : AbstractIndexCreationTask<IPersist
                         // do not rewrite this as !(kvp.Value is ValueType) either: ravendb serializes
                         // the map to c# source and drops the parenthesis, which no longer compiles.
                         .Where(kvp => Convert.GetTypeCode(kvp.Value) == TypeCode.String)
-                        .Select(kvp => CreateField($"_{kvp.Key}{NGramSuffix}", kvp.Value, new CreateFieldOptions
+                        .Where(kvp => !excluded.Contains($"{kvp.Key},"))
+                        .Select(kvp => CreateField($"_{kvp.Key}{NGramSuffix}",
+                            kvp.Value.ToString().Length > maxLength
+                                ? kvp.Value.ToString().Substring(0, maxLength)
+                                : kvp.Value.ToString(),
+                            new CreateFieldOptions
                         {
                             Storage = FieldStorage.No,
                             // analyzed with Indexing.Analyzers.Search.Default == NGramAnalyzer, which
                             // turns Search into a substring match: 'jo' hits john, lenjonas and peter jo.
                             Indexing = FieldIndexing.Search
                         })))
-            };	
+            };
+
+        Map = (Expression<Func<IEnumerable<IPersist>, IEnumerable>>)new InlineCapturedValues().Visit(Map);
+    }
+
+    /// <summary>
+    /// Replaces every read of a captured local (a field of a compiler generated closure) by its value,
+    /// so ravendb serializes it as a literal instead of a reference to the closure class.
+    /// </summary>
+    private class InlineCapturedValues : ExpressionVisitor
+    {
+        protected override Expression VisitMember(MemberExpression node) =>
+            node.Expression is ConstantExpression closure && node.Member is FieldInfo field
+                ? Expression.Constant(field.GetValue(closure.Value), node.Type)
+                : base.VisitMember(node);
     }
 }

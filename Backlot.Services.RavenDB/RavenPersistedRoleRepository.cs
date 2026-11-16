@@ -346,6 +346,10 @@ namespace Backlot.Services.RavenDb
                 // ReSharper disable once RedundantCaseLabel : we like to show other default values as well here.
                 case ConditionEnum.eq: // 1 - equal
                 default:
+                    // long strings are indexed truncated, so compare against the same truncated value.
+                    if (itm.Value is string eqValue && eqValue.Length > Roles_BySkillAndReadPermission.IndexMaxFieldLength)
+                        return query.WhereEquals(fieldName, eqValue.Substring(0, Roles_BySkillAndReadPermission.IndexMaxFieldLength));
+                    
                     return query.WhereEquals(fieldName, itm.Value);
             }
         }
