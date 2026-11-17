@@ -1,5 +1,4 @@
 using Autofac;
-using Autofac.Builder;
 using Backlot.Core;
 using Backlot.Core.Security;
 using Backlot.Core.Services;

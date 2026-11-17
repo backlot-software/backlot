@@ -12,7 +12,6 @@ using Backlot.Defaults.Roles;
 using Backlot.Defaults.Scenarios.Persistance;
 using Backlot.Defaults.Scenarios.Query;
 using Backlot.Demo.Console;
-using Backlot.Demo.Console.Models;
 using Backlot.Demo.Console.Roles;
 using Backlot.Demo.Console.Scenarios;
 using Newtonsoft.Json;

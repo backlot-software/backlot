@@ -1,5 +1,4 @@
-using Backlot.Studio.Core;
-using Backlot.Studio.Implementation;
+using Backlot.Authentication.Razor;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,7 +10,7 @@ namespace Backlot.Studio;
 /// <summary>
 /// Mounts the Backlot Studio admin UI inside any ASP.NET Core host:
 /// <code>
-/// builder.Services.AddBacklotStudio(o => o.BaseUrl = "https://localhost:7221");
+/// builder.Services.AddBacklotStudio(configureSignIn: o => o.BaseUrl = "https://localhost:7221");
 /// ...
 /// app.MapBacklotStudio("/studio");
 /// </code>
@@ -22,23 +21,27 @@ public static class BacklotStudioExtensions
         new ManifestEmbeddedFileProvider(typeof(BacklotStudioExtensions).Assembly, "wwwroot"));
 
     /// <summary>
-    /// Registers everything the Studio pages need: its own cookie authentication scheme and
-    /// authorization policy, session state, the Backlot API client, and the Razor Pages area.
+    /// Registers everything the Studio pages need: the Backlot sign-in (see
+    /// <see cref="BacklotSignInExtensions.AddBacklotSignIn(IServiceCollection, IConfiguration?, Action{BacklotSignInOptions}?)"/>)
+    /// and the Razor Pages area.
     /// </summary>
     public static IServiceCollection AddBacklotStudio(
         this IServiceCollection services,
-        Action<BacklotStudioOptions>? configure = null)
-        => services.AddBacklotStudio(configuration: null, configure);
+        Action<BacklotStudioOptions>? configure = null,
+        Action<BacklotSignInOptions>? configureSignIn = null)
+        => services.AddBacklotStudio(configuration: null, configure, configureSignIn);
 
     /// <summary>
-    /// Same as <see cref="AddBacklotStudio(IServiceCollection, Action{BacklotStudioOptions}?)"/>, but
+    /// Same as <see cref="AddBacklotStudio(IServiceCollection, Action{BacklotStudioOptions}?, Action{BacklotSignInOptions}?)"/>, but
     /// binds the <c>BacklotStudio</c> configuration section first; <paramref name="configure"/> then
-    /// overrides whatever configuration supplied.
+    /// overrides whatever configuration supplied. The <c>BacklotSignIn</c> section is bound for the
+    /// sign-in, <paramref name="configureSignIn"/> then overrides it.
     /// </summary>
     public static IServiceCollection AddBacklotStudio(
         this IServiceCollection services,
         IConfiguration? configuration,
-        Action<BacklotStudioOptions>? configure = null)
+        Action<BacklotStudioOptions>? configure = null,
+        Action<BacklotSignInOptions>? configureSignIn = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -52,36 +55,33 @@ public static class BacklotStudioExtensions
         configuration?.GetSection(BacklotStudioOptions.SectionName).Bind(options);
         configure?.Invoke(options);
 
-        // BaseUrl is required and never inferred. A missing or malformed value is deliberately not a
-        // startup failure: the Studio comes up so the login page can tell the operator what to set.
-        var baseUri = options.BaseUri;
-
         // Registered as a plain singleton (not just IOptions) because MapBacklotStudio mutates the
         // same instance to apply a mount path given at map time.
         services.AddSingleton(options);
         services.TryAddSingleton<IOptions<BacklotStudioOptions>>(new OptionsWrapper<BacklotStudioOptions>(options));
 
-        // TryAdd inside, so a host that already registered Redis or SQL Server distributed cache keeps it.
-        services.AddDistributedMemoryCache();
-        services.AddSession();
-        services.AddHttpContextAccessor();
-        services.AddTransient<AuthHeaderHandler>();
+        services.AddBacklotSignIn(configuration, signIn =>
+        {
+            // BaseUrl used to live in the BacklotStudio section; still honoured when BacklotSignIn has none.
+            if (string.IsNullOrWhiteSpace(signIn.BaseUrl))
+                signIn.BaseUrl = configuration?[$"{BacklotStudioOptions.SectionName}:{nameof(BacklotSignInOptions.BaseUrl)}"] ?? string.Empty;
 
-        // BaseAddress stays null when BaseUrl is not configured: BacklotApiClient then reports itself
-        // as unconfigured (and throws on use) instead of the whole page failing to be constructed,
-        // which is what lets the login page render its alert.
-        services.AddHttpClient<IBacklotApiClient, BacklotApiClient>(client =>
-                client.BaseAddress = baseUri)
-            .AddHttpMessageHandler<AuthHeaderHandler>();
+            // Unless the host picks its own, the login pages sit under the Studio's mount path
+            // (/studio/login, /studio/login/bearer) and a sign-in lands on the Studio dashboard.
+            // Read lazily, so a path passed to MapBacklotStudio is reflected.
+            signIn.PathPrefixFallback = () => options.PathPrefix;
+            signIn.DefaultReturnUrlFallback = () => options.PathPrefix.Length == 0 ? "/" : options.PathPrefix;
 
-        AddStudioAuthentication(services, options);
+            configureSignIn?.Invoke(signIn);
+        });
+
         AddStudioRazorPages(services, options);
 
         return services;
     }
 
     /// <summary>
-    /// Serves the Studio: its embedded static assets, its session, and its Razor Pages.
+    /// Serves the Studio: its embedded static assets, the Backlot sign-in, and its Razor Pages.
     /// </summary>
     /// <param name="app">The host application.</param>
     /// <param name="prefix">
@@ -110,46 +110,10 @@ public static class BacklotStudioExtensions
             RequestPath = options.AssetRequestPath,
         });
 
-        // Session is branched onto the Studio's own path so a host that runs without sessions — or
-        // with differently configured ones — is left untouched.
-        var sessionOptions = BuildSessionOptions(options);
-        var studioPath = options.PathBase;
-        app.UseWhen(
-            context => !studioPath.HasValue || context.Request.Path.StartsWithSegments(studioPath),
-            branch => branch.UseSession(sessionOptions));
-
-        // Safe to call even when the host already maps Razor Pages: MapRazorPages reuses the
-        // existing page data source rather than adding a second one.
-        app.MapRazorPages();
+        // The sign-in's session (for the whole host) and the Razor Pages, the Studio's included.
+        app.MapBacklotSignIn();
 
         return app;
-    }
-
-    private static void AddStudioAuthentication(IServiceCollection services, BacklotStudioOptions options)
-    {
-        // AddAuthentication() without a scheme name leaves the host's default schemes alone.
-        services.AddAuthentication()
-            .AddCookie(BacklotStudioDefaults.AuthenticationScheme, cookie =>
-            {
-                // Read lazily, on first use, so a path passed to MapBacklotStudio is reflected here.
-                cookie.LoginPath = options.PathPrefix + "/login";
-                cookie.LogoutPath = options.PathPrefix + "/logout";
-                cookie.AccessDeniedPath = options.PathPrefix + "/login";
-                cookie.ExpireTimeSpan = options.IdleTimeout;
-                cookie.SlidingExpiration = true;
-                cookie.Cookie.Name = BacklotStudioDefaults.AuthenticationCookieName;
-                cookie.Cookie.Path = options.CookiePath;
-                cookie.Cookie.HttpOnly = true;
-                cookie.Cookie.SameSite = SameSiteMode.Strict;
-                cookie.Cookie.SecurePolicy = options.CookieSecurePolicy;
-                options.ConfigureCookie?.Invoke(cookie);
-            });
-
-        // A named policy rather than a fallback policy: the host's own endpoints must stay as they were.
-        services.AddAuthorization(authorization =>
-            authorization.AddPolicy(BacklotStudioDefaults.AuthorizationPolicy, policy => policy
-                .AddAuthenticationSchemes(BacklotStudioDefaults.AuthenticationScheme)
-                .RequireAuthenticatedUser()));
     }
 
     private static void AddStudioRazorPages(IServiceCollection services, BacklotStudioOptions options)
@@ -175,10 +139,7 @@ public static class BacklotStudioExtensions
         services.Configure<RazorPagesOptions>(razorPages =>
         {
             // Scoped to the area, so the host's own pages keep their own (or no) authorization.
-            razorPages.Conventions.AuthorizeAreaFolder(
-                BacklotStudioDefaults.AreaName, "/", BacklotStudioDefaults.AuthorizationPolicy);
-            razorPages.Conventions.AllowAnonymousToAreaPage(BacklotStudioDefaults.AreaName, "/Login");
-            razorPages.Conventions.AllowAnonymousToAreaPage(BacklotStudioDefaults.AreaName, "/LoginBearer");
+            razorPages.Conventions.RequireBacklotSignInForArea(BacklotStudioDefaults.AreaName);
 
             // Every Studio page declares an absolute route (@page "/roles/{RoleType?}"), which is
             // rewritten here to sit under the mount path. Conventions run when the page routes are
@@ -198,23 +159,5 @@ public static class BacklotStudioExtensions
                     }
                 });
         });
-    }
-
-    private static SessionOptions BuildSessionOptions(BacklotStudioOptions options)
-    {
-        var sessionOptions = new SessionOptions
-        {
-            IdleTimeout = options.IdleTimeout,
-        };
-
-        sessionOptions.Cookie.Name = BacklotStudioDefaults.SessionCookieName;
-        sessionOptions.Cookie.Path = options.CookiePath;
-        sessionOptions.Cookie.HttpOnly = true;
-        sessionOptions.Cookie.IsEssential = true;
-        sessionOptions.Cookie.SameSite = SameSiteMode.Strict;
-        sessionOptions.Cookie.SecurePolicy = options.CookieSecurePolicy;
-        options.ConfigureSession?.Invoke(sessionOptions);
-
-        return sessionOptions;
     }
 }

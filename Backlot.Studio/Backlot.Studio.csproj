@@ -53,6 +53,10 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Backlot.Authentication.Razor\Backlot.Authentication.Razor.csproj" />
+  </ItemGroup>
+
   <!-- wwwroot is embedded into the assembly so MapBacklotStudio can serve it from the package
        itself, without the host having to opt into static web assets. -->
   <ItemGroup>

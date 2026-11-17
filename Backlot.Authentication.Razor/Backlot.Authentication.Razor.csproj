@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Razor Class Library that ships Razor Pages (an Area), so MVC support is required. -->
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+
+    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionSuffix>
+    </VersionSuffix>
+    <Title>Backlot.Authentication.Razor</Title>
+    <Description>Sign in to a Backlot API from an ASP.NET Core host: login pages (Basic and Bearer), cookie authentication, the per-user Backlot API client, and a single sign-on shared by Backlot Studio and the host's own Razor Pages.</Description>
+    <Authors>Jeroen Wijdeven Holding B.V.</Authors>
+    <Copyright>(c) copyright Jeroen Wijdeven Holding B.V. 2026</Copyright>
+    <PackageProjectUrl>https://www.backlot.software</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+    <PackageIcon>bl.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;Development</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <VersionSuffix>alpha-$([System.DateTime]::UtcNow.ToString(yyyyMMdd-HHmm))</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Development'">
+    <VersionSuffix>beta</VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- The Razor SDK does not carry the Web SDK's implicit usings. -->
+  <ItemGroup>
+    <Using Include="System.Net.Http.Json" />
+    <Using Include="Microsoft.AspNetCore.Builder" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.AspNetCore.Routing" />
+    <Using Include="Microsoft.Extensions.Configuration" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <!-- Backlot.Studio mounts the login pages on its own path when the host does not pick one. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Backlot.Studio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\bl.png">
+      <Pack>True</Pack>
+      <PackagePath>
+      </PackagePath>
+      <Link>bl.png</Link>
+    </None>
+    <None Include="README.md" Pack="True" PackagePath="" />
+  </ItemGroup>
+
+</Project>

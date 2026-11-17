@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Backlot.Core;
@@ -8,6 +7,7 @@ using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Exceptions;
 using Backlot.Core.Services;
+using Backlot.Authentication.Razor;
 using Backlot.Studio;
 using Backlot.Http;
 using Backlot.Http.Media;
@@ -33,28 +33,33 @@ public static class ApplicationBuilding
     /// Adjusts Backlot Studio on top of whatever the <c>BacklotStudio</c> configuration section supplied.
     /// The Studio is mounted either way; this only configures it.
     /// </param>
+    /// <param name="configureSignIn">
+    /// Adjusts the Backlot sign-in, shared by the Studio and the host's own Razor Pages, on top of
+    /// whatever the <c>BacklotSignIn</c> configuration section supplied.
+    /// </param>
     /// <returns></returns>
     /// <exception cref="BadRequestException"></exception>
     /// <exception cref="NotFoundException"></exception>
     public static WebApplication BuildWebApp(this WebApplicationBuilder builder,
         Action<ConfigureHostBuilder> configureHostBuilder, bool enableHttps = true,
-        Action<BacklotStudioOptions> configureStudio = null)
+        Action<BacklotStudioOptions> configureStudio = null,
+        Action<BacklotSignInOptions> configureSignIn = null)
     {
         
         configureHostBuilder(builder.Host);
 
         // Backlot Studio is part of what a Backlot web host is, so it is mounted here.
         // AddBacklotStudio has to run before builder.Build() and MapBacklotStudio
-        builder.Services.AddBacklotStudio(builder.Configuration, studio =>
+        builder.Services.AddBacklotStudio(builder.Configuration, configureStudio, signIn =>
         {
             // Without https redirection the app is reachable over plain http, on which a Secure-only
             // cookie is never sent back and signing in loops to the login page forever. Guarded by
             // IsDevelopment because enableHttps: false is also a legitimate production setup (a proxy
             // terminating TLS in front), where downgrading the cookie would be a real weakening.
             if (!enableHttps && builder.Environment.IsDevelopment())
-                studio.CookieSecurePolicy = CookieSecurePolicy.SameAsRequest;
+                signIn.CookieSecurePolicy = CookieSecurePolicy.SameAsRequest;
 
-            configureStudio?.Invoke(studio); // the caller always gets the last word
+            configureSignIn?.Invoke(signIn); // the caller always gets the last word
         });
 
         // for documentation purposes; Backlot relies on NewtonsoftJson telling .netcore to use this for serialization needs to be done with: builder.Services.AddControllers().AddNewtonsoftJson();
@@ -73,7 +78,7 @@ public static class ApplicationBuilding
             app.UseHttpsRedirection();
 
         // After UseHttpsRedirection on purpose: MapBacklotStudio adds the Studio's embedded static
-        // files and a session branched onto its mount path, and neither should be served on a request
+        // files and the sign-in's session (shared by the whole host), and neither should be served on a request
         // that was never upgraded. MapRazorPages only registers an endpoint data source, so the Studio
         // pages themselves still run at the terminal endpoint middleware.
         app.MapBacklotStudio();

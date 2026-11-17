@@ -15,7 +15,6 @@ using Backlot.DependencyInjection.Autofac;
 using Backlot.Http.Media;
 using Backlot.Http.Media.Formatters.Csv;
 using Backlot.Http.Media.Formatters.Html;
-using Backlot.Http.Watching;
 // optional, if you want to use the authentication.jwt library.
 using Backlot.Services.RavenDb;
 using Newtonsoft.Json.Linq;

@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Backlot.Core;
-using Backlot.Core.Abstraction.Roles;
 using Backlot.Core.Json;
 using Backlot.Defaults.Scenarios.Configuration.Models;
 using Newtonsoft.Json.Linq;

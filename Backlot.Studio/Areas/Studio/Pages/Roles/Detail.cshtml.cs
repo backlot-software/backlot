@@ -1,9 +1,10 @@
+using Backlot.Authentication.Razor;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Authentication.Razor.Core;
 using Backlot.Studio.Core;
-using Backlot.Studio.Core.Models.Request;
-using Backlot.Studio.Core.Models.Response;
+using Backlot.Authentication.Razor.Core.Models.Request;
 using Backlot.Studio.Extensions;
 using Microsoft.AspNetCore.Mvc;
 

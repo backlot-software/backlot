@@ -1,7 +1,8 @@
+using Backlot.Authentication.Razor;
 using System.Text.Json;
 using Backlot.Studio.Areas.Studio.Pages.ViewModels;
-using Backlot.Studio.Core;
-using Backlot.Studio.Core.Models.Response;
+using Backlot.Authentication.Razor.Core;
+using Backlot.Authentication.Razor.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backlot.Studio.Areas.Studio.Pages.Configuration;
@@ -196,6 +197,8 @@ public class IndexModel : AuthenticatedPageModel
         }
         catch (UnauthorizedAccessException)
         {
+            // Signed out, otherwise the login page would see the cookie and send the operator straight back.
+            await SignOutAsync();
             return new JsonResult(new { ok = false, unauthorized = true, error = "Unauthorized — your session may have expired. Please sign in again." })
             {
                 StatusCode = StatusCodes.Status401Unauthorized
