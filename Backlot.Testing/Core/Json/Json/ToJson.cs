@@ -131,7 +131,7 @@ public class ToJson
         // Create the "child" role
         role.Total = Acting.New<IMoney>();
         // Change properties of the "Child" role
-        role.Total.Value = (decimal)100.10;
+        role.Total.Value = 100.10m;
         
         // Act
         var jsn = Backlot.Core.Json.Json.ToJson(role, Strategy.SerializeForInteraction);
