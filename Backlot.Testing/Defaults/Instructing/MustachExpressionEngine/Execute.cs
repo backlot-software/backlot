@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Backlot.Testing.Core;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -76,7 +75,6 @@ public class Execute
         
         // Assert
         Assert.That(value, Is.EqualTo("7_9_sum_023d02600ded"));
-
     }
     
 }

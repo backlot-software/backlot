@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Autofac;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Json;
 using Backlot.Core.Services;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.Scenarios;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
@@ -14,15 +19,39 @@ namespace Backlot.Testing.Core.Loader;
 
 public class GetRoleName
 {
-    [SetUp]
-    public void Setup()
+    private static void DefaultSetup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
+    }
+
+    private static void PermissionAndRepositorySetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.RegisterType<MemoryPersistedRoleRepository>()
+                        .As<IPersistedRoleRepository>();
+
+                    b.RegisterType<MemoryRelationRepository>()
+                        .As<IRelationRepository>();
+
+                    b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
+
+        // Ensure the repository starts empty.
+        ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
     
     [Test]
     public void GetRoleName_InterfaceNameStartingWithI_ReturnsInterfaceNameWithoutI()
     {
+        DefaultSetup();
+        
         // Act
         var result = Backlot.Core.Loader.GetRoleName(typeof(IInterfaceStartingWithI));
 
@@ -34,6 +63,8 @@ public class GetRoleName
     public void GetRoleName_WithTypedActor_ReturnsRoleName()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = new Formula()
         {
             Uid = "023d02600ded",
@@ -54,6 +85,8 @@ public class GetRoleName
     public void GetRoleName_WithJsonActor_ReturnsRoleNameAndJProxyName()
     {
         // Arrange
+        DefaultSetup();
+        
         var origin = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -82,6 +115,8 @@ public class GetRoleName
     [Test]
     public void GetRoleName_NonRoleType_ThrowsArgumentException()
     {
+        DefaultSetup();
+        
         // Act & Assert
         Assert.Throws<ArgumentException>(() => Backlot.Core.Loader.GetRoleName(typeof(JObject)));
     }
@@ -90,6 +125,8 @@ public class GetRoleName
     public void GetRoleName_WithSelfRole_ReturnsPresentedRoleNameAndSelfRoleName()
     {
         // Arrange
+        DefaultSetup();
+        
         var self = new FormulaSelf()
         {
             Uid = "f5d3c5aa",
@@ -116,6 +153,8 @@ public class GetRoleName
     public async Task GetRoleName_WithPersistedRole_ReturnsRoleName()
     {
         // Arrange
+        PermissionAndRepositorySetup();
+        
         var self = new FormulaSelf()
         {
             Uid = "f5d3c5aa",

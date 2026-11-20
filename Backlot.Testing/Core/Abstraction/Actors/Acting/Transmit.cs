@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Backlot.Core.Abstraction.Actors;
+using Backlot.Testing.Defaults;
 using Backlot.Testing.Shared.TestModels;
 using NUnit.Framework;
 // ReSharper disable SuspiciousTypeConversion.Global
@@ -15,7 +16,8 @@ public class Transmit
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
     }
     
     [Test]

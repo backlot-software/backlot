@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Autofac;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Abstraction.Roles;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Services;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.UseCases.NullAllowedScenarios.Roles;
 using Backlot.Testing.UseCases.NullAllowedScenarios.Scenarios;
 using NUnit.Framework;
@@ -26,16 +31,38 @@ namespace Backlot.Testing.UseCases.NullAllowedScenarios;
 /// </summary>
 public class OptionalRoleScenario
 {
-    [SetUp]
-    public void Setup()
+    private static void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot());
+    }
+
+    private static void PermissionAndRepositorySetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+            {
+                b.RegisterType<MemoryPersistedRoleRepository>()
+                    .As<IPersistedRoleRepository>();
+
+                b.RegisterType<MemoryRelationRepository>()
+                    .As<IRelationRepository>();
+                
+                b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
+                    .As<IChecksumBuilder>();
+            }));
+        // Ensure the repository starts empty.
+        ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
 
     [Test]
     public void GivenMissingRole_WhenScenarioWithoutNullAllowedIsPlayed_ThenArgumentExceptionIsThrown()
     {
         // Arrange
+        Setup();
         
         var cardCode = new
         {
@@ -55,6 +82,8 @@ public class OptionalRoleScenario
     public async Task GivenMissingRole_WhenScenarioWithNullAllowedIsPlayed_ThenScenarioExecutes()
     {
         // Arrange
+        PermissionAndRepositorySetup();
+        
         var cardCode = new
         {
             Uid = "DD50AE10-5910-4C0C-8208-F8287D9220EC",
@@ -73,6 +102,8 @@ public class OptionalRoleScenario
     public async Task GivenPersistedRelatedRoles_WhenScenarioWithoutNullAllowedIsPlayed_ThenRelatedRoleIsResolvedAndScenarioExecutes()
     {
         // Arrange
+        PermissionAndRepositorySetup();
+        
         var card = new
         {
             Uid = "DD50AE10-5910-4C0C-8208-F8287D9220EC",

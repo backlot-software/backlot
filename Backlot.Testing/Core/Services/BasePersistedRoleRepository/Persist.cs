@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Autofac;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Exceptions;
 using Backlot.Core.Security;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.Stubs;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
@@ -17,17 +22,34 @@ namespace Backlot.Testing.Core.Services.BasePersistedRoleRepository;
 /// </summary>
 public class Persist
 {
-
-    [SetUp]
-    public void Setup()
+    
+    private static void PermissionChecksumSetup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.Register(_ => new ChecksumBuilder(MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
+    }
+    
+    private static void PermissionSetup()
+    {
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b)));
     }
 
     [Test]
     public void Persist_RoleWithNonePermissionSet_ThrowsPermissionControlException()
     {
         // Arrange
+        PermissionSetup();
+        
         var jObject = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -51,6 +73,8 @@ public class Persist
     public void Persist_MaskPermissionLevelTo7ButNoUserOrGroupWithThatPermission_ThrowsPermissionControlException()
     {
         // Arrange
+        PermissionSetup();
+        
         var jObject = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -76,6 +100,8 @@ public class Persist
     public async Task Persist_MaskPermissionLevel7AndAtLeastOneUserSetWithALevelHigherThan0_RoleIsStored()
     {
         // Arrange
+        PermissionSetup();
+        
         var jObject = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -102,6 +128,8 @@ public class Persist
     public async Task Persist_UpdateWritableObject_MergesUpdatedAndExistingProperties()
     {
         // Arrange
+        PermissionChecksumSetup();
+        
         const string uid = "023d02600ded";
 
         var stored = JObject.FromObject(new
@@ -154,6 +182,8 @@ public class Persist
     public void Persist_UpdateReadOnlyObject_ThrowsPermissionControlException()
     {
         // Arrange
+        PermissionChecksumSetup();
+        
         const string uid = "023d02600ded";
 
         var stored = JObject.FromObject(new
@@ -194,6 +224,8 @@ public class Persist
     public async Task Persist_StoreNewWriteableObject_StoresAndReturnsObject()
     {
         // Arrange
+        PermissionSetup();
+        
         var newObject = JObject.FromObject(new
         {
             Uid = "023d02600ded",
@@ -224,6 +256,8 @@ public class Persist
     public async Task Persist_UnchangedPersistedObject_ReturnsWithoutStoringAgain()
     {
         // Arrange
+        PermissionChecksumSetup(); //todo configure proper setup
+        
         var jObject = JObject.FromObject(new
         {
             Uid = "023d02600ded",

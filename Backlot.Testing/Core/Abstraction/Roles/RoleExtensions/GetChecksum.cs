@@ -1,6 +1,10 @@
-﻿using Backlot.Core;
+﻿using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Abstraction.Roles;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -17,7 +21,15 @@ public class GetChecksum
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+            {
+                b.Register(_ => new ChecksumBuilder(System.Security.Cryptography.MD5.Create().ComputeHash))
+                    .As<IChecksumBuilder>();
+            }));
     }
     
     [Test]

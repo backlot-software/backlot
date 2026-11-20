@@ -1,6 +1,9 @@
 ﻿using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Security;
+using Backlot.Testing.Defaults;
+using Backlot.Testing.Defaults.Fakes;
+using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using NUnit.Framework;
 
@@ -11,7 +14,10 @@ public class ManagePermission
     [SetUp]
     public void Setup()
     {
-        Initialize.Setup();
+        Defaults.Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b)));
     }
     
     [Test]

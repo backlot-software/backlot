@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Backlot.DependencyInjection.Autofac\Backlot.DependencyInjection.Autofac.csproj" />
     <ProjectReference Include="..\Backlot.Scheduling\Backlot.Scheduling.csproj" />
     <ProjectReference Include="..\Backlot.Services.Filesystem.Disk\Backlot.Services.Filesystem.LocalDiskStorage.csproj" />
+    <ProjectReference Include="..\Backlot.Testing.Defaults\Backlot.Testing.Defaults.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging">
