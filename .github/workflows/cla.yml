@@ -34,7 +34,7 @@ jobs:
           path-to-document: 'https://github.com/backlot-software/backlot/blob/main/CLA.MD' # e.g. a CLA or a DCO document
           # branch should not be protected
           branch: 'main'
-          allowlist: copilot,bot*
+          allowlist: github-actions,copilot,bot*
 
          # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
           remote-organization-name: backlot-software
