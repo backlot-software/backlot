@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Backlot.Defaults.Scenarios.Configuration;
 using NUnit.Framework;

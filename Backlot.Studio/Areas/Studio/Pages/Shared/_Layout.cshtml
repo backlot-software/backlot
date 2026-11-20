@@ -240,7 +240,7 @@
                                 <div class="border-t border-secondary-200 my-1"></div>
                                 @* The form tag helper emits the antiforgery token itself — adding a
                                    second @@Html.AntiForgeryToken() would post two values under one name. *@
-                                <form method="post" asp-area="Studio" asp-page="/Logout">
+                                <form method="post" asp-area="BacklotSignIn" asp-page="/Logout">
                                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-danger-600 hover:bg-danger-50">Sign out</button>
                                 </form>
                             </div>

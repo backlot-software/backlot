@@ -1,7 +1,8 @@
+using Backlot.Authentication.Razor;
 using System.Text.Json;
-using Backlot.Studio.Core;
-using Backlot.Studio.Core.Models.Request;
-using Backlot.Studio.Core.Models.Response;
+using Backlot.Authentication.Razor.Core;
+using Backlot.Authentication.Razor.Core.Models.Request;
+using Backlot.Authentication.Razor.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backlot.Studio.Areas.Studio.Pages.Roles;

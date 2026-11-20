@@ -1,0 +1,24 @@
+@page
+@model Backlot.Demo.Web.Pages.IndexModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Portal — Backlot Demo</title>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto;">
+<h1>Portal</h1>
+<p>Signed in as <strong>@ViewData["Username"]</strong>, shared with <a href="~/studio">Backlot Studio</a>.</p>
+
+<h2>WhoAmI</h2>
+<pre>@Model.WhoAmI</pre>
+
+<form method="post" asp-area="BacklotSignIn" asp-page="/Logout">
+    <input type="hidden" name="returnUrl" value="@Url.Content("~/portal")" />
+    <button type="submit">Sign out</button>
+</form>
+</body>
+</html>

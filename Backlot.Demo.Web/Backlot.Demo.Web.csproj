@@ -35,4 +35,8 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Portal\Index.cshtml" />
+    </ItemGroup>
 </Project>
