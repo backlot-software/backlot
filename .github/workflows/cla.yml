@@ -8,7 +8,7 @@ on:
 # explicitly configure permissions, in case your GITHUB_TOKEN workflow permissions are set to read-only in repository settings
 permissions:
   actions: write
-  contents: write # this can be 'read' if the signatures are in remote repository
+  contents: write # Required to store CLA signatures in this repository
   pull-requests: write
   statuses: write
 
@@ -21,14 +21,6 @@ jobs:
         uses: contributor-assistant/github-action@v2.6.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          # the below token should have repo scope and must be manually added by you in the repository's secret
-          # This token is required only if you have configured to store the signatures in a remote repository/organization
-          # Use a fine-grained PAT with the permissions; Content and Metadata
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_CLA }}
-          # Or you could look into a github app
-          # GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
-          # GITHUB_APP_PRIVATE_KEY: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
-          # GITHUB_APP_INSTALLATION_ID: ${{ secrets.GITHUB_APP_INSTALLATION_ID }}
         with:
           path-to-signatures: 'signatures/version1/cla.json'
           path-to-document: 'https://github.com/backlot-software/backlot/blob/main/CLA.MD' # e.g. a CLA or a DCO document
@@ -37,8 +29,6 @@ jobs:
           allowlist: copilot,bot*
 
          # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
-          remote-organization-name: backlot-software
-          remote-repository-name: CLA
           #create-file-commit-message: 'For example: Creating file for storing CLA Signatures'
           signed-commit-message: '$contributorName has signed the CLA in $owner/$repo#$pullRequestNo'
           #custom-notsigned-prcomment: 'pull request comment with Introductory message to ask new contributors to sign'
