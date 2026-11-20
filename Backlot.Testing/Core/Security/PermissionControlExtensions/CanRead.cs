@@ -10,15 +10,22 @@ namespace Backlot.Testing.Core.Security.PermissionControlExtensions;
 
 public class CanRead
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies a user without matching user or group read permissions cannot read.
+    /// </summary>
     [Test]
     public void CanRead_CurrentUserWithoutMatchingPermissions_CurrentUserCanNotRead()
     {

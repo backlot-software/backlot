@@ -1,0 +1,17 @@
+﻿namespace Backlot.Testing.UseCases.ComplexActor.Roles;
+
+public enum FollowUp
+    {
+        None = 0,
+        Public = 1,
+        Private = 2,
+        PublicAndPrivate = 3
+    }
+    
+public enum ProductType
+    {
+        None = 0,
+        Basic = 1,
+        Flexible = 2,
+        NoLimits = 3
+    }

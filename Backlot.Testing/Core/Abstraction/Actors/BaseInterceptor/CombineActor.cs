@@ -10,13 +10,20 @@ namespace Backlot.Testing.Core.Abstraction.Actors.BaseInterceptor;
 
 public class CombineActor
 {
+    # region Backlot Test Environement Setup
+    
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
     
+    # endregion
+    
+    /// <summary>
+    /// Verifies combining JSON into a dictionary preserves existing values and adds missing properties.
+    /// </summary>
     [Test]
     public void CombineActor_CombineJsonWithDictionary_NoneExistingPropertiesFromJsonObjectAreAddedToDictionary()
     {
@@ -24,20 +31,20 @@ public class CombineActor
         var newObject = new Dictionary<string, object>
         {
             { "Uid", "8a89ca8f03db4f80a846d2e0d4b5d3cb" },
-            { "CustomerName", "Lamborghini" }
+            { "Number1", "1" }
         };
 
         var savedObject = JObject.FromObject(new
         {
             Uid = "8a89ca8f03db4f80a846d2e0d4b5d3cb",
-            CustomerName = "Ferrari",
-            CardCode = "ITALY-455-ROME",
+            Number1 = "2",
+            Number2 = "3",
             CustomField = "Some custom lorem ipsum"
         });
         
         // Both can be presented as
-        var newRole = newObject.Presents<ICard>();
-        var savedRole = savedObject.Presents<ICard>();
+        var newRole = newObject.Presents<IFormula>();
+        var savedRole = savedObject.Presents<IFormula>();
 
         // Act
         (newRole as IProxiedRole)?.Interceptor.CombineActor(savedRole as IProxiedRole);
@@ -45,14 +52,17 @@ public class CombineActor
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(newRole.CustomerName, Is.EqualTo("Lamborghini"));
-            Assert.That(newRole.CardCode, Is.EqualTo("ITALY-455-ROME"));
+            Assert.That(newRole.Number1, Is.EqualTo(1));
+            Assert.That(newRole.Number2, Is.EqualTo(3));
             
             //check for CustomField.
             Assert.That(((newRole as IProxiedRole)?.Actor as IDictionary<string, object>), Does.ContainKey("CustomField"));
         });
     }
     
+    /// <summary>
+    /// Verifies combining a dictionary into JSON preserves existing values and adds missing properties.
+    /// </summary>
     [Test]
     public void CombineActor_CombineDictionaryWithJson_NoneExistingPropertiesFromDictionaryAreAddedToJsonObject()
     {
@@ -60,20 +70,20 @@ public class CombineActor
         var newObject = JObject.FromObject(new
         {
             Uid = "8a89ca8f03db4f80a846d2e0d4b5d3cb",
-            CustomerName = "Ferrari"
+            Number1 = "1"
         });
         
         var savedObject = new Dictionary<string, object>
         {
             { "Uid", "8a89ca8f03db4f80a846d2e0d4b5d3cb" },
-            { "CustomerName", "Lamborghini" },
-            { "CardCode", "ITALY-455-ROME" },
+            { "Number1", "2" },
+            { "Number2", "3" },
             { "CustomField", "Some custom lorem ipsum" }
         };
         
         // Both can be presented as
-        var newRole = newObject.Presents<ICard>();
-        var savedRole = savedObject.Presents<ICard>();
+        var newRole = newObject.Presents<IFormula>();
+        var savedRole = savedObject.Presents<IFormula>();
         
         // Act
         (newRole as IProxiedRole)?.Interceptor.CombineActor(savedRole as IProxiedRole);
@@ -81,8 +91,8 @@ public class CombineActor
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(newRole.CustomerName, Is.EqualTo("Ferrari"));
-            Assert.That(newRole.CardCode, Is.EqualTo("ITALY-455-ROME"));
+            Assert.That(newRole.Number1, Is.EqualTo(1));
+            Assert.That(newRole.Number2, Is.EqualTo(3));
             
             //check for CustomField.
             Assert.That(((newRole as IProxiedRole)?.Actor as JContainer), Does.ContainKey("CustomField"));

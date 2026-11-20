@@ -13,13 +13,20 @@ namespace Backlot.Testing.Core.Abstraction.Actors.Acting;
 /// </summary>
 public class Transmit
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies transmitting to a non-persistable role copies only destination fields.
+    /// </summary>
     [Test]
     public void Transmit_APersistableRoleTransmittedToANonePersistableRole_OnlyFieldsFromTheDestinationTypeAreUsedInTheResult()
     {
@@ -48,6 +55,9 @@ public class Transmit
         
     }
     
+    /// <summary>
+    /// Verifies transmitting a persistable role to another persistable role throws an argument exception.
+    /// </summary>
     [Test]
     public void Transmit_APersistableRoleTransmittedToAPersistableRole_ThrowsArgumentException()
     {

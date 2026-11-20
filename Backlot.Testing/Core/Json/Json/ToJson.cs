@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
@@ -18,17 +19,24 @@ namespace Backlot.Testing.Core.Json.Json;
 /// </summary>
 public class ToJson
 {
-    #region Backlot Test Environment Setup Methods
+    #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are in the region below
+    }
 
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder => 
+        Initialize.BuildApp(builder => 
             builder.ConfigureBacklot());
     }
 
     private static void PermissionEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -42,7 +50,7 @@ public class ToJson
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -50,7 +58,7 @@ public class ToJson
     
     private static void AliasEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
@@ -64,6 +72,9 @@ public class ToJson
 
     #endregion
     
+    /// <summary>
+    /// Verifies calculated fields are omitted when a JSON-backed role is serialized for persistence.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorAndSerializedForPersistence_CalculatedFieldNotSerialized()
     {
@@ -88,6 +99,9 @@ public class ToJson
         Assert.That(jsn, Does.Not.Contain("Number3"));
     }
     
+    /// <summary>
+    /// Verifies calculated fields are included when a JSON-backed role is serialized for interaction.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorAndSerializedForInteraction_CalculatedFieldSerialized()
     {
@@ -110,6 +124,9 @@ public class ToJson
         Assert.That(jsn,  Does.Contain("Number3"));
     }
     
+    /// <summary>
+    /// Verifies an updated calculated field on a typed actor is included in interaction serialization.
+    /// </summary>
     [Test]
     public void ToJson_WithTypedActorWithUpdatedCalculatedFieldAndSerializeForInteraction_CalculatedFieldSerialized()
     {
@@ -136,6 +153,9 @@ public class ToJson
         Assert.That(jsn, Does.Contain("Number3"));
     }
     
+    /// <summary>
+    /// Verifies an unchanged calculated field on a typed actor is omitted from interaction serialization.
+    /// </summary>
     [Test]
     public void ToJson_WithTypedActorWithCalculatedFieldOriginallyGivenAndSerializeForInteraction_CalculatedFieldIsNotSerialized()
     {
@@ -160,6 +180,9 @@ public class ToJson
         Assert.That(jsn, Does.Not.Contain("Number3"));
     }
     
+    /// <summary>
+    /// Verifies a child role added during execution is serialized with its updated values.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorWithANoneFilledChildRoleWhichIsAddedDuringExecution_ChildRoleIsCreatedUnderTheHoodAndSerializedWithTheChangedValues()
     {
@@ -189,6 +212,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies a JSON property changed from null is serialized with its new value.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorHavingNullValueWhichIsSetByCodeAndUpdatedWithNewValue_NewValueSerialized()
     {
@@ -209,6 +235,9 @@ public class ToJson
         Assert.That(json, Does.Contain("\"Operation\":\"sum\""));
     }
     
+    /// <summary>
+    /// Verifies setting a JSON-backed role property to null preserves the null and unrelated actor fields.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorWhereAPropertyValueIsChangedToNullAndSerializedForPersistence_TheNullValueIsRespectedAfterSerialization()
     {
@@ -240,6 +269,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies serialization uses the role property name instead of its JSON actor alias.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
@@ -268,6 +300,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies serialization uses the role property name when the JSON actor has no alias-named field.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorUsingAnAliasMarkedPropertyWithoutAnAliasName_NormalFieldNameUsedInSerialization()
     {
@@ -296,6 +331,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies serialization of a typed actor replaces the alias-named actor property with the role property name.
+    /// </summary>
     [Test]
     public void ToJson_WithTypedActorUsingAnAliasNamedProperty_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
@@ -324,6 +362,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies serialization uses the actor property name when no alias-named property exists on the typed actor.
+    /// </summary>
     [Test]
     public void ToJson_WithTypedActorUsingAnAliasMarkedPropertyWithoutAnAliasName_ActorNameUsedRoleDefinedNameIgnoredInSerialization()
     {
@@ -351,6 +392,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies a field-info alias serializes the UID under its role name rather than the actor field name.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorUsingAnAliasDefinedPropertyUsingFieldInfoAlias_RolePropertyNameUsedActorNameRemovedInSerialization()
     {
@@ -380,6 +424,9 @@ public class ToJson
         });
     }
     
+    /// <summary>
+    /// Verifies persistence serialization keeps both UID fields when the actor provides the original and aliased properties.
+    /// </summary>
     [Test]
     public void ToJson_WithJSONActorHavingTheOriginalPropertyAndAnAliasPropertyAndSerializeForPersistenceStrategy_RoleIsUsingTheOriginalAsDefault()
     {
@@ -410,4 +457,30 @@ public class ToJson
             Assert.That(jsnParsed["Uid"], Is.Not.Null);
         });
     }
+
+    #region Test Models
+
+    public class FormulaCalculatedField
+    {
+        public string HelloWorld => "HelloWorld";
+        public string Operation { get; set; } = null!;
+        public int? Number1 { get; set; }
+        public int? Number2 { get; set; }
+        public int? Number3 { get; set; }
+
+        public string Name => "Example which can presents it self as an IFormula Role";
+
+        public string Uid { get; set; } = null!;
+    }
+    
+    /// <summary>
+    /// Representing a test role using another role as a property
+    /// </summary>
+    public interface IOrder : IRole
+    {
+        public string Name { get; set; }
+        public IMoney Total { get; set; }
+    }
+
+    #endregion
 }

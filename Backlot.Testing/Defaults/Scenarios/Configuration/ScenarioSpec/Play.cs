@@ -17,24 +17,20 @@ namespace Backlot.Testing.Defaults.Scenarios.Configuration.ScenarioSpec;
 /// </remarks>
 public class Play
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
-    
-    private static int Occurrences(string haystack, string needle)
-    {
-        var count = 0;
-        for (var i = haystack.IndexOf(needle, System.StringComparison.Ordinal);
-             i >= 0;
-             i = haystack.IndexOf(needle, i + needle.Length, System.StringComparison.Ordinal))
-            count++;
 
-        return count;
-    }
+    #endregion
     
+    /// <summary>
+    /// Verifies the generated contract includes its declared preamble.
+    /// </summary>
     [Test]
     public async Task Play_LoadedScenarios_EmitsTheDeclaredPreamble()
     {
@@ -50,6 +46,9 @@ public class Play
         });
     }
     
+    /// <summary>
+    /// Verifies the shared generic response envelope is declared exactly once.
+    /// </summary>
     [Test]
     public async Task Play_LoadedScenarios_EmitsTheDeclaredSharedResponseEnvelopeOnce()
     {
@@ -66,6 +65,9 @@ public class Play
         });
     }
     
+    /// <summary>
+    /// Verifies a calculated field is emitted as response-only rather than omitted.
+    /// </summary>
     [Test]
     public async Task Play_ACalculatedField_EmitsCalculatedFieldReadOnlyRatherThanOmittingIt()
     {
@@ -80,6 +82,9 @@ public class Play
         Assert.That(spec, Does.Contain("@visibility(Lifecycle.Read) LastModified?: offsetDateTime;"));
     }
     
+    /// <summary>
+    /// Verifies a role reached from a scenario is emitted as a named model with requiredness preserved.
+    /// </summary>
     [Test]
     public async Task Play_RoleReachedFromAScenario_EmitsRoleAsNamedModelWithOptionalityIntact()
     {
@@ -102,6 +107,9 @@ public class Play
         });
     }
     
+    /// <summary>
+    /// Verifies a director scenario is emitted as a GET operation.
+    /// </summary>
     [Test]
     public async Task Play_DirectorScenario_UsesGet()
     {
@@ -112,6 +120,9 @@ public class Play
         Assert.That(spec, Does.Contain("@get"));
     }
     
+    /// <summary>
+    /// Verifies a director scenario with no role input is emitted without a request body.
+    /// </summary>
     [Test]
     public async Task Play_DirectorScenario_SendsNoBody()
     {
@@ -123,6 +134,9 @@ public class Play
         Assert.That(spec, Does.Contain("Scenarios(): Envelope<"));
     }
     
+    /// <summary>
+    /// Verifies the director itself is not emitted as a contract model.
+    /// </summary>
     [Test]
     public async Task Play_DirectorScenario_DoesNotEmitDirectorModel()
     {
@@ -134,6 +148,9 @@ public class Play
         Assert.That(spec, Does.Not.Contain("model Director {"));
     }
     
+    /// <summary>
+    /// Verifies repeated contract generation produces identical text.
+    /// </summary>
     [Test]
     public async Task Play_PlayedTwice_ReturnsTheSameTextSoDriftIsDiffable()
     {
@@ -144,4 +161,19 @@ public class Play
         // Assert
         Assert.That(second, Is.EqualTo(first));
     }
+
+    #region Test Helpers
+
+    private static int Occurrences(string haystack, string needle)
+    {
+        var count = 0;
+        for (var i = haystack.IndexOf(needle, System.StringComparison.Ordinal);
+             i >= 0;
+             i = haystack.IndexOf(needle, i + needle.Length, System.StringComparison.Ordinal))
+            count++;
+
+        return count;
+    }
+
+    #endregion
 }

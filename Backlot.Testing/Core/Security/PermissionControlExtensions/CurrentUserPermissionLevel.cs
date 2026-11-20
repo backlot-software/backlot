@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Backlot.Core.Abstraction.Actors;
+﻿using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Security;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
 using Backlot.Testing.Shared.Directors;
-using Backlot.Testing.Shared.Stubs;
 using Backlot.Testing.Shared.TestModels;
 using NUnit.Framework;
 
@@ -13,15 +10,22 @@ namespace Backlot.Testing.Core.Security.PermissionControlExtensions;
 
 public class CurrentUserPermissionLevel
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies group permission levels higher than the mask do not raise the current user's permission level.
+    /// </summary>
     [Test]
     public void CurrentUserPermissionLevel_GroupHasHigherLevelThanMask_ReturnsMaskPermissionLevel()
     {
@@ -44,6 +48,9 @@ public class CurrentUserPermissionLevel
         Assert.That(result, Is.EqualTo(PermissionLevel.None));
     }
     
+    /// <summary>
+    /// Verifies the highest applicable group permission determines the current user's permission level.
+    /// </summary>
     [Test]
     public void CurrentUserPermissionLevel_WildcardHasHigherLevelThanGroup_ReturnsWildcardPermissionLevel()
     {
@@ -66,6 +73,9 @@ public class CurrentUserPermissionLevel
         Assert.That(result, Is.EqualTo(PermissionLevel.ReadExecute)); //result of the highest group level (thus the wildcard) is used.
     }
     
+    /// <summary>
+    /// Verifies the current user's permission level is the highest permission granted by their groups.
+    /// </summary>
     [Test]
     public void CurrentUserPermissionLevel_TwoGroupsWithDifferentLevels_ReturnsHighestGroupPermissionLevel()
     {
@@ -88,6 +98,9 @@ public class CurrentUserPermissionLevel
         Assert.That(result, Is.EqualTo(PermissionLevel.ReadWriteExecute)); //result of the highest group level is used; admin in this case.
     }
     
+    /// <summary>
+    /// Verifies an explicit user permission determines the current user's permission level.
+    /// </summary>
     [Test]
     public void CurrentUserPermissionLevel_ExplicitUserPermissionSet_ReturnsUserPermissionLevel()
     {
@@ -102,7 +115,7 @@ public class CurrentUserPermissionLevel
             .SetMask(PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Admin, PermissionLevel.ReadWriteExecute)
             .SetGroup(Access.Open, PermissionLevel.None)
-            .SetUser(UserCtx.UserNameStatic, PermissionLevel.Read));
+            .SetUser(UserContext.Current.UserName, PermissionLevel.Read));
 
         // Act
         var result = role.CurrentUserPermissionLevel();

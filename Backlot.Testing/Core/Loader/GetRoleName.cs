@@ -19,15 +19,24 @@ namespace Backlot.Testing.Core.Loader;
 
 public class GetRoleName
 {
+    # region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
+    
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
 
     private static void PermissionAndRepositorySetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -47,6 +56,11 @@ public class GetRoleName
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
     
+    # endregion
+    
+    /// <summary>
+    /// Verifies the role name is derived from an interface name by removing its leading I.
+    /// </summary>
     [Test]
     public void GetRoleName_InterfaceNameStartingWithI_ReturnsInterfaceNameWithoutI()
     {
@@ -59,6 +73,9 @@ public class GetRoleName
         Assert.That(result, Is.EqualTo("InterfaceStartingWithI"));
     }
 
+    /// <summary>
+    /// Verifies a typed actor presented as a role resolves to its role name.
+    /// </summary>
     [Test]
     public void GetRoleName_WithTypedActor_ReturnsRoleName()
     {
@@ -81,6 +98,9 @@ public class GetRoleName
         Assert.That(result, Is.EqualTo("Formula"));
     }
 
+    /// <summary>
+    /// Verifies a JSON-backed role and its proxy resolve to the same role name.
+    /// </summary>
     [Test]
     public void GetRoleName_WithJsonActor_ReturnsRoleNameAndJProxyName()
     {
@@ -112,6 +132,9 @@ public class GetRoleName
         
     }
 
+    /// <summary>
+    /// Verifies requesting a role name for a non-role type throws an argument exception.
+    /// </summary>
     [Test]
     public void GetRoleName_NonRoleType_ThrowsArgumentException()
     {
@@ -121,6 +144,9 @@ public class GetRoleName
         Assert.Throws<ArgumentException>(() => Backlot.Core.Loader.GetRoleName(typeof(JObject)));
     }
 
+    /// <summary>
+    /// Verifies a self role and its presented role resolve to the self role's name.
+    /// </summary>
     [Test]
     public void GetRoleName_WithSelfRole_ReturnsPresentedRoleNameAndSelfRoleName()
     {
@@ -149,6 +175,9 @@ public class GetRoleName
         });
     }
 
+    /// <summary>
+    /// Verifies a persisted self role resolves to its role name when loaded from the repository.
+    /// </summary>
     [Test]
     public async Task GetRoleName_WithPersistedRole_ReturnsRoleName()
     {

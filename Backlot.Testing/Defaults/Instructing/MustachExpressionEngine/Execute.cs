@@ -7,13 +7,21 @@ namespace Backlot.Testing.Defaults.Instructing.MustachExpressionEngine;
 
 public class Execute
 {
+    #region Backlot Test Environment Setup
+
     private Backlot.Defaults.Instructing.MustachExpressionEngine _expressionEngine;
+    
     [SetUp]
     public void Setup()
     {
         _expressionEngine = new Backlot.Defaults.Instructing.MustachExpressionEngine();
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies a Mustache expression resolves property values from a typed actor.
+    /// </summary>
     [Test]
     public void Execute_WithTypedActor_CalculatedValue()
     {
@@ -35,6 +43,9 @@ public class Execute
         Assert.That(value, Is.EqualTo("7_9_sum_023d02600ded"));
     }
     
+    /// <summary>
+    /// Verifies a Mustache expression resolves property values from a JSON actor.
+    /// </summary>
     [Test]
     public void Execute_WithJSONActor_CalculatedValue()
     {
@@ -56,6 +67,9 @@ public class Execute
         Assert.That(value, Is.EqualTo("7_9_sum_023d02600ded"));
     }
     
+    /// <summary>
+    /// Verifies a Mustache expression resolves values from a dictionary actor.
+    /// </summary>
     [Test]
     public void Execute_WithDictionaryActor_CalculatedValue()
     {

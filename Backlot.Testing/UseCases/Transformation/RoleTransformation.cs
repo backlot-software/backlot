@@ -31,7 +31,36 @@ namespace Backlot.Testing.UseCases.Transformation;
 public class RoleTransformation
 {
 
-    #region Setup
+    #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
+    
+    private static void RevisionSetup(Func<IEnumerable<Revision>> revisions)
+    {
+        var repo = Substitute.For<IPersistedRoleRepository>();
+        repo.GetRevisions<IPersist>(Arg.Any<string>())
+                    .Returns(_ => revisions());
+        
+        Initialize.BuildApp(builder =>
+            builder.ConfigureBacklot(
+                (config, b) => new PermissionDirector(
+                    new FakeStorage(), config, b),
+                configureContainer: b =>
+                {
+                    b.RegisterInstance(repo)
+                        .As<IPersistedRoleRepository>();
+
+                    b.Register(_ => new ChecksumBuilder(
+                            MD5.Create().ComputeHash))
+                        .As<IChecksumBuilder>();
+                }));
+    }
+    
     private static IEnumerable<Revision> SetupSelfRevisions()
     {
         var revision1 = new FormulaSelf
@@ -98,36 +127,17 @@ public class RoleTransformation
 
         return revisions;
     }
-    
-    // not [setup] attribute, because the setup differs per test.
-    private static void Setup(Func<IEnumerable<Revision>> revisions)
-    {
-        var repo = Substitute.For<IPersistedRoleRepository>();
-        repo.GetRevisions<IPersist>(Arg.Any<string>())
-                    .Returns(_ => revisions());
-        
-        Defaults.Initialize.BuildApp(builder =>
-            builder.ConfigureBacklot(
-                (config, b) => new PermissionDirector(
-                    new FakeStorage(), config, b),
-                configureContainer: b =>
-                {
-                    b.RegisterInstance(repo)
-                        .As<IPersistedRoleRepository>();
-
-                    b.Register(_ => new ChecksumBuilder(
-                            MD5.Create().ComputeHash))
-                        .As<IChecksumBuilder>();
-                }));
-    }
 
     #endregion
     
+    /// <summary>
+    /// Verifies playing a forward transformation for self-role revisions returns a transformation.
+    /// </summary>
     [Test]
     public async Task GivenSelfRoleRevisions_WhenForwardTransformationIsPlayed_ThenTransformationHasToBeReturned()
     {
         // Arrange
-        Setup(SetupSelfRevisions);
+        RevisionSetup(SetupSelfRevisions);
         
         var seek = Acting.New<ISeek>();
         seek.Command = "fwd";
@@ -140,11 +150,14 @@ public class RoleTransformation
         Assert.That(result, Is.Not.Null);
     }
     
+    /// <summary>
+    /// Verifies a forward JSON revision returns changed values and preserves an explicit null value.
+    /// </summary>
     [Test]
     public async Task GivenJsonRevisionWithNullValue_WhenForwardTransformationIsPlayed_ThenTransformationIsReturnedIncludingNullValue()
     {
         // Arrange
-        Setup(SetupJsonWithNullRevisions);
+        RevisionSetup(SetupJsonWithNullRevisions);
         
         var seek = Acting.New<ISeek>();
         seek.Command = "fwd";

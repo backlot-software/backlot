@@ -10,15 +10,22 @@ namespace Backlot.Testing.Core.Security.PermissionControlExtensions;
 
 public class CanExecute
 {
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies a user cannot execute when the user's permission grants execution only at the user level, not the admin group.
+    /// </summary>
     [Test]
     public void CanExecute_CurrentUserWithAdminReadWritePermission_CurrentUserCanNotExecute()
     {

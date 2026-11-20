@@ -26,10 +26,13 @@ namespace Backlot.Testing.UseCases.RolePersistence;
 /// </summary>
 public class SameUidRoleUpdates
 {
+
+    #region Backlot Test Environment Setup
+
     [SetUp]
     public void Setup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b),
@@ -47,7 +50,12 @@ public class SameUidRoleUpdates
         // Ensure the repository starts empty.
         ServiceLocator.Get<IPersistedRoleRepository>().FlushDb();
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies playing self and proxied actors with the same UID is rejected when their origin types conflict.
+    /// </summary>
     [Test]
     public async Task  GivenDifferentProxiedAndSelfRolesActorsReferringToSameUid_WhenPlayedTwice_ThenThrowsArgumentExceptionDuringMerge()
     {
@@ -80,6 +88,9 @@ public class SameUidRoleUpdates
         Assert.That(exception?.Message, Does.Contain("You are using a mix of origin types."));
     }
     
+    /// <summary>
+    /// Verifies updates from separate JSON actors with the same UID merge while preserving unchanged properties.
+    /// </summary>
     [Test]
     public async Task  GivenDifferentJsonActorsReferringToSameUid_WhenPlayedTwice_ThenObjectPropertiesAreMerged()
     {
@@ -119,6 +130,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies proxied actors of different types with the same UID merge their available properties.
+    /// </summary>
     [Test]
     public async Task GivenProxiedRolesWithDifferentActorTypesReferringToSameUid_WhenPlayedTwice_ThenMergeProperties()
     {
@@ -158,6 +172,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies updated values from typed actors with the same UID are merged and persisted.
+    /// </summary>
     [Test]
     public async Task GivenTypedActorsReferringToSameUid_WhenPlayedTwice_ObjectsAreMergedAndUpdatedValuesPersisted()
     {
@@ -199,6 +216,9 @@ public class SameUidRoleUpdates
         });
     }
     
+    /// <summary>
+    /// Verifies updates from typed self actors with the same UID persist while retaining unchanged values.
+    /// </summary>
     [Test]
     public async Task GivenTypedSelfActorsReferringToSameUid_WhenPlayedTwice_ObjectsAreUpdatedAndValuesPersisted()
     {
@@ -239,4 +259,17 @@ public class SameUidRoleUpdates
             Assert.That(persisted.Operation, Is.EqualTo("sum"));
         });
     }
+
+    #region Test Models
+
+    /// <summary>
+    /// Incomplete object which can be presented as an IFormula
+    /// </summary>
+    public class FormulaIncomplete
+    {
+        public int Number1 { get; set; }
+        public string Uid { get; set; } = null!;
+    }
+
+    #endregion
 }

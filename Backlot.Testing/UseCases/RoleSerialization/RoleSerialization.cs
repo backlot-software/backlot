@@ -1,16 +1,14 @@
 ﻿using Autofac;
+using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Json;
 using Backlot.Core.Json.Serialization.Newtonsoft;
 using Backlot.Core.Security;
-using Backlot.Core.Services;
-using Backlot.Services.Filesystem.LocalDiskStorage;
 using Backlot.Testing.Defaults;
 using Backlot.Testing.Defaults.Fakes;
 using Backlot.Testing.Shared.Directors;
 using Backlot.Testing.Shared.TestModels;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -23,15 +21,24 @@ namespace Backlot.Testing.UseCases.RoleSerialization;
 /// </summary>
 public class RoleSerialization
 {
+    #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
+
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -39,7 +46,7 @@ public class RoleSerialization
     
     private static void AliasEncryptionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b),
@@ -50,14 +57,19 @@ public class RoleSerialization
                         .SingleInstance();
                 }));
     }
+
+    #endregion
     
+    /// <summary>
+    /// Verifies an aliased typed actor property survives persistence serialization and re-presentation.
+    /// </summary>
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForPersistenceAndPresentedAgain_ThenAliasValueIsPreserved()
     {
         // Arrange
         AliasSetup();
         
-        var origin = new FormulaDifferentAliasName()
+        var origin = new FormulaAlias()
         {
             Uid = "860C5B53",
             Number1 = 7,
@@ -78,13 +90,16 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies an aliased typed actor property survives interaction serialization and re-presentation.
+    /// </summary>
     [Test]
     public void GivenTypedActorWithAliasNamedProperty_WhenSerializedForInteractionAndPresentedAgain_ThenAliasValueIsPreserved()
     {
         // Arrange
         AliasEncryptionSetup();
         
-        var origin = new FormulaDifferentAliasName()
+        var origin = new FormulaAlias()
         {
             Uid = "860C5B53",
             Number1 = 7,
@@ -105,6 +120,9 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies serialization across different presented roles preserves their original and added skills.
+    /// </summary>
     [Test]
     public void GivenJsonRole_WhenPresentedAsDifferentRolesAndSerialized_ThenAllOriginalSkillsAndAddedSkillsArePreserved()
     {
@@ -132,6 +150,9 @@ public class RoleSerialization
         });
     }
     
+    /// <summary>
+    /// Verifies merging JSON proxies preserves an explicit null and additional properties during persistence serialization.
+    /// </summary>
     [Test]
     public void GivenTwoJProxiesWhereTheLeadingJsonContainsANullValueForAProperty_WhenTheJProxiesAreMergedAndSerializedForPersistence_TheNullValueAndAdditionalPropertiesArePreserved()
     {
@@ -158,4 +179,16 @@ public class RoleSerialization
             Assert.That(result["Operation"]?.Value<string>() , Is.Null);
         });
     }
+
+    #region Test Models
+
+    /// <summary>
+    /// Representing a test role using another role as a property
+    /// </summary>
+    public interface IPersistedOrder : IPersist
+    {
+        public IMoney Total { get; set; }
+    }
+
+    #endregion
 }

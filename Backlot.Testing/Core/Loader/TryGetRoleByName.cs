@@ -6,6 +6,9 @@ namespace Backlot.Testing.Core.Loader;
 
 public class TryGetRoleByName
 {
+    /// <summary>
+    /// Verifies valid role names resolve case-insensitively, with or without the leading I.
+    /// </summary>
     [TestCase ("InterfaceStartingWithI", typeof(IInterfaceStartingWithI))]
     [TestCase ("interfacestartingwithi", typeof(IInterfaceStartingWithI))]
     [TestCase ("INTERFACESTARTINGWITHI", typeof(IInterfaceStartingWithI))]
@@ -27,6 +30,9 @@ public class TryGetRoleByName
         });
     }
     
+    /// <summary>
+    /// Verifies unknown or non-role names return false and a null type.
+    /// </summary>
     [TestCase ("RoleThatDoesNotExist")]
     [TestCase ("nterfaceStartingWithI")]
     [TestCase ("FormulaSelf")]

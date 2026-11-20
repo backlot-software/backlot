@@ -20,17 +20,24 @@ namespace Backlot.Testing.Core.Abstraction.Actors.Acting;
 
 public class Presents
 {
-    #region Backlot Test Environment Setup Methods
+    #region Backlot Test Environment Setup
+    
+    [SetUp]
+    public void Setup()
+    {
+        // This fixture contains tests needing different backlot environment configurations.
+        // These setups are configured below and called in the tests //Arrange
+    }
     
     private static void DefaultSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot());
     }
 
     private static void PermissionSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PermissionDirector(
                     new FakeStorage(), config, b)));
@@ -38,7 +45,7 @@ public class Presents
 
     private static void PersonSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new PersonDirector(
                     new FakeStorage(), config, b)));
@@ -46,7 +53,7 @@ public class Presents
     
     private static void CardSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new CardDirector(
                     new FakeStorage(), config, b)));
@@ -54,7 +61,7 @@ public class Presents
     
     private static void AliasSetup()
     {
-        Defaults.Initialize.BuildApp(builder =>
+        Initialize.BuildApp(builder =>
             builder.ConfigureBacklot(
                 (config, b) => new AliasDirector(
                     new FakeStorage(), config, b)));
@@ -62,6 +69,9 @@ public class Presents
 
     #endregion
     
+    /// <summary>
+    /// Verifies an expression engine derives a UID for an actor without one when its role is presented.
+    /// </summary>
     [Test]
     public void Presents_WithActorNotHavingAUidAndARoleAliasReferringToAnExpressionEngine_UidIsCalculatedBasedOnExpressionEngine()
     {
@@ -84,6 +94,9 @@ public class Presents
         Assert.That(role.Uid, Is.EqualTo("12_sumexample!"));
     }
     
+    /// <summary>
+    /// Verifies one actor can be presented as different roles, each exposed through a proxy with accessible properties.
+    /// </summary>
     [Test]
     public void Presents_OneActorPresentedTwiceAsDifferentRoles_ActsAsAnIJProxy()
     {
@@ -118,6 +131,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a dictionary key aliased to the UID property supplies the presented person's UID.
+    /// </summary>
     [Test]
     public void Presents_DictionaryActorWithNoneMatchingUid_NotMatchingUidIsResolvedFromAlias()
     {
@@ -137,6 +153,9 @@ public class Presents
         Assert.That(person.Uid, Is.EqualTo("12355"));
     }
     
+    /// <summary>
+    /// Verifies actor property values are converted to the property types declared by the presented role.
+    /// </summary>
     [Test]
     public void Presents_TypedActorWithDifferentPropertyTypes_DifferentTypesAreConvertedToWhatTheRoleDefines()
     {
@@ -161,6 +180,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies an anonymous actor is proxied while retaining its actor and exposing role properties.
+    /// </summary>
     [Test]
     public void Presents_AnonymousActor_ReturnsProxyWithAccessibleProperties()
     {
@@ -192,6 +214,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a supplied JSON UID is preserved when the external card code is absent.
+    /// </summary>
     [Test]
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenUidIsFilledUidIsPreserved()
     {
@@ -216,6 +241,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a card code from a JSON actor is used as the card role's UID.
+    /// </summary>
     [Test]
     public void Presents_WithJSONObjectsGettingUidFromDifferentSources_WhenCardCodeIsFilledUidIsCardCode()
     {
@@ -240,6 +268,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies a property with an aliased name on an anonymous actor maps to the role property.
+    /// </summary>
     [Test]
     public void Presents_AnonymousActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
     {
@@ -258,6 +289,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
 
+    /// <summary>
+    /// Verifies a dictionary entry with an aliased name maps to the corresponding role property.
+    /// </summary>
     [Test]
     public void
         Presents_DictionaryActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
@@ -277,6 +311,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
 
+    /// <summary>
+    /// Verifies an ExpandoObject property with an aliased name maps to the corresponding role property.
+    /// </summary>
     [Test]
     public void Presents_ExpandoObjectActorWithNotDirectMatchingPropertyName_NotDirectMatchingPropertyNameIsCorrectedByAlias()
     {
@@ -294,6 +331,9 @@ public class Presents
         Assert.That(role.Operation, Is.EqualTo("sum"));
     }
     
+    /// <summary>
+    /// Verifies an aliased property in nested JSON role data is used when presenting the parent role.
+    /// </summary>
     [Test]
     public void Presents_WithJSONNestedRoleActorWhichNeedsAliassing_AliasValueIsUsedForRoleProperty()
     {
@@ -324,6 +364,9 @@ public class Presents
         Assert.That(role.Formulas.First().Operation, Is.EqualTo("sum")); // "Op" alias is used for "Operation" value.
     }
     
+    /// <summary>
+    /// Verifies an actor's permission field is ignored and the role receives the default permission.
+    /// </summary>
     [Test]
     public void Presents_TypedObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {
@@ -351,6 +394,9 @@ public class Presents
         });
     }
     
+    /// <summary>
+    /// Verifies an anonymous actor's permission field is ignored and the role receives the default permission.
+    /// </summary>
     [Test]
     public void Presents_AnonymousObjectWithItsOwnPermissionProperty_PermissionPropertyIsIgnoredAndDefaultIsUsed()
     {
@@ -380,10 +426,7 @@ public class Presents
     }
 
     #region Fixture Specific Custom Directors
-
-    // TODO: Review these fixture-specific directors and their test models
-    // during the Shared/TestModels cleanup.
-    // Preserve the alias and custom UID initialization test coverage.
+    
     private class PersonDirector(
         IFileSystem fileSystem,
         IConfigurationManager configuration,
@@ -408,6 +451,68 @@ public class Presents
         }
     }
     
+    #endregion
+
+    #region Test Models
+
+    public interface ICard : IPersist
+    {
+        string CardCode { get; set; }
+        string CustomerName { get; set; }
+    }
+
+    /// <summary>
+    /// Initialize card uid when not "mapped"
+    /// </summary>
+    public static class CardInitialization
+    {
+        public static ICard Initialize(ICard card, object actor)
+        {
+            if (card is IProxiedRole proxy && !string.IsNullOrWhiteSpace(card.CardCode))
+            {
+                proxy.Referrers = () => new Dictionary<string, string>
+                {
+                    {nameof(ICard.Uid), nameof(ICard.CardCode)},
+                };
+            }
+        
+            // no need to check uid for other type of objects, because it's a required property
+
+
+            return card;
+        }
+    }
+    
+    [FieldInfoAlias(nameof(Uid), ["BSN AN"])]
+    public interface IPerson : IPersist
+    {
+    }
+    
+    public class FormulaPermission
+    {
+        public string HelloWorld => "HelloWorld";
+        public string Operation { get; set; } = null!;
+        public int? Number1 { get; set; }
+        public int? Number2 { get; set; }
+
+        public string Name => "Example which can presents it self as an IFormula Role";
+
+        public string Uid { get; set; } = null!;
+    
+        public string __Permission { get; set; }
+    }
+    
+    /// <summary>
+    /// As IFormula but types of the number1 and number2 property are changed.
+    /// </summary>
+    public interface IFormulaTypeChanged : IPersist
+    {
+        string Operation { get; set; }
+
+        string Number1 { get; set; }
+        string Number2 { get; set; }
+    }
+
     #endregion
     
 }
