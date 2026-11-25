@@ -13,6 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScheduler<AutofacScopedPlayer>(
     interval:  TimeSpan.FromSeconds(1)); // default = 2 minutes, advicable to keep this as long as your use-case can accept.
 
+// The solution's own Razor Pages (Pages/Portal) share the Studio's sign-in: one login for both.
+builder.Services.AddRazorPages(
+        // o => 
+        // default = "/" the root or add your own area to required signin. o.Conventions.RequireBacklotSignIn("/Portal")
+    );
+
 // Backlot Studio is mounted by BuildWebApp; it is configured through the "BacklotStudio" section of
 // appsettings.json. There is no separate Studio process.
 var app = builder.BuildWebApp(hostBuilder =>

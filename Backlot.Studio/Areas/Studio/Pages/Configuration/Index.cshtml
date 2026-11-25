@@ -359,7 +359,7 @@ else
                     });
                     const payload = await res.json();
 
-                    if (payload.unauthorized) { window.location.href = '@Url.Page("/Login")'; return; }
+                    if (payload.unauthorized) { window.location.href = '@Url.BacklotLogin()'; return; }
 
                     if (payload.ok) {
                         // Persist the resolved name so a subsequent Save/Remove targets the same entry.

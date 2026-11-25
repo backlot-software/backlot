@@ -3,7 +3,6 @@ using System.Net;
 using Backlot.Http;
 using Backlot.Http.Media;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Backlot.Functions;

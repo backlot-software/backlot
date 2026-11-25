@@ -8,7 +8,6 @@ using Backlot.Defaults.Instructing;
 using Backlot.Defaults.Scenarios.Authentication;
 using Backlot.Defaults.Services;
 using Backlot.DependencyInjection.Autofac;
-using Backlot.Http.Watching;
 using Backlot.Services.LiteDB;
 using Newtonsoft.Json.Linq;
 using IConfigurationManager = Backlot.Core.Services.IConfigurationManager;

@@ -1,4 +1,4 @@
-using Backlot.Studio.Core.Models.Response;
+using Backlot.Authentication.Razor.Core.Models.Response;
 
 namespace Backlot.Studio.Areas.Studio.Pages.ViewModels;
 

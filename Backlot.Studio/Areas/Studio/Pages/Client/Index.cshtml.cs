@@ -1,9 +1,11 @@
-﻿using System.Text;
+﻿using Backlot.Authentication.Razor;
+using System.Text;
 using System.Text.Json;
 using Backlot.Studio.Areas.Studio.Pages.ViewModels;
+using Backlot.Authentication.Razor.Core;
 using Backlot.Studio.Core;
-using Backlot.Studio.Implementation;
-using Backlot.Studio.Core.Models.Response;
+using Backlot.Authentication.Razor.Implementation;
+using Backlot.Authentication.Razor.Core.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backlot.Studio.Areas.Studio.Pages.Client;
@@ -15,6 +17,7 @@ namespace Backlot.Studio.Areas.Studio.Pages.Client;
 public class IndexModel : AuthenticatedPageModel
 {
     private readonly IBacklotApiClient _api;
+    private readonly IBacklotSignInManager _signInManager;
     private readonly ILogger<IndexModel> _logger;
 
     public string ApiBaseUrl { get; }
@@ -49,9 +52,10 @@ public class IndexModel : AuthenticatedPageModel
     // persist/persist option), or null.
     public string? DefaultEndpoint { get; private set; }
 
-    public IndexModel(IBacklotApiClient api, ILogger<IndexModel> logger)
+    public IndexModel(IBacklotApiClient api, IBacklotSignInManager signInManager, ILogger<IndexModel> logger)
     {
         _api = api;
+        _signInManager = signInManager;
         _logger = logger;
         ApiBaseUrl = api.BaseUrl?.AbsoluteUri ?? string.Empty;
     }
@@ -191,7 +195,9 @@ public class IndexModel : AuthenticatedPageModel
         catch (UnauthorizedAccessException)
         {
             // Credentials expired/invalid — the session Basic header no longer authenticates. Tell the
-            // client to send the operator back through login rather than silently failing.
+            // client to send the operator back through login rather than silently failing; signed out
+            // first, otherwise the login page would see the cookie and send the operator straight back.
+            await SignOutAsync();
             return new JsonResult(new { unauthorized = true, error = "Unauthorized — your session may have expired. Please sign in again." })
             {
                 StatusCode = StatusCodes.Status401Unauthorized
@@ -226,16 +232,15 @@ public class IndexModel : AuthenticatedPageModel
 
     // Builds the raw .http request text for {method} {baseUrl}/{endpoint} with the given body and
     // optional Accept header. The Authorization line carries the same credential the app uses for
-    // its own API requests, read from session: the base64 Basic credential (Login.cshtml.cs) or the
-    // Bearer access token (LoginBearer.cshtml.cs); missing session value → empty. The body block is
+    // its own API requests (IBacklotSignInManager.GetApiAuthorization): the base64 Basic credential or
+    // the Bearer access token; nobody signed in → empty. The body block is
     // omitted for GET requests (and empty bodies).
     private string BuildHttpRequest(string method, string endpoint, string? body, string? accept = null)
     {
         var baseUrl = _api.BaseUrl?.ToString().TrimEnd('/') ?? string.Empty;
-        var scheme = HttpContext?.Session.GetString(BacklotStudioDefaults.AuthSchemeSessionKey) ?? AuthHeaderHandler.BasicScheme;
-        var authHeader = HttpContext?.Session.GetString(scheme == AuthHeaderHandler.BearerScheme
-            ? BacklotStudioDefaults.AccessTokenSessionKey
-            : BacklotStudioDefaults.BasicAuthSessionKey) ?? string.Empty;
+        var authorization = _signInManager.GetApiAuthorization();
+        var scheme = authorization?.Scheme ?? AuthHeaderHandler.BasicScheme;
+        var authHeader = authorization?.Parameter ?? string.Empty;
         var path = endpoint.Trim().TrimStart('/');
         var verb = string.IsNullOrWhiteSpace(method) ? "GET" : method.Trim().ToUpperInvariant();
 

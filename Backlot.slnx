@@ -22,6 +22,7 @@
   <Folder Name="/Backlot/Infrastructure/" />
   <Folder Name="/Backlot/Infrastructure/Authentication/">
     <Project Path="Backlot.Authentication.Basic/Backlot.Authentication.Basic.csproj" />
+    <Project Path="Backlot.Authentication.Razor/Backlot.Authentication.Razor.csproj" />
   </Folder>
   <Folder Name="/Backlot/Infrastructure/Databases/">
     <Project Path="Backlot.Services.LiteDB/Backlot.Services.LiteDB.csproj" />

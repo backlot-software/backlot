@@ -11,11 +11,11 @@ if (string.IsNullOrEmpty(builder.Configuration["urls"]) &&
     builder.WebHost.UseUrls("http://127.0.0.1:0");
 }
 
-builder.Services.AddBacklotStudio(builder.Configuration, studio =>
+builder.Services.AddBacklotStudio(builder.Configuration, configureSignIn: signIn =>
 {
     // The desktop sidecar runs over HTTP on loopback (127.0.0.1), so relax cookie policy to SameAsRequest
     // so authentication cookies function without requiring local TLS certificates.
-    studio.CookieSecurePolicy = CookieSecurePolicy.SameAsRequest;
+    signIn.CookieSecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 var app = builder.Build();

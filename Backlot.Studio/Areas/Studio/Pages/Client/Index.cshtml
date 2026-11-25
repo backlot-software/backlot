@@ -242,7 +242,7 @@
                     resultPanel.classList.remove('hidden');
 
                     if (payload.unauthorized) {
-                        window.location.href = '@Url.Page("/Login")';
+                        window.location.href = '@Url.BacklotLogin()';
                         return;
                     }
 

@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Core.Lifetime;
 using Autofac.Extensions.DependencyInjection;
-using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
 using Backlot.Core.Abstraction.Scenarios;
 using Backlot.Core.DependencyInjection;

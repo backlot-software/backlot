@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Backlot.Core;
 using Backlot.Core.Abstraction.Actors;
-using Backlot.Core.Abstraction.Roles;
 using Backlot.Core.DependencyInjection;
 using Backlot.Core.Json;
 using Backlot.Core.Services;
