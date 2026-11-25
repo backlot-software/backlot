@@ -8,7 +8,7 @@ on:
 # explicitly configure permissions, in case your GITHUB_TOKEN workflow permissions are set to read-only in repository settings
 permissions:
   actions: write
-  contents: write # this can be 'read' if the signatures are in remote repository
+  contents: read # this can be 'read' if the signatures are in remote repository
   pull-requests: write
   statuses: write
 
@@ -34,7 +34,7 @@ jobs:
           path-to-document: 'https://github.com/backlot-software/backlot/blob/main/CLA.MD' # e.g. a CLA or a DCO document
           # branch should not be protected
           branch: 'main'
-          allowlist: copilot,bot*
+          allowlist: github-actions,copilot,bot*
 
          # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
           remote-organization-name: backlot-software
