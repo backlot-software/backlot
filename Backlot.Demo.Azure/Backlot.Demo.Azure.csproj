@@ -25,7 +25,7 @@
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</None>
 		<None Update="_local.jsonsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
 		<None Update="uisettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
