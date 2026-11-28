@@ -60,7 +60,7 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
     // Backing fields for reserved properties -->
     
     private string _permission;
-    private IDictionary<string, string> _referers;
+    private IDictionary<string, string[]> _referers;
     
     // <-- Backing fields for intercepted properties
 
@@ -68,7 +68,7 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
     {
         Actor = actor;
         RoleType = roleType;
-        _referers = new Dictionary<string, string>();
+        _referers = new Dictionary<string, string[]>();
         Backingfields = new Dictionary<string, object>();
         
         // defaults;
@@ -137,7 +137,7 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
                 
                 //set
 
-                if (invocation.Arguments[0] is Func<IDictionary<string, string>> refererFunc)
+                if (invocation.Arguments[0] is Func<IDictionary<string, string[]>> refererFunc)
                 {
                     foreach (var refItm in refererFunc()) // try to add the referers when there is already a referer set for this field, that one is leading.
                     {
@@ -159,15 +159,16 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
 
             #endregion
             
-            var expressionOrAlias = _referers.TryGetValue(propname, out var exp) //the alias is either the property name or a referer to the alias used by the actor.
-                ? exp // an expression or alias is found
-                : propname;
+            var expressionsOrAlias = _referers.TryGetValue(propname, out var exps) //the alias is either the property name or referers to the aliases/expressions used by the actor, in order.
+                ? exps // expressions or aliases are found
+                : [propname];
+            var expressionOrAlias = expressionsOrAlias[0]; // the first entry is used for setting and as backing field key.
 
             #region 1.2) intercepted properties
             
             if (method.ReturnType != typeof(void)) // 1.2.1) get
             {
-                if (TryGetWithExpression(expressionOrAlias, method.ReturnType, out var actorValue))
+                if (TryGetWithExpressions(expressionsOrAlias, method.ReturnType, out var actorValue))
                 {
                     if (actorValue != null)
                     {
@@ -346,13 +347,28 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
     /// <summary>
     /// Get the value of an actor property with an expression engine or when no engine is defined the defined alias name.
     /// </summary>
-    /// <param name="expressionOrAlias">the expression or the alias</param>
+    /// <param name="expressions">the expressions which we use to execute the expression engine.</param>
     /// <param name="returnType"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    private bool TryGetWithExpression(string expressionOrAlias, Type returnType, out object value)
+    private bool TryGetWithExpressions(string[] expressions, Type returnType, out object value)
     {
-        var match = Acting.RefererExpressionEngineRegex().Match(expressionOrAlias);   
+        foreach (var exp in expressions) // candidates are tried in order, the first one resulting in a value wins.
+        {
+            if (TryGetWithSingleExpression(exp, returnType, out value))
+                return true;
+        }
+
+        value = returnType.IsValueType ? CreateDefault(returnType) : null;
+        return false;
+    }
+
+    /// <summary>
+    /// Get the value of a single expression or alias, see <see cref="TryGetWithExpressions"/>.
+    /// </summary>
+    private bool TryGetWithSingleExpression(string expression, Type returnType, out object value)
+    {
+        var match = Acting.RefererExpressionEngineRegex().Match(expression);   
         if (match.Success) // an expression engine is defined
         {
             var engine = match.Groups["engine"].Value;
@@ -375,9 +391,9 @@ public abstract class BaseInterceptor<TActor> : IProxyInterceptor
             value = returnType.IsValueType ? CreateDefault(returnType) : null;
             return false;
         }
-        else // the expression is an alias name 
+        else // fallback: the expression is an alias name 
         {
-            return TryGet(expressionOrAlias, returnType, out value);
+            return TryGet(expression, returnType, out value);
         }
     }
 

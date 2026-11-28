@@ -12,15 +12,15 @@ public static class Instructors
     /// <param name="role">The actual proxied role the referrers need to be built for</param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private static IDictionary<string, string> DictionaryReferrerBuilder<T>(IDictionary<string, IEnumerable<string>> dictionary, T role)
+    private static IDictionary<string, string[]> DictionaryReferrerBuilder<T>(IDictionary<string, IEnumerable<string>> dictionary, T role)
         where T : IRole
     {
         if (!dictionary.Any()) //return an empty dictionary when no aliases are defined.
-            return new Dictionary<string, string>();
-        
+            return new Dictionary<string, string[]>();
+
         var actorProperties = role.ActorProperties();
 
-        var result = new Dictionary<string, string>(); // return per field the available alias
+        var result = new Dictionary<string, string[]>(); // return per field the available aliases/expressions
         foreach (var property in dictionary) // go through the dictionary and check if there is any property in the actor matching.
         {
             if (actorProperties.Contains(property.Key))
@@ -28,13 +28,16 @@ public static class Instructors
                     
             var alias = property.Value.FirstOrDefault(a => actorProperties.Contains(a)); // if there is more than one, the first is leading
             if (alias != null)
-                result.Add(property.Key, alias); // add the alias to the actual referrers. 
+                result.Add(property.Key, new[] { alias }); // add the alias to the actual referrers.
             else
             {
-                var expression =
-                    property.Value.FirstOrDefault(expression =>  Acting.RefererExpressionEngineRegex().IsMatch(expression));
-                if(expression != null)
-                    result.Add(property.Key, expression); // add the logic to the actual referrers.
+                // keep all expressions in declaration order, each actor might need its own; they are tried in order at runtime.
+                var expressions = property.Value
+                    .Where(expression => Acting.RefererExpressionEngineRegex().IsMatch(expression))
+                    .Distinct()
+                    .ToArray();
+                if (expressions.Length > 0)
+                    result.Add(property.Key, expressions); // add the logic to the actual referrers.
             }
         }
 
@@ -136,13 +139,13 @@ public static class Instructors
                 var actorProperties = role.ActorProperties();
 
                 // Case sensitivy checks.
-                var result = new Dictionary<string, string>();
-                foreach (var fieldName in fields) 
+                var result = new Dictionary<string, string[]>();
+                foreach (var fieldName in fields)
                 {
                     var alias = actorProperties.FirstOrDefault(a =>
-                        !a.Contains(fieldName) // check if it not cantains an case sensitive equal variant 
+                        !a.Contains(fieldName) // check if it not cantains an case sensitive equal variant
                         && a.Contains(fieldName, StringComparison.InvariantCultureIgnoreCase)); // but but if it does contain a case insensitive equal variant then ...
-                        if (alias != null) result.Add(fieldName, alias); // add it.
+                        if (alias != null) result.Add(fieldName, new[] { alias }); // add it.
                 }
 
                 return result;

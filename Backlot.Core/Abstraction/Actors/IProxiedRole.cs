@@ -26,13 +26,13 @@ namespace Backlot.Core.Abstraction.Actors
         /// <summary>
         /// Dictionary of properties which are referring to an alias or expression
         /// key: role propertyname
-        /// value: what the interceptor needs to have to get the value from the actor. This can be:
-        /// - the actual property name used within the underlying actor
-        /// - or an expression following the regex pattern. ^(?.):(?.*)$ Acting.RefererExpressionEnginePattern
+        /// value: what the interceptor needs to have to get the value from the actor, tried in order. Each entry can be:
+        /// - the actual property name used within the underlying actor (in this case the value is always a single entry)
+        /// - or an expression following the regex pattern. ^(?.):(?.*)$ Acting.RefererExpressionEnginePattern (in this case the value is potentially multiple entries)
         /// </summary>
         /// <returns></returns>
         [JsonIgnore]
-        Func<IDictionary<string, string>> Referrers { get; set; }
+        Func<IDictionary<string, string[]>> Referrers { get; set; }
 
         /// <summary>
         /// Is the representation of the actor null or not.

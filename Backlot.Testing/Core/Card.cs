@@ -36,9 +36,9 @@ public static class CardInitialization
     {
         if (card is IProxiedRole proxy && !string.IsNullOrWhiteSpace(card.CardCode))
         {
-            proxy.Referrers = () => new Dictionary<string, string>
+            proxy.Referrers = () => new Dictionary<string, string[]>
             {
-                {nameof(ICard.Uid), nameof(ICard.CardCode)},
+                {nameof(ICard.Uid), new[] { nameof(ICard.CardCode) }},
             };
         }
         

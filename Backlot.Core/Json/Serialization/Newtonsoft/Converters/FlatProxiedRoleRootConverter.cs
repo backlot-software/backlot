@@ -49,7 +49,7 @@ public class FlatProxiedRoleRootConverter : ProxiedRootConverter
             foreach (var prop in actor.Properties()
                          .Where(p => 
                              !skipFields.Any(sf => sf == p.Name) &&
-                             !referrers.Any(r => r.Value == p.Name) && 
+                             !referrers.Any(r => r.Value.Contains(p.Name)) &&
                                                  !p.Name.StartsWith(Meta.__)
                          )
                     ) // skip when any of the properties is the representative of a referrer
