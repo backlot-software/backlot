@@ -9,7 +9,7 @@
     <!-- Razor Class Library that ships Razor Pages (an Area), so MVC support is required. -->
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 
-    <VersionPrefix>0.5.0</VersionPrefix>
+    <VersionPrefix>0.5.1</VersionPrefix>
     <VersionSuffix>
     </VersionSuffix>
     <Title>Backlot.Authentication.Razor</Title>
